@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Monitor, RotateCcw } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSeo } from "@/lib/seo";
 import {
   DEFAULT_APP_WIDTH,
   MAX_APP_WIDTH,
@@ -19,25 +19,13 @@ import {
   useLayoutSettings,
 } from "@/lib/layout-settings";
 
-const title = "Configurações — ELO Transporte e Turismo";
-const description =
-  "Configurações do sistema ELO: preferências de layout, incluindo a largura máxima da interface.";
+export default function ConfiguracoesPage() {
+  useSeo({
+    title: "Configurações — ELO Transporte e Turismo",
+    description:
+      "Configurações do sistema ELO: preferências de layout, incluindo a largura máxima da interface.",
+  });
 
-export const Route = createFileRoute("/_authenticated/configuracoes")({
-  head: () => ({
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: ConfiguracoesPage,
-});
-
-function ConfiguracoesPage() {
   const { maxWidth, setMaxWidth, resetMaxWidth, isFullWidth, saveState } =
     useLayoutSettings();
 

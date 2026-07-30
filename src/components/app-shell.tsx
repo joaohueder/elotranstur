@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { LayoutDashboard, LogOut, Settings } from "lucide-react";
@@ -31,7 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     queryClient.clear();
     await supabase.auth.signOut();
     clearRememberMe();
-    navigate({ to: "/login", replace: true });
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -70,17 +70,21 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav className="border-b border-border bg-background/60 backdrop-blur">
         <div className="app-container flex items-center gap-1 overflow-x-auto px-8">
           {navItems.map((item) => (
-            <Link
+            <NavLink
               key={item.to}
               to={item.to}
-              className="flex items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-4 py-3.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
-              activeProps={{
-                className: "border-brand-accent text-foreground",
-              }}
+              className={({ isActive }) =>
+                [
+                  "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors hover:text-foreground",
+                  isActive
+                    ? "border-brand-accent text-foreground"
+                    : "border-transparent text-muted-foreground",
+                ].join(" ")
+              }
             >
               <item.icon className="size-3.5" />
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </div>
       </nav>

@@ -1,51 +1,32 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useSeo } from "@/lib/seo";
 import { supabase, setRememberMe } from "@/lib/supabase";
 
 import loginHero from "../assets/login-hero.jpg";
 
+export default function LoginPage() {
+  useSeo({
+    title: "Login — ELO Transporte e Turismo",
+    description:
+      "Acesse o painel da ELO: gestão de viagens, leads, CRM, site e landing pages.",
+  });
 
-
-
-export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Login — ELO Transporte e Turismo" },
-      {
-        name: "description",
-        content:
-          "Acesse o painel da ELO: gestão de viagens, leads, CRM, site e landing pages.",
-      },
-      { property: "og:title", content: "Login — ELO Transporte e Turismo" },
-      {
-        property: "og:description",
-        content:
-          "Acesse o painel da ELO: gestão de viagens, leads, CRM, site e landing pages.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: LoginPage,
-});
-
-function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/painel", replace: true });
+      if (data.session) navigate("/painel", { replace: true });
     });
   }, [navigate]);
 
@@ -60,26 +41,15 @@ function LoginPage() {
 
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/painel` },
-        });
-        if (error) throw error;
-        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
-        setMode("signin");
-      } else {
-        // Define a persistência ANTES do login: com "Manter conectado" a
-        // sessão é salva por 30 dias; sem, expira ao fechar a aba.
-        setRememberMe(rememberMe);
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        navigate({ to: "/painel", replace: true });
-      }
+      // Define a persistência ANTES do login: com "Manter conectado" a
+      // sessão é salva por 30 dias; sem, expira ao fechar a aba.
+      setRememberMe(rememberMe);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      navigate("/painel", { replace: true });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Não foi possível continuar.",
@@ -100,7 +70,6 @@ function LoginPage() {
     if (error) toast.error(error.message);
     else toast.success("Enviamos um link de redefinição para seu e-mail.");
   };
-
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans lg:flex-row">
@@ -133,13 +102,11 @@ function LoginPage() {
 
           <div className="space-y-6">
             <p className="text-lg font-light leading-relaxed text-primary-foreground/80">
-              Viagens, leads, CRM, site institucional e landing pages em um
-              só painel para operadoras de transporte e turismo.
+              Viagens, leads, CRM, site institucional e landing pages em um só
+              painel para operadoras de transporte e turismo.
             </p>
-
           </div>
         </div>
-
       </div>
 
       {/* Right Column: Login Interface */}
@@ -149,7 +116,9 @@ function LoginPage() {
             <div className="grid h-8 px-2 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
               ELO
             </div>
-            <span className="font-serif text-xl tracking-tight">TRANSPORTE E TURISMO</span>
+            <span className="font-serif text-xl tracking-tight">
+              TRANSPORTE E TURISMO
+            </span>
           </div>
 
           <div className="mb-10">
@@ -194,7 +163,6 @@ function LoginPage() {
                 >
                   Esqueceu a senha?
                 </button>
-
               </div>
               <Input
                 id="password"
@@ -226,16 +194,9 @@ function LoginPage() {
               disabled={loading}
               className="w-full rounded-none bg-primary py-6 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
-              {loading
-                ? "Processando..."
-                : mode === "signup"
-                  ? "Criar conta"
-                  : "Acessar painel"}
+              {loading ? "Processando..." : "Acessar painel"}
             </Button>
-
           </form>
-
-
         </div>
       </div>
     </div>
