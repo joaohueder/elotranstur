@@ -139,7 +139,7 @@ function LoginPage() {
                 htmlFor="email"
                 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                E-mail corporativo
+                E-MAIL
               </Label>
               <Input
                 id="email"
