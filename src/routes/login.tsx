@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 
 import loginHero from "../assets/login-hero.jpg";
 
-export const { LoginPage as default } from "@/routes/login";
+
 
 export const Route = createFileRoute("/login")({
   head: () => ({
