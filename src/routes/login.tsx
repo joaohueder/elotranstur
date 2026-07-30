@@ -184,12 +184,14 @@ function LoginPage() {
                 >
                   Senha
                 </Label>
-                <Link
-                  to="/login"
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
                   className="text-xs font-medium text-brand-accent hover:underline"
                 >
                   Esqueceu a senha?
-                </Link>
+                </button>
+
               </div>
               <Input
                 id="password"
