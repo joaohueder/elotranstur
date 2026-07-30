@@ -399,71 +399,37 @@ export default function UsuariosPage() {
 
     const nome = draft.nome.trim();
 
-    if (
-      (nome || null) !== (selected.nome ?? null) ||
-      draft.ativo !== selected.ativo
-    ) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ nome: nome || null, ativo: draft.ativo })
-        .eq("id", selected.id);
-      if (error) {
-        setSaving(false);
-        toast.error(`Não foi possível salvar o perfil: ${error.message}`);
-        return;
-      }
+    const permissions = MODULES.map((m) => {
+      const p = draft.permissions[m.key];
+      return {
+        modulo: m.key,
+        can_view: p?.can_view ?? false,
+        can_edit: p?.can_edit ?? false,
+        can_delete: p?.can_delete ?? false,
+      };
+    });
+
+    const { error } = await supabase.rpc("admin_save_user", {
+      _user_id: selected.id,
+      _nome: nome || null,
+      _ativo: draft.ativo,
+      _role: draft.role,
+      _permissions: permissions,
+    });
+
+    if (error) {
+      setSaving(false);
+      toast.error(`Não foi possível salvar: ${error.message}`);
+      return;
     }
-
-    if (draft.role !== selected.role) {
-      const res = await applyRole(selected.id, draft.role);
-      if (res.error) {
-        setSaving(false);
-        toast.error(`Não foi possível alterar o papel: ${res.error.message}`);
-        return;
-      }
-    }
-
-    if (draft.role !== "admin" && permissionsChanged(selected, draft)) {
-      const rows = MODULES.map(
-        (m) =>
-          draft.permissions[m.key] ?? {
-            user_id: selected.id,
-            modulo: m.key,
-            can_view: false,
-            can_edit: false,
-            can_delete: false,
-          },
-      ).map((p) => ({ ...p, user_id: selected.id }));
-
-      const { error } = await supabase
-        .from("user_permissions")
-        .upsert(rows, { onConflict: "user_id,modulo" });
-      if (error) {
-        setSaving(false);
-        toast.error(`Não foi possível salvar as permissões: ${error.message}`);
-        return;
-      }
-    }
-
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === selected.id
-          ? {
-              ...u,
-              nome: nome || null,
-              ativo: draft.ativo,
-              role: draft.role,
-              permissions: draft.permissions,
-            }
-          : u,
-      ),
-    );
 
     setSaving(false);
     toast.success("Alterações salvas.");
     setSelectedId(null);
     setDraft(null);
+    await load();
   }
+
 
 
   if (authz.loading) {
