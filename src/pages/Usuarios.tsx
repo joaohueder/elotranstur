@@ -407,106 +407,229 @@ export default function UsuariosPage() {
 
   return (
     <AppShell>
-      <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Sistema
           </p>
           <h1 className="mt-2 font-serif text-4xl text-foreground">Usuários</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Crie contas, defina papéis e libere individualmente visualização,
-            edição e exclusão por módulo.
+            Todos os usuários cadastrados no sistema, com papel, status e
+            permissões por módulo.
           </p>
         </div>
-        <Button
-          className="rounded-none"
-          onClick={() => {
-            setForm(EMPTY_FORM);
-            setCreateOpen(true);
-          }}
-        >
-          <Plus className="size-4" />
-          Novo usuário
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="rounded-none"
+            disabled={loading}
+            onClick={() => void load()}
+          >
+            <RefreshCw className={loading ? "size-4 animate-spin" : "size-4"} />
+            Atualizar
+          </Button>
+          <Button
+            className="rounded-none"
+            onClick={() => {
+              setForm(EMPTY_FORM);
+              setCreateOpen(true);
+            }}
+          >
+            <Plus className="size-4" />
+            Novo usuário
+          </Button>
+        </div>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(280px,360px)_1fr]">
-        <Card className="rounded-none border-border">
+      <div className="mb-8 grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Total", value: stats.total, icon: Users },
+          { label: "Administradores", value: stats.admins, icon: ShieldCheck },
+          { label: "Ativos", value: stats.ativos, icon: CircleCheck },
+          { label: "Inativos", value: stats.inativos, icon: CircleSlash },
+        ].map((s) => (
+          <div key={s.label} className="bg-card px-5 py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                {s.label}
+              </span>
+              <s.icon className="size-4 text-brand-accent" />
+            </div>
+            <p className="mt-2 font-serif text-3xl text-foreground">
+              {loading ? "—" : s.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-64 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="rounded-none pl-9"
+            placeholder="Buscar por nome ou e-mail…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <Select
+          value={roleFilter}
+          onValueChange={(v) => setRoleFilter(v as typeof roleFilter)}
+        >
+          <SelectTrigger className="w-48 rounded-none">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="todos">Todos os papéis</SelectItem>
+            <SelectItem value="admin">Administradores</SelectItem>
+            <SelectItem value="usuario">Usuários</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+        >
+          <SelectTrigger className="w-44 rounded-none">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="todos">Todos os status</SelectItem>
+            <SelectItem value="ativos">Somente ativos</SelectItem>
+            <SelectItem value="inativos">Somente inativos</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-xs uppercase tracking-widest text-muted-foreground">
+          {loading
+            ? "Carregando…"
+            : `${filtered.length} de ${users.length} usuário(s)`}
+        </span>
+      </div>
+
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-40 animate-pulse border border-border bg-muted/40" />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <Card className="rounded-none border-dashed border-border">
           <CardHeader>
-            <CardTitle className="font-serif text-2xl">Contas</CardTitle>
+            <CardTitle className="font-serif text-2xl">
+              Nenhum usuário encontrado
+            </CardTitle>
             <CardDescription>
-              {loading ? "Carregando…" : `${users.length} usuário(s)`}
+              Ajuste a busca e os filtros ou crie uma nova conta.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-1 p-0 pb-4">
-            {users.map((u) => (
-              <button
-                key={u.id}
-                onClick={() => setSelectedId(u.id)}
-                className={[
-                  "flex w-full items-center justify-between gap-3 border-l-2 px-6 py-3 text-left transition-colors",
-                  u.id === selectedId
-                    ? "border-brand-accent bg-muted"
-                    : "border-transparent hover:bg-muted/60",
-                ].join(" ")}
-              >
-                <span className="min-w-0">
-                  <span className="block truncate text-sm text-foreground">
-                    {u.nome || u.email || u.id}
-                    {!u.ativo && (
-                      <span className="ml-2 text-xs uppercase tracking-widest text-muted-foreground">
-                        inativo
-                      </span>
-                    )}
-                  </span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {u.email}
-                  </span>
-                </span>
-                <Badge
-                  variant={u.role === "admin" ? "default" : "secondary"}
-                  className="rounded-none text-[10px] uppercase tracking-widest"
-                >
-                  {u.role === "admin" ? "Admin" : "Usuário"}
-                </Badge>
-              </button>
-            ))}
-            {!loading && users.length === 0 && (
-              <p className="px-6 text-sm text-muted-foreground">
-                Nenhum usuário encontrado.
-              </p>
-            )}
-          </CardContent>
         </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((u) => {
+            const initials = (u.nome || u.email || "?")
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((s) => s[0]?.toUpperCase())
+              .join("");
+            const liberados =
+              u.role === "admin"
+                ? MODULES.length
+                : MODULES.filter((m) => u.permissions[m.key]?.can_view).length;
 
-        <Card className="rounded-none border-border">
-          {selected ? (
-            <>
-              <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
-                <div>
-                  <CardTitle className="flex items-center gap-2 font-serif text-2xl">
-                    {selected.role === "admin" ? (
-                      <ShieldCheck className="size-5 text-brand-accent" />
-                    ) : (
-                      <UserIcon className="size-5 text-brand-accent" />
-                    )}
-                    {selected.nome || selected.email}
-                  </CardTitle>
-                  <CardDescription>{selected.email}</CardDescription>
-                </div>
-                {selected.id !== authz.userId && (
-                  <Button
-                    variant="outline"
-                    className="rounded-none text-destructive hover:text-destructive"
-                    onClick={() => setDeleteTarget(selected)}
+            return (
+              <article
+                key={u.id}
+                className="group flex flex-col border border-border bg-card transition-colors hover:border-brand-accent"
+              >
+                <div className="flex items-start gap-3 p-5">
+                  <div className="flex size-11 shrink-0 items-center justify-center border border-border bg-muted font-serif text-sm text-foreground">
+                    {initials || "?"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {u.nome || u.email || u.id}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {u.email}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={u.role === "admin" ? "default" : "secondary"}
+                    className="rounded-none text-[10px] uppercase tracking-widest"
                   >
-                    <Trash2 className="size-4" />
-                    Excluir
-                  </Button>
-                )}
-              </CardHeader>
+                    {u.role === "admin" ? "Admin" : "Usuário"}
+                  </Badge>
+                </div>
 
-              <CardContent className="space-y-8">
+                <div className="flex items-center gap-4 border-t border-border px-5 py-3 text-xs">
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <span
+                      className={[
+                        "size-2 rounded-full",
+                        u.ativo ? "bg-brand-accent" : "bg-muted-foreground/40",
+                      ].join(" ")}
+                    />
+                    {u.ativo ? "Ativa" : "Desativada"}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {u.role === "admin"
+                      ? "Acesso total"
+                      : `${liberados}/${MODULES.length} módulos`}
+                  </span>
+                  {u.id === authz.userId && (
+                    <span className="ml-auto uppercase tracking-widest text-brand-accent">
+                      você
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-auto flex items-center gap-2 border-t border-border p-3">
+                  <Button
+                    variant="secondary"
+                    className="flex-1 rounded-none"
+                    onClick={() => setSelectedId(u.id)}
+                  >
+                    <Settings2 className="size-4" />
+                    Gerenciar
+                  </Button>
+                  {u.id !== authz.userId && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-none text-muted-foreground hover:text-destructive"
+                      aria-label={`Excluir ${u.email}`}
+                      onClick={() => setDeleteTarget(u)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <Dialog
+        open={Boolean(selected)}
+        onOpenChange={(open) => !open && setSelectedId(null)}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-2xl">
+          {selected && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 font-serif text-2xl">
+                  {selected.role === "admin" ? (
+                    <ShieldCheck className="size-5 text-brand-accent" />
+                  ) : (
+                    <UserIcon className="size-5 text-brand-accent" />
+                  )}
+                  {selected.nome || selected.email}
+                </DialogTitle>
+                <DialogDescription>{selected.email}</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-8">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label
@@ -592,13 +715,13 @@ export default function UsuariosPage() {
                         <TableHead className="text-xs uppercase tracking-widest">
                           Módulo
                         </TableHead>
-                        <TableHead className="w-28 text-center text-xs uppercase tracking-widest">
+                        <TableHead className="w-24 text-center text-xs uppercase tracking-widest">
                           Ver
                         </TableHead>
-                        <TableHead className="w-28 text-center text-xs uppercase tracking-widest">
+                        <TableHead className="w-24 text-center text-xs uppercase tracking-widest">
                           Editar
                         </TableHead>
-                        <TableHead className="w-28 text-center text-xs uppercase tracking-widest">
+                        <TableHead className="w-24 text-center text-xs uppercase tracking-widest">
                           Excluir
                         </TableHead>
                       </TableRow>
@@ -628,20 +751,31 @@ export default function UsuariosPage() {
                     </TableBody>
                   </Table>
                 )}
-              </CardContent>
+              </div>
+
+              <DialogFooter>
+                {selected.id !== authz.userId && (
+                  <Button
+                    variant="outline"
+                    className="mr-auto rounded-none text-destructive hover:text-destructive"
+                    onClick={() => setDeleteTarget(selected)}
+                  >
+                    <Trash2 className="size-4" />
+                    Excluir conta
+                  </Button>
+                )}
+                <Button
+                  className="rounded-none"
+                  onClick={() => setSelectedId(null)}
+                >
+                  Concluir
+                </Button>
+              </DialogFooter>
             </>
-          ) : (
-            <CardHeader>
-              <CardTitle className="font-serif text-2xl">
-                Selecione um usuário
-              </CardTitle>
-              <CardDescription>
-                Escolha uma conta à esquerda para definir papel e permissões.
-              </CardDescription>
-            </CardHeader>
           )}
-        </Card>
-      </div>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="rounded-none sm:max-w-lg">
