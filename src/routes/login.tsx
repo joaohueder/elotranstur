@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
 import loginHero from "../assets/login-hero.jpg";
 
@@ -200,51 +199,6 @@ function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-10 flex items-center gap-4">
-            <Separator className="flex-1" />
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Acesso institucional
-            </span>
-            <Separator className="flex-1" />
-          </div>
-
-          <div className="mt-8 grid grid-cols-2 gap-4">
-            <Button
-              variant="outline"
-              className="rounded-none border-border bg-background py-5 text-xs font-medium hover:bg-accent"
-            >
-              Azure AD
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-none border-border bg-background py-5 text-xs font-medium hover:bg-accent"
-            >
-              Okta SSO
-            </Button>
-          </div>
-
-          <p className="mt-12 text-center text-sm text-muted-foreground">
-            Não tem uma conta de operador?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-foreground hover:underline"
-            >
-              Solicite parceria
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-auto flex flex-wrap gap-x-6 gap-y-2 pt-16 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-          <Link to="/login" className="hover:text-brand-accent">
-            Termos de serviço
-          </Link>
-          <Link to="/login" className="hover:text-brand-accent">
-            Privacidade
-          </Link>
-          <Link to="/login" className="hover:text-brand-accent">
-            Segurança
-          </Link>
-          <span className="ml-auto text-muted-foreground/60">v1.0.0</span>
         </div>
       </div>
     </div>
