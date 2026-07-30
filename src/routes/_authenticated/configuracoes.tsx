@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 });
 
 function ConfiguracoesPage() {
-  const { maxWidth, setMaxWidth, resetMaxWidth, isFullWidth } =
+  const { maxWidth, setMaxWidth, resetMaxWidth, isFullWidth, saveState } =
     useLayoutSettings();
 
   return (
