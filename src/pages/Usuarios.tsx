@@ -707,10 +707,11 @@ export default function UsuariosPage() {
 
       <Dialog
         open={Boolean(selected)}
-        onOpenChange={(open) => !open && setSelectedId(null)}
+        onOpenChange={(open) => !open && cancelEdit()}
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-2xl">
-          {selected && (
+          {selected && draft && (
+
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 font-serif text-2xl">
