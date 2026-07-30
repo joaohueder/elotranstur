@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/lib/supabase";
+import { supabase, setRememberMe } from "@/lib/supabase";
 
 import loginHero from "../assets/login-hero.jpg";
 
@@ -70,6 +70,9 @@ function LoginPage() {
         toast.success("Conta criada! Verifique seu e-mail para confirmar.");
         setMode("signin");
       } else {
+        // Define a persistência ANTES do login: com "Manter conectado" a
+        // sessão é salva por 30 dias; sem, expira ao fechar a aba.
+        setRememberMe(rememberMe);
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
