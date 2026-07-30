@@ -170,6 +170,31 @@ export default function UsuariosPage() {
     [users, selectedId],
   );
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return users.filter((u) => {
+      if (roleFilter !== "todos" && u.role !== roleFilter) return false;
+      if (statusFilter === "ativos" && !u.ativo) return false;
+      if (statusFilter === "inativos" && u.ativo) return false;
+      if (!q) return true;
+      return (
+        (u.nome ?? "").toLowerCase().includes(q) ||
+        (u.email ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [users, query, roleFilter, statusFilter]);
+
+  const stats = useMemo(
+    () => ({
+      total: users.length,
+      admins: users.filter((u) => u.role === "admin").length,
+      ativos: users.filter((u) => u.ativo).length,
+      inativos: users.filter((u) => !u.ativo).length,
+    }),
+    [users],
+  );
+
+
   useEffect(() => {
     setNomeDraft(selected?.nome ?? "");
   }, [selected?.id, selected?.nome]);
