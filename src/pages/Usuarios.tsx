@@ -418,9 +418,59 @@ export default function UsuariosPage() {
     });
 
     if (error) {
-      setSaving(false);
-      toast.error(`Não foi possível salvar: ${error.message}`);
-      return;
+      // Fallback: RPC ainda não instalada na instância — grava direto nas tabelas.
+      const missingRpc =
+        error.code === "PGRST202" ||
+        error.code === "42883" ||
+        /admin_save_user/i.test(error.message);
+
+      if (!missingRpc) {
+        setSaving(false);
+        toast.error(`Não foi possível salvar: ${error.message}`);
+        return;
+      }
+
+      const fallbackError = await saveWithoutRpc(
+        selected.id,
+        nome || null,
+        draft.ativo,
+        draft.role,
+        permissions,
+      );
+      if (fallbackError) {
+        setSaving(false);
+        toast.error(`Não foi possível salvar: ${fallbackError}`);
+        return;
+      }
+    }
+
+    // Confere no banco se as permissões realmente ficaram gravadas.
+    if (draft.role !== "admin") {
+      const check = await supabase
+        .from("user_permissions")
+        .select("modulo, can_view, can_edit, can_delete")
+        .eq("user_id", selected.id);
+
+      const saved = new Map(
+        (check.data ?? []).map((r) => [
+          r.modulo,
+          `${r.can_view}|${r.can_edit}|${r.can_delete}`,
+        ]),
+      );
+      const mismatch = permissions.some(
+        (p) =>
+          saved.get(p.modulo) !==
+          `${p.can_view}|${p.can_edit}|${p.can_delete}`,
+      );
+
+      if (check.error || mismatch) {
+        setSaving(false);
+        toast.error(
+          `As permissões não foram gravadas${check.error ? `: ${check.error.message}` : ". Execute supabase/sql/2026_usuarios_admin_save.sql na sua instância."}`,
+        );
+        await load();
+        return;
+      }
     }
 
     setSaving(false);
@@ -429,6 +479,39 @@ export default function UsuariosPage() {
     setDraft(null);
     await load();
   }
+
+  async function saveWithoutRpc(
+    userId: string,
+    nome: string | null,
+    ativo: boolean,
+    role: AppRole,
+    permissions: { modulo: string; can_view: boolean; can_edit: boolean; can_delete: boolean }[],
+  ): Promise<string | null> {
+    const profileRes = await supabase
+      .from("profiles")
+      .upsert({ id: userId, nome, ativo }, { onConflict: "id" });
+    if (profileRes.error) return profileRes.error.message;
+
+    const roleRes = await applyRole(userId, role);
+    if (roleRes.error) return roleRes.error.message;
+
+    if (role === "admin") {
+      const del = await supabase
+        .from("user_permissions")
+        .delete()
+        .eq("user_id", userId);
+      return del.error ? del.error.message : null;
+    }
+
+    const permRes = await supabase
+      .from("user_permissions")
+      .upsert(
+        permissions.map((p) => ({ ...p, user_id: userId })),
+        { onConflict: "user_id,modulo" },
+      );
+    return permRes.error ? permRes.error.message : null;
+  }
+
 
 
 
