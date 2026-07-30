@@ -92,6 +92,13 @@ export default function UsuariosPage() {
   const [savingNome, setSavingNome] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
 
+  const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"todos" | AppRole>("todos");
+  const [statusFilter, setStatusFilter] = useState<
+    "todos" | "ativos" | "inativos"
+  >("todos");
+
+
   const load = useCallback(async () => {
     setLoading(true);
 
