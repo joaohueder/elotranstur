@@ -52,10 +52,10 @@ function LoginPage() {
         <div className="absolute inset-0">
           <img
             src={loginHero}
-            alt="Trem de alta velocidade atravessando montanhas ao amanhecer"
+            alt="Ônibus executivo em estrada brasileira ao pôr do sol"
             className="h-full w-full object-cover opacity-40"
-            width={1200}
-            height={1600}
+            width={1280}
+            height={1024}
           />
         </div>
 
