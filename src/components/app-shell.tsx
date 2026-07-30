@@ -77,7 +77,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Barra de menu horizontal */}
       <nav className="border-b border-border bg-background/60 backdrop-blur">
         <div className="app-container flex items-center gap-1 overflow-x-auto px-8">
-          {navItems.map((item) => (
+          {navItems
+            .filter((item) => !item.adminOnly || isAdmin)
+            .map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
