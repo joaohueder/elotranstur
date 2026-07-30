@@ -233,20 +233,6 @@ function LoginPage() {
                   : "Acessar painel"}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
-              {mode === "signup"
-                ? "Já possui acesso? "
-                : "Ainda não tem conta? "}
-              <button
-                type="button"
-                onClick={() =>
-                  setMode(mode === "signup" ? "signin" : "signup")
-                }
-                className="font-medium text-brand-accent hover:underline"
-              >
-                {mode === "signup" ? "Entrar" : "Cadastre-se"}
-              </button>
-            </p>
           </form>
 
 
