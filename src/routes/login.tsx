@@ -9,20 +9,22 @@ import { Separator } from "@/components/ui/separator";
 
 import loginHero from "../assets/login-hero.jpg";
 
+export const { LoginPage as default } from "@/routes/login";
+
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login — Gestão de Transporte e Turismo" },
+      { title: "Login — ELO Transporte e Turismo" },
       {
         name: "description",
         content:
-          "Acesse o painel de gestão integrada para operadoras de transporte e turismo.",
+          "Acesse o painel da ELO: gestão de viagens, leads, CRM, site e landing pages.",
       },
-      { property: "og:title", content: "Login — Gestão de Transporte e Turismo" },
+      { property: "og:title", content: "Login — ELO Transporte e Turismo" },
       {
         property: "og:description",
         content:
-          "Acesse o painel de gestão integrada para operadoras de transporte e turismo.",
+          "Acesse o painel da ELO: gestão de viagens, leads, CRM, site e landing pages.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -60,22 +62,22 @@ function LoginPage() {
         <div className="relative z-10 max-w-lg">
           <div className="mb-8 flex items-center gap-3">
             <div className="grid size-10 place-items-center rounded-sm bg-brand-accent text-xl font-serif font-bold italic text-primary-foreground">
-              H
+              E
             </div>
             <span className="font-serif text-2xl tracking-tight text-primary-foreground">
-              Horizonte
+              ELO
             </span>
           </div>
 
           <h1 className="mb-6 font-serif text-5xl leading-tight italic text-primary-foreground">
-            Gestão integrada para as{" "}
-            <span className="text-brand-accent">melhores</span> jornadas.
+            Gestão completa para o seu{" "}
+            <span className="text-brand-accent">turismo</span>.
           </h1>
 
           <div className="space-y-6">
             <p className="text-lg font-light leading-relaxed text-primary-foreground/80">
-              O sistema unificado para operadoras de turismo premium e frotas
-              de transporte de passageiros.
+              Viagens, leads, CRM, site institucional e landing pages em um
+              só painel para operadoras de transporte e turismo.
             </p>
 
             <div className="flex gap-8 pt-4">
@@ -118,9 +120,9 @@ function LoginPage() {
         <div className="mx-auto w-full max-w-md">
           <div className="mb-12 flex items-center gap-3 lg:hidden">
             <div className="grid size-8 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
-              H
+              E
             </div>
-            <span className="font-serif text-xl tracking-tight">Horizonte</span>
+            <span className="font-serif text-xl tracking-tight">ELO</span>
           </div>
 
           <div className="mb-10">
