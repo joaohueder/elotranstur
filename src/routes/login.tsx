@@ -82,10 +82,6 @@ function LoginPage() {
           </div>
         </div>
 
-        <div className="absolute bottom-12 left-12 right-12 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-primary-foreground/40">
-          <span>Desde 2024</span>
-          <span>Padrão em Mobilidade e Turismo</span>
-        </div>
       </div>
 
       {/* Right Column: Login Interface */}
