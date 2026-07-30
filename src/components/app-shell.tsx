@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
+import { supabase, clearRememberMe } from "@/lib/supabase";
 
 const navItems = [
   { to: "/painel", label: "Painel" },
@@ -18,6 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
+    clearRememberMe();
     navigate({ to: "/login", replace: true });
   }
 
