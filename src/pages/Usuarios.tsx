@@ -100,9 +100,16 @@ export default function UsuariosPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
 
-  const [nomeDraft, setNomeDraft] = useState("");
-  const [savingNome, setSavingNome] = useState(false);
+  type EditDraft = {
+    nome: string;
+    ativo: boolean;
+    role: AppRole;
+    permissions: Record<string, PermissionRow>;
+  };
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+
 
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"todos" | AppRole>("todos");
