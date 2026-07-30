@@ -138,3 +138,18 @@ export const supabase = new Proxy({} as SupabaseClient, {
     return Reflect.get(_client, prop, receiver);
   },
 });
+
+/**
+ * Cliente isolado usado apenas para CRIAR contas pelo módulo de Usuários.
+ * Não persiste sessão, então o administrador logado não é deslogado nem
+ * substituído pela sessão do usuário recém-criado.
+ */
+export function createSignupClient(): SupabaseClient {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
