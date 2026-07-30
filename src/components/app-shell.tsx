@@ -1,18 +1,30 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { LayoutDashboard, LogOut, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase, clearRememberMe } from "@/lib/supabase";
 
 const navItems = [
-  { to: "/painel", label: "Painel" },
-  { to: "/configuracoes", label: "Configurações" },
+  { to: "/painel", label: "Painel", icon: LayoutDashboard },
+  { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (active) setEmail(data.user?.email ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -23,42 +35,68 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-muted font-sans">
+    <div className="flex min-h-screen flex-col bg-muted font-sans">
+      {/* Header */}
       <header className="border-b border-border bg-background">
         <div className="app-container flex items-center justify-between px-8 py-5">
-          <div className="flex items-center gap-8">
-            <Link to="/painel" className="flex items-center gap-3">
-              <div className="grid size-8 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
-                E
-              </div>
-              <span className="font-serif text-xl tracking-tight">
-                ELO TRANSPORTE E TURISMO
+          <Link to="/painel" className="flex items-center gap-3">
+            <div className="grid size-9 place-items-center rounded-sm bg-brand-accent px-1 font-serif text-sm font-bold italic tracking-tight text-primary-foreground">
+              ELO
+            </div>
+            <span className="font-serif text-xl tracking-tight">
+              TRANSPORTE E TURISMO
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-5">
+            {email && (
+              <span className="hidden text-xs uppercase tracking-widest text-muted-foreground sm:inline">
+                {email}
               </span>
-            </Link>
-            <nav className="hidden items-center gap-6 md:flex">
-              {navItems.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
-                  activeProps={{ className: "text-foreground" }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            )}
+            <Button
+              variant="outline"
+              className="rounded-none text-xs font-semibold uppercase tracking-widest"
+              onClick={handleSignOut}
+            >
+              <LogOut className="mr-2 size-3.5" />
+              Sair
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            className="rounded-none text-xs font-semibold uppercase tracking-widest"
-            onClick={handleSignOut}
-          >
-            Sair
-          </Button>
         </div>
       </header>
 
-      <main className="app-container px-8 py-12">{children}</main>
+      {/* Barra de menu horizontal */}
+      <nav className="border-b border-border bg-background/60 backdrop-blur">
+        <div className="app-container flex items-center gap-1 overflow-x-auto px-8">
+          {navItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="flex items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-4 py-3.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+              activeProps={{
+                className: "border-brand-accent text-foreground",
+              }}
+            >
+              <item.icon className="size-3.5" />
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      {/* Main */}
+      <main className="app-container flex-1 px-8 py-12">{children}</main>
+
+      {/* Rodapé */}
+      <footer className="border-t border-border bg-background">
+        <div className="app-container flex flex-col items-center justify-between gap-2 px-8 py-6 text-xs uppercase tracking-widest text-muted-foreground sm:flex-row">
+          <span>
+            © {new Date().getFullYear()} ELO Transporte e Turismo
+          </span>
+          <span>Painel administrativo · v1.0</span>
+        </div>
+      </footer>
     </div>
   );
 }
