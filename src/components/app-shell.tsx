@@ -86,6 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={({ isActive }) =>
                   [
                     "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors hover:text-foreground",
+                    item.to === "/configuracoes" ? "ml-auto" : "",
                     isActive
                       ? "border-brand-accent text-foreground"
                       : "border-transparent text-muted-foreground",
