@@ -52,7 +52,18 @@ function ConfiguracoesPage() {
         </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
           Ajuste as preferências gerais do ELO. As alterações são aplicadas
-          imediatamente e ficam salvas neste dispositivo.
+          imediatamente e ficam salvas na sua conta, no banco de dados.
+        </p>
+        <p className="mt-1 text-xs uppercase tracking-widest text-muted-foreground">
+          {saveState === "saving"
+            ? "Salvando…"
+            : saveState === "saved"
+              ? "Preferências salvas"
+              : saveState === "error"
+                ? "Não foi possível salvar no banco"
+                : saveState === "loading"
+                  ? "Carregando preferências…"
+                  : ""}
         </p>
       </header>
 
