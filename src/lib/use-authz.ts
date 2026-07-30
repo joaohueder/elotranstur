@@ -26,8 +26,11 @@ export function useAuthz(): Authz {
 
     async function load() {
       setLoading(true);
-      const { data: userData } = await supabase.auth.getUser();
-      const id = userData.user?.id ?? null;
+
+      // Sessão local (não depende de rede) — evita ficar sem papel se o
+      // endpoint /auth/v1/user falhar na instância auto-hospedada.
+      const { data: sessionData } = await supabase.auth.getSession();
+      const id = sessionData.session?.user?.id ?? null;
       if (!active) return;
       setUserId(id);
 
@@ -38,7 +41,7 @@ export function useAuthz(): Authz {
         return;
       }
 
-      const [{ data: roles }, { data: perms }] = await Promise.all([
+      const [rolesRes, permsRes] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", id),
         supabase
           .from("user_permissions")
@@ -47,21 +50,41 @@ export function useAuthz(): Authz {
       ]);
       if (!active) return;
 
-      const isAdmin = (roles ?? []).some(
-        (r: { role: string }) => r.role === "admin",
+      if (rolesRes.error) {
+        console.error("[authz] falha ao ler user_roles:", rolesRes.error);
+      }
+      if (permsRes.error) {
+        console.error(
+          "[authz] falha ao ler user_permissions:",
+          permsRes.error,
+        );
+      }
+
+      const isAdmin = (rolesRes.data ?? []).some(
+        (r: { role: string }) => String(r.role).trim() === "admin",
       );
       setRole(isAdmin ? "admin" : "usuario");
 
       const map: Record<string, PermissionRow> = {};
-      for (const p of (perms ?? []) as PermissionRow[]) map[p.modulo] = p;
+      for (const p of (permsRes.data ?? []) as PermissionRow[])
+        map[p.modulo] = p;
       setPermissions(map);
       setLoading(false);
     }
 
     load();
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") load();
+      if (
+        event === "SIGNED_IN" ||
+        event === "SIGNED_OUT" ||
+        event === "INITIAL_SESSION" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "USER_UPDATED"
+      ) {
+        load();
+      }
     });
+
     return () => {
       active = false;
       sub.subscription.unsubscribe();
