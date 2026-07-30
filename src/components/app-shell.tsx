@@ -80,22 +80,22 @@ export function AppShell({ children }: { children: ReactNode }) {
           {navItems
             .filter((item) => !item.adminOnly || isAdmin)
             .map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                [
-                  "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors hover:text-foreground",
-                  isActive
-                    ? "border-brand-accent text-foreground"
-                    : "border-transparent text-muted-foreground",
-                ].join(" ")
-              }
-            >
-              <item.icon className="size-3.5" />
-              {item.label}
-            </NavLink>
-          ))}
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors hover:text-foreground",
+                    isActive
+                      ? "border-brand-accent text-foreground"
+                      : "border-transparent text-muted-foreground",
+                  ].join(" ")
+                }
+              >
+                <item.icon className="size-3.5" />
+                {item.label}
+              </NavLink>
+            ))}
         </div>
       </nav>
 
