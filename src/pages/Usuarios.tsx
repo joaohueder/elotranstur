@@ -245,9 +245,23 @@ export default function UsuariosPage() {
   );
 
 
+  // Carrega o rascunho ao abrir a edição de um usuário.
   useEffect(() => {
-    setNomeDraft(selected?.nome ?? "");
-  }, [selected?.id, selected?.nome]);
+    if (!selected) {
+      setDraft(null);
+      return;
+    }
+    setDraft({
+      nome: selected.nome ?? "",
+      ativo: selected.ativo,
+      role: selected.role,
+      permissions: JSON.parse(
+        JSON.stringify(selected.permissions),
+      ) as Record<string, PermissionRow>,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
+
 
   async function applyRole(userId: string, role: AppRole) {
     await supabase.from("user_roles").delete().eq("user_id", userId);
