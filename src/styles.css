@@ -146,3 +146,14 @@
     color: var(--color-foreground);
   }
 }
+
+/* Largura máxima do sistema, ajustável em Configurações > Layout. */
+:root {
+  --app-max-width: 1440px;
+}
+
+@utility app-container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin-inline: auto;
+}

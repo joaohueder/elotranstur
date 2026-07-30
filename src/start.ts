@@ -4,6 +4,7 @@ import { renderErrorPage } from "./lib/error-page";
 // Backend exclusivo: instância Supabase auto-hospedada (src/lib/supabase.ts).
 // Não reintroduzir o attacher gerado pelo Supabase gerenciado.
 import { attachSelfHostedSupabaseAuth } from "@/lib/supabase-auth-middleware";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -28,6 +29,6 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSelfHostedSupabaseAuth],
+  functionMiddleware: [attachSupabaseAuth, attachSelfHostedSupabaseAuth],
   requestMiddleware: [errorMiddleware, csrfMiddleware],
 }));
