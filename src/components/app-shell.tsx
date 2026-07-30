@@ -22,6 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string | null>(null);
+  const { isAdmin } = useAuthz();
 
   useEffect(() => {
     let active = true;
