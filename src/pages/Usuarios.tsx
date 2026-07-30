@@ -734,23 +734,14 @@ export default function UsuariosPage() {
                     >
                       Nome
                     </Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="nome"
-                        className="rounded-none"
-                        value={nomeDraft}
-                        onChange={(e) => setNomeDraft(e.target.value)}
-                        onBlur={() => void saveNome(selected)}
-                      />
-                      <Button
-                        variant="secondary"
-                        className="rounded-none"
-                        disabled={savingNome}
-                        onClick={() => void saveNome(selected)}
-                      >
-                        Salvar
-                      </Button>
-                    </div>
+                    <Input
+                      id="nome"
+                      className="rounded-none"
+                      value={draft.nome}
+                      onChange={(e) =>
+                        setDraft({ ...draft, nome: e.target.value })
+                      }
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -759,16 +750,19 @@ export default function UsuariosPage() {
                     </span>
                     <div className="flex h-10 items-center gap-3">
                       <Switch
-                        checked={selected.ativo}
+                        checked={draft.ativo}
                         disabled={selected.id === authz.userId}
-                        onCheckedChange={(v) => void toggleAtivo(selected, v)}
+                        onCheckedChange={(v) =>
+                          setDraft({ ...draft, ativo: v })
+                        }
                         aria-label="Conta ativa"
                       />
                       <span className="text-sm text-muted-foreground">
-                        {selected.ativo ? "Ativa" : "Desativada"}
+                        {draft.ativo ? "Ativa" : "Desativada"}
                       </span>
                     </div>
                   </div>
+
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
