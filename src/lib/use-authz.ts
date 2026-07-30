@@ -60,11 +60,32 @@ export function useAuthz(): Authz {
         );
       }
 
-      const isAdmin = (rolesRes.data ?? []).some(
+      let isAdmin = (rolesRes.data ?? []).some(
         (r: { role: string }) => String(r.role).trim() === "admin",
       );
-      console.info("[authz] userId:", id, "papéis:", rolesRes.data, "admin:", isAdmin);
+
+      // Fallback: se a leitura direta vier vazia/bloqueada por RLS, pergunta
+      // ao banco via função SECURITY DEFINER.
+      if (!isAdmin && (rolesRes.error || (rolesRes.data ?? []).length === 0)) {
+        const rpc = await supabase.rpc("is_admin");
+        if (rpc.error) {
+          console.error("[authz] fallback is_admin() falhou:", rpc.error);
+        } else if (rpc.data === true) {
+          isAdmin = true;
+        }
+      }
+
+      if (!active) return;
+      console.info(
+        "[authz] userId:",
+        id,
+        "papéis:",
+        rolesRes.data,
+        "admin:",
+        isAdmin,
+      );
       setRole(isAdmin ? "admin" : "usuario");
+
 
 
       const map: Record<string, PermissionRow> = {};
