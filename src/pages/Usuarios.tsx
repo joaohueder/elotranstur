@@ -207,16 +207,19 @@ export default function UsuariosPage() {
       );
     if (profileRes.error) {
       toast.warning(
-        "Conta criada, mas o perfil não pôde ser atualizado agora.",
+        `Conta criada, mas o perfil não pôde ser gravado: ${profileRes.error.message}`,
       );
     }
 
     if (form.role === "admin") {
       const roleRes = await applyRole(userId, "admin");
       if (roleRes.error) {
-        toast.warning("Conta criada, mas o papel de administrador falhou.");
+        toast.warning(
+          `Conta criada, mas o papel de administrador falhou: ${roleRes.error.message}`,
+        );
       }
     }
+
 
     setCreating(false);
     setCreateOpen(false);
