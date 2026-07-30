@@ -63,7 +63,9 @@ export function useAuthz(): Authz {
       const isAdmin = (rolesRes.data ?? []).some(
         (r: { role: string }) => String(r.role).trim() === "admin",
       );
+      console.info("[authz] userId:", id, "papéis:", rolesRes.data, "admin:", isAdmin);
       setRole(isAdmin ? "admin" : "usuario");
+
 
       const map: Record<string, PermissionRow> = {};
       for (const p of (permsRes.data ?? []) as PermissionRow[])
