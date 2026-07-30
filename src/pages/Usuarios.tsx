@@ -275,47 +275,27 @@ export default function UsuariosPage() {
       toast.error("Informe e-mail e senha.");
       return;
     }
-    if (form.senha.length < 6) {
-      toast.error("A senha precisa ter ao menos 6 caracteres.");
+    if (form.senha.length < 8) {
+      toast.error("A senha precisa ter ao menos 8 caracteres.");
       return;
     }
 
     setCreating(true);
-    const signupClient = createSignupClient();
-    const { data, error } = await signupClient.auth.signUp({
-      email,
-      password: form.senha,
-      options: { data: { nome: nome || email } },
+    const { data, error } = await supabase.rpc("admin_create_user", {
+      _email: email,
+      _senha: form.senha,
+      _nome: nome || email,
+      _role: form.role,
     });
 
-    if (error || !data.user) {
+    if (error || !data) {
       setCreating(false);
       toast.error(error?.message ?? "Não foi possível criar o usuário.");
       return;
     }
 
-    const userId = data.user.id;
+    const userId = data as string;
 
-    const profileRes = await supabase
-      .from("profiles")
-      .upsert(
-        { id: userId, email, nome: nome || email, ativo: true },
-        { onConflict: "id" },
-      );
-    if (profileRes.error) {
-      toast.warning(
-        `Conta criada, mas o perfil não pôde ser gravado: ${profileRes.error.message}`,
-      );
-    }
-
-    if (form.role === "admin") {
-      const roleRes = await applyRole(userId, "admin");
-      if (roleRes.error) {
-        toast.warning(
-          `Conta criada, mas o papel de administrador falhou: ${roleRes.error.message}`,
-        );
-      }
-    }
 
 
     setCreating(false);
