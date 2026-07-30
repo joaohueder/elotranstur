@@ -770,8 +770,10 @@ export default function UsuariosPage() {
                     Papel
                   </span>
                   <Select
-                    value={selected.role}
-                    onValueChange={(v) => changeRole(selected, v as AppRole)}
+                    value={draft.role}
+                    onValueChange={(v) =>
+                      setDraft({ ...draft, role: v as AppRole })
+                    }
                     disabled={selected.id === authz.userId}
                   >
                     <SelectTrigger className="w-56 rounded-none">
@@ -793,7 +795,8 @@ export default function UsuariosPage() {
                   )}
                 </div>
 
-                {selected.role === "admin" ? (
+                {draft.role === "admin" ? (
+
                   <p className="border border-dashed border-border bg-muted/50 p-4 text-sm text-muted-foreground">
                     Administradores têm acesso completo a todos os módulos —
                     não é necessário configurar permissões.
