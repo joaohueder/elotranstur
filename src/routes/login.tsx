@@ -36,16 +36,68 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/painel", replace: true });
+    });
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Intencionalmente sem integração com banco de dados por enquanto.
-    // eslint-disable-next-line no-console
-    console.log({ email, password, rememberMe });
+    if (loading) return;
+
+    if (!email || !password) {
+      toast.error("Informe e-mail e senha.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/painel` },
+        });
+        if (error) throw error;
+        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+        setMode("signin");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        navigate({ to: "/painel", replace: true });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Não foi possível continuar.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      toast.error("Informe seu e-mail para redefinir a senha.");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) toast.error(error.message);
+    else toast.success("Enviamos um link de redefinição para seu e-mail.");
+  };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans lg:flex-row">
