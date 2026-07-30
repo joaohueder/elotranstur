@@ -821,7 +821,7 @@ export default function UsuariosPage() {
                     </TableHeader>
                     <TableBody>
                       {MODULES.map((m) => {
-                        const p = selected.permissions[m.key];
+                        const p = draft.permissions[m.key];
                         return (
                           <TableRow key={m.key}>
                             <TableCell className="text-sm">{m.label}</TableCell>
@@ -832,7 +832,7 @@ export default function UsuariosPage() {
                                 <Switch
                                   checked={Boolean(p?.[field])}
                                   onCheckedChange={(v) =>
-                                    togglePermission(selected, m.key, field, v)
+                                    setDraftPermission(m.key, field, v)
                                   }
                                   aria-label={`${m.label} — ${field}`}
                                 />
@@ -846,7 +846,7 @@ export default function UsuariosPage() {
                 )}
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="gap-2">
                 {selected.id !== authz.userId && (
                   <Button
                     variant="outline"
@@ -858,12 +858,22 @@ export default function UsuariosPage() {
                   </Button>
                 )}
                 <Button
+                  variant="ghost"
                   className="rounded-none"
-                  onClick={() => setSelectedId(null)}
+                  disabled={saving}
+                  onClick={cancelEdit}
                 >
-                  Concluir
+                  Cancelar
+                </Button>
+                <Button
+                  className="rounded-none"
+                  disabled={saving || !isDirty}
+                  onClick={() => void handleSave()}
+                >
+                  {saving ? "Salvando…" : "Salvar alterações"}
                 </Button>
               </DialogFooter>
+
             </>
           )}
         </DialogContent>
