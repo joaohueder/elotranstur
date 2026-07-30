@@ -1,14 +1,21 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase, clearRememberMe } from "@/lib/supabase";
+import { useAuthz } from "@/lib/use-authz";
 
 const navItems = [
-  { to: "/painel", label: "Painel", icon: LayoutDashboard },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
+  { to: "/painel", label: "Painel", icon: LayoutDashboard, adminOnly: false },
+  { to: "/usuarios", label: "Usuários", icon: Users, adminOnly: true },
+  {
+    to: "/configuracoes",
+    label: "Configurações",
+    icon: Settings,
+    adminOnly: false,
+  },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {

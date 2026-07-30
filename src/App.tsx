@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import Login from "@/pages/Login";
 import Painel from "@/pages/Painel";
 import Configuracoes from "@/pages/Configuracoes";
+import Usuarios from "@/pages/Usuarios";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
