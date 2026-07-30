@@ -79,32 +79,6 @@ function LoginPage() {
               só painel para operadoras de transporte e turismo.
             </p>
 
-            <div className="flex gap-8 pt-4">
-              <div>
-                <div className="font-serif text-2xl text-primary-foreground">
-                  2.4k
-                </div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Veículos
-                </div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl text-primary-foreground">
-                  140
-                </div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Destinos
-                </div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl text-primary-foreground">
-                  99.9%
-                </div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Disponibilidade
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
