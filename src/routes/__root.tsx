@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { supabase } from "@/lib/supabase";
 import appCss from "../styles.css?url";
 
