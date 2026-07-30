@@ -146,10 +146,10 @@ function LoginPage() {
       <div className="flex flex-1 flex-col justify-center bg-muted px-8 py-16 lg:px-24">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-12 flex items-center gap-3 lg:hidden">
-            <div className="grid size-8 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
-              E
+            <div className="grid h-8 px-2 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
+              ELO
             </div>
-            <span className="font-serif text-xl tracking-tight">ELO</span>
+            <span className="font-serif text-xl tracking-tight">TRANSPORTE E TURISMO</span>
           </div>
 
           <div className="mb-10">
