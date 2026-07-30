@@ -1,20 +1,28 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase, clearRememberMe } from "@/lib/supabase";
+import { useAuthz } from "@/lib/use-authz";
 
 const navItems = [
-  { to: "/painel", label: "Painel", icon: LayoutDashboard },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
+  { to: "/painel", label: "Painel", icon: LayoutDashboard, adminOnly: false },
+  { to: "/usuarios", label: "Usuários", icon: Users, adminOnly: true },
+  {
+    to: "/configuracoes",
+    label: "Configurações",
+    icon: Settings,
+    adminOnly: false,
+  },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string | null>(null);
+  const { isAdmin } = useAuthz();
 
   useEffect(() => {
     let active = true;
@@ -69,23 +77,25 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Barra de menu horizontal */}
       <nav className="border-b border-border bg-background/60 backdrop-blur">
         <div className="app-container flex items-center gap-1 overflow-x-auto px-8">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                [
-                  "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors hover:text-foreground",
-                  isActive
-                    ? "border-brand-accent text-foreground"
-                    : "border-transparent text-muted-foreground",
-                ].join(" ")
-              }
-            >
-              <item.icon className="size-3.5" />
-              {item.label}
-            </NavLink>
-          ))}
+          {navItems
+            .filter((item) => !item.adminOnly || isAdmin)
+            .map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors hover:text-foreground",
+                    isActive
+                      ? "border-brand-accent text-foreground"
+                      : "border-transparent text-muted-foreground",
+                  ].join(" ")
+                }
+              >
+                <item.icon className="size-3.5" />
+                {item.label}
+              </NavLink>
+            ))}
         </div>
       </nav>
 
