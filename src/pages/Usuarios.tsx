@@ -117,44 +117,12 @@ export default function UsuariosPage() {
     setLoading(true);
     setLoadError(null);
 
-    // Garante que contas recém-criadas em auth.users tenham perfil/papel.
-    const syncRes = await supabase.rpc("admin_sync_profiles");
-    if (syncRes.error) {
-      console.warn("[usuarios] admin_sync_profiles:", syncRes.error.message);
-      setLoadError(
-        `Sincronização de perfis falhou: ${syncRes.error.message}. Execute o SQL supabase/sql/2026_usuarios_sync_profiles.sql na sua instância.`,
-      );
-    }
+    // Fonte principal: RPC de admin que lê direto de auth.users.
+    const listRes = await supabase.rpc("admin_list_users");
 
-    const [profilesRes, rolesRes, permsRes] = await Promise.all([
-      supabase.from("profiles").select("id, email, nome, ativo").order("email"),
-      supabase.from("user_roles").select("user_id, role"),
-      supabase
-        .from("user_permissions")
-        .select("user_id, modulo, can_view, can_edit, can_delete"),
-    ]);
-
-    if (profilesRes.error) {
-      setLoadError(
-        `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
-      );
-      toast.error(
-        `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
-      );
-      setLoading(false);
-      return;
-    }
-
-
-
-    const roleByUser = new Map<string, AppRole>();
-    for (const r of (rolesRes.data ?? []) as {
-      user_id: string;
-      role: AppRole;
-    }[]) {
-      if (r.role === "admin") roleByUser.set(r.user_id, "admin");
-      else if (!roleByUser.has(r.user_id)) roleByUser.set(r.user_id, "usuario");
-    }
+    const permsRes = await supabase
+      .from("user_permissions")
+      .select("user_id, modulo, can_view, can_edit, can_delete");
 
     const permsByUser = new Map<string, Record<string, PermissionRow>>();
     for (const p of (permsRes.data ?? []) as PermissionRow[]) {
@@ -163,24 +131,77 @@ export default function UsuariosPage() {
       permsByUser.set(p.user_id, current);
     }
 
-    const list: ManagedUser[] = ((profilesRes.data ?? []) as ProfileRow[]).map(
-      (p) => ({
+    let list: ManagedUser[] = [];
+
+    if (!listRes.error && Array.isArray(listRes.data)) {
+      list = (
+        listRes.data as {
+          id: string;
+          email: string | null;
+          nome: string | null;
+          ativo: boolean;
+          role: AppRole;
+        }[]
+      ).map((u) => ({
+        id: u.id,
+        email: u.email,
+        nome: u.nome,
+        ativo: u.ativo,
+        role: u.role,
+        permissions: permsByUser.get(u.id) ?? {},
+      }));
+    } else {
+      // Fallback: tabelas públicas (requer profiles populado).
+      setLoadError(
+        `Listagem completa indisponível (${listRes.error?.message ?? "RPC ausente"}). Execute supabase/sql/2026_usuarios_admin_list.sql na sua instância.`,
+      );
+
+      const [profilesRes, rolesRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, email, nome, ativo")
+          .order("email"),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
+
+      if (profilesRes.error) {
+        setLoadError(
+          `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
+        );
+        toast.error(
+          `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
+        );
+        setLoading(false);
+        return;
+      }
+
+      const roleByUser = new Map<string, AppRole>();
+      for (const r of (rolesRes.data ?? []) as {
+        user_id: string;
+        role: AppRole;
+      }[]) {
+        if (r.role === "admin") roleByUser.set(r.user_id, "admin");
+        else if (!roleByUser.has(r.user_id))
+          roleByUser.set(r.user_id, "usuario");
+      }
+
+      list = ((profilesRes.data ?? []) as ProfileRow[]).map((p) => ({
         id: p.id,
         email: p.email,
         nome: p.nome,
         ativo: p.ativo,
         role: roleByUser.get(p.id) ?? "usuario",
         permissions: permsByUser.get(p.id) ?? {},
-      }),
-    );
+      }));
+    }
 
     setUsers(list);
     setSelectedId((prev) =>
       prev && list.some((u) => u.id === prev) ? prev : null,
     );
     setLoading(false);
-
   }, []);
+
 
   useEffect(() => {
     if (authz.loading || !authz.isAdmin) return;
