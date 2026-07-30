@@ -64,7 +64,7 @@ function LoginPage() {
               E
             </div>
             <span className="font-serif text-2xl tracking-tight text-primary-foreground">
-              ELO
+              ELO TRANSPORTE E TURISMO
             </span>
           </div>
 
