@@ -94,6 +94,13 @@ export default function UsuariosPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+
+    // Garante que contas recém-criadas em auth.users tenham perfil/papel.
+    const syncRes = await supabase.rpc("admin_sync_profiles");
+    if (syncRes.error) {
+      console.warn("[usuarios] admin_sync_profiles:", syncRes.error.message);
+    }
+
     const [profilesRes, rolesRes, permsRes] = await Promise.all([
       supabase.from("profiles").select("id, email, nome, ativo").order("email"),
       supabase.from("user_roles").select("user_id, role"),
@@ -103,10 +110,13 @@ export default function UsuariosPage() {
     ]);
 
     if (profilesRes.error) {
-      toast.error("Não foi possível carregar os usuários.");
+      toast.error(
+        `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
+      );
       setLoading(false);
       return;
     }
+
 
     const roleByUser = new Map<string, AppRole>();
     for (const r of (rolesRes.data ?? []) as {
@@ -197,16 +207,19 @@ export default function UsuariosPage() {
       );
     if (profileRes.error) {
       toast.warning(
-        "Conta criada, mas o perfil não pôde ser atualizado agora.",
+        `Conta criada, mas o perfil não pôde ser gravado: ${profileRes.error.message}`,
       );
     }
 
     if (form.role === "admin") {
       const roleRes = await applyRole(userId, "admin");
       if (roleRes.error) {
-        toast.warning("Conta criada, mas o papel de administrador falhou.");
+        toast.warning(
+          `Conta criada, mas o papel de administrador falhou: ${roleRes.error.message}`,
+        );
       }
     }
+
 
     setCreating(false);
     setCreateOpen(false);
