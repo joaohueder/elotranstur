@@ -326,43 +326,6 @@ export default function UsuariosPage() {
     setSelectedId(userId);
   }
 
-  async function saveNome(user: ManagedUser) {
-    const nome = nomeDraft.trim();
-    if (nome === (user.nome ?? "")) return;
-    setSavingNome(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ nome: nome || null })
-      .eq("id", user.id);
-    setSavingNome(false);
-    if (error) {
-      toast.error("Não foi possível salvar o nome.");
-      return;
-    }
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, nome: nome || null } : u)),
-    );
-    toast.success("Nome atualizado.");
-  }
-
-  async function toggleAtivo(user: ManagedUser, ativo: boolean) {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, ativo } : u)),
-    );
-    const { error } = await supabase
-      .from("profiles")
-      .update({ ativo })
-      .eq("id", user.id);
-    if (error) {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, ativo: !ativo } : u)),
-      );
-      toast.error("Não foi possível alterar o status da conta.");
-      return;
-    }
-    toast.success(ativo ? "Conta ativada." : "Conta desativada.");
-  }
-
   async function handleDelete(user: ManagedUser) {
     const { error } = await supabase.rpc("admin_delete_user", {
       _user_id: user.id,
@@ -377,70 +340,131 @@ export default function UsuariosPage() {
     await load();
   }
 
-  async function changeRole(user: ManagedUser, role: AppRole) {
-    const previous = user.role;
-    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, role } : u)));
-
-    const res = await applyRole(user.id, role);
-    if (res.error) {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, role: previous } : u)),
-      );
-      toast.error("Não foi possível alterar o papel deste usuário.");
-      return;
-    }
-    toast.success(
-      role === "admin"
-        ? "Usuário agora é administrador (acesso total)."
-        : "Papel alterado para usuário — defina as permissões.",
-    );
-  }
-
-  async function togglePermission(
-    user: ManagedUser,
+  // ——— Edição em rascunho (só grava ao clicar em Salvar) ———
+  function setDraftPermission(
     modulo: string,
     field: "can_view" | "can_edit" | "can_delete",
     value: boolean,
   ) {
-    const current: PermissionRow = user.permissions[modulo] ?? {
-      user_id: user.id,
-      modulo,
-      can_view: false,
-      can_edit: false,
-      can_delete: false,
-    };
+    setDraft((prev) => {
+      if (!prev || !selected) return prev;
+      const current: PermissionRow = prev.permissions[modulo] ?? {
+        user_id: selected.id,
+        modulo,
+        can_view: false,
+        can_edit: false,
+        can_delete: false,
+      };
+      const next: PermissionRow = { ...current, [field]: value };
+      // Editar ou excluir exige visualizar.
+      if (value && field !== "can_view") next.can_view = true;
+      if (!value && field === "can_view") {
+        next.can_edit = false;
+        next.can_delete = false;
+      }
+      return { ...prev, permissions: { ...prev.permissions, [modulo]: next } };
+    });
+  }
 
-    const next: PermissionRow = { ...current, [field]: value };
-    // Editar ou excluir exige visualizar.
-    if (value && field !== "can_view") next.can_view = true;
-    if (!value && field === "can_view") {
-      next.can_edit = false;
-      next.can_delete = false;
+  function permissionsChanged(user: ManagedUser, d: EditDraft) {
+    return MODULES.some((m) => {
+      const a = user.permissions[m.key];
+      const b = d.permissions[m.key];
+      const norm = (p?: PermissionRow) => [
+        Boolean(p?.can_view),
+        Boolean(p?.can_edit),
+        Boolean(p?.can_delete),
+      ];
+      return norm(a).join() !== norm(b).join();
+    });
+  }
+
+  const isDirty = Boolean(
+    selected &&
+      draft &&
+      ((draft.nome.trim() || null) !== (selected.nome ?? null) ||
+        draft.ativo !== selected.ativo ||
+        draft.role !== selected.role ||
+        permissionsChanged(selected, draft)),
+  );
+
+  function cancelEdit() {
+    setSelectedId(null);
+    setDraft(null);
+  }
+
+  async function handleSave() {
+    if (!selected || !draft) return;
+    setSaving(true);
+
+    const nome = draft.nome.trim();
+
+    if (
+      (nome || null) !== (selected.nome ?? null) ||
+      draft.ativo !== selected.ativo
+    ) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ nome: nome || null, ativo: draft.ativo })
+        .eq("id", selected.id);
+      if (error) {
+        setSaving(false);
+        toast.error(`Não foi possível salvar o perfil: ${error.message}`);
+        return;
+      }
+    }
+
+    if (draft.role !== selected.role) {
+      const res = await applyRole(selected.id, draft.role);
+      if (res.error) {
+        setSaving(false);
+        toast.error(`Não foi possível alterar o papel: ${res.error.message}`);
+        return;
+      }
+    }
+
+    if (draft.role !== "admin" && permissionsChanged(selected, draft)) {
+      const rows = MODULES.map(
+        (m) =>
+          draft.permissions[m.key] ?? {
+            user_id: selected.id,
+            modulo: m.key,
+            can_view: false,
+            can_edit: false,
+            can_delete: false,
+          },
+      ).map((p) => ({ ...p, user_id: selected.id }));
+
+      const { error } = await supabase
+        .from("user_permissions")
+        .upsert(rows, { onConflict: "user_id,modulo" });
+      if (error) {
+        setSaving(false);
+        toast.error(`Não foi possível salvar as permissões: ${error.message}`);
+        return;
+      }
     }
 
     setUsers((prev) =>
       prev.map((u) =>
-        u.id === user.id
-          ? { ...u, permissions: { ...u.permissions, [modulo]: next } }
+        u.id === selected.id
+          ? {
+              ...u,
+              nome: nome || null,
+              ativo: draft.ativo,
+              role: draft.role,
+              permissions: draft.permissions,
+            }
           : u,
       ),
     );
 
-    const { error } = await supabase
-      .from("user_permissions")
-      .upsert(next, { onConflict: "user_id,modulo" });
-
-    if (error) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === user.id
-            ? { ...u, permissions: { ...u.permissions, [modulo]: current } }
-            : u,
-        ),
-      );
-      toast.error("Não foi possível salvar a permissão.");
-    }
+    setSaving(false);
+    toast.success("Alterações salvas.");
+    setSelectedId(null);
+    setDraft(null);
   }
+
 
   if (authz.loading) {
     return (
