@@ -61,7 +61,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useSeo } from "@/lib/seo";
-import { createSignupClient, supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import {
   MODULES,
