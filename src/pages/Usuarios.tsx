@@ -951,7 +951,7 @@ export default function UsuariosPage() {
                 className="rounded-none"
                 value={form.senha}
                 onChange={(e) => setForm({ ...form, senha: e.target.value })}
-                placeholder="Mínimo de 6 caracteres"
+                placeholder="Mínimo de 8 caracteres"
               />
             </div>
             <div className="space-y-2">
