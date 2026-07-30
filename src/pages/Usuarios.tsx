@@ -527,6 +527,13 @@ export default function UsuariosPage() {
         </span>
       </div>
 
+      {loadError && (
+        <div className="border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+          {loadError}
+        </div>
+      )}
+
+
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {[0, 1, 2].map((i) => (
