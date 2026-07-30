@@ -147,9 +147,10 @@ export default function UsuariosPage() {
 
     setUsers(list);
     setSelectedId((prev) =>
-      prev && list.some((u) => u.id === prev) ? prev : (list[0]?.id ?? null),
+      prev && list.some((u) => u.id === prev) ? prev : null,
     );
     setLoading(false);
+
   }, []);
 
   useEffect(() => {
