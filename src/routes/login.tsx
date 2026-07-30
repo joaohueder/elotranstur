@@ -217,7 +217,7 @@ function LoginPage() {
                 htmlFor="remember"
                 className="text-sm font-normal text-muted-foreground"
               >
-                Lembrar deste dispositivo por 30 dias
+                Ficar conectado por 30 dias
               </Label>
             </div>
 
