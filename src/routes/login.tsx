@@ -220,11 +220,32 @@ function LoginPage() {
 
             <Button
               type="submit"
+              disabled={loading}
               className="w-full rounded-none bg-primary py-6 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
-              Acessar painel
+              {loading
+                ? "Processando..."
+                : mode === "signup"
+                  ? "Criar conta"
+                  : "Acessar painel"}
             </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              {mode === "signup"
+                ? "Já possui acesso? "
+                : "Ainda não tem conta? "}
+              <button
+                type="button"
+                onClick={() =>
+                  setMode(mode === "signup" ? "signin" : "signup")
+                }
+                className="font-medium text-brand-accent hover:underline"
+              >
+                {mode === "signup" ? "Entrar" : "Cadastre-se"}
+              </button>
+            </p>
           </form>
+
 
         </div>
       </div>
