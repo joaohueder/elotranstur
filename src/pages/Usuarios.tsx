@@ -111,13 +111,19 @@ export default function UsuariosPage() {
   >("todos");
 
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
 
     // Garante que contas recém-criadas em auth.users tenham perfil/papel.
     const syncRes = await supabase.rpc("admin_sync_profiles");
     if (syncRes.error) {
       console.warn("[usuarios] admin_sync_profiles:", syncRes.error.message);
+      setLoadError(
+        `Sincronização de perfis falhou: ${syncRes.error.message}. Execute o SQL supabase/sql/2026_usuarios_sync_profiles.sql na sua instância.`,
+      );
     }
 
     const [profilesRes, rolesRes, permsRes] = await Promise.all([
@@ -129,12 +135,16 @@ export default function UsuariosPage() {
     ]);
 
     if (profilesRes.error) {
+      setLoadError(
+        `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
+      );
       toast.error(
         `Não foi possível carregar os usuários: ${profilesRes.error.message}`,
       );
       setLoading(false);
       return;
     }
+
 
 
     const roleByUser = new Map<string, AppRole>();
