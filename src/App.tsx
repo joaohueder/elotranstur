@@ -77,6 +77,14 @@ export default function App() {
               }
             />
             <Route
+              path="/usuarios"
+              element={
+                <RequireAuth>
+                  <Usuarios />
+                </RequireAuth>
+              }
+            />
+            <Route
               path="/configuracoes"
               element={
                 <RequireAuth>
