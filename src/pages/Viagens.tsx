@@ -17,6 +17,7 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
+import { ViagemCountdown } from "@/components/viagem-countdown";
 import {
   VIAGEM_SITUACOES,
   capaDa,
@@ -210,6 +211,11 @@ export default function Viagens() {
                   </span>{" "}
                   · {v.vagas || 0} vagas
                 </p>
+                <ViagemCountdown
+                  data={v.data_partida}
+                  hora={v.hora_partida}
+                  className="mt-3"
+                />
                 {(v.itens_inclusos ?? []).length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {v.itens_inclusos.map((item, i) => (
