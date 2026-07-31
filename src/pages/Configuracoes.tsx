@@ -71,8 +71,17 @@ export default function Configuracoes() {
               <TabsTrigger value="layout" className="rounded-sm">
                 Layout
               </TabsTrigger>
+              <TabsTrigger value="email" className="rounded-sm">
+                E-mail
+              </TabsTrigger>
             </TabsList>
           </div>
+
+          <TabsContent value="email" className="m-0 p-4 sm:p-6">
+            <EmailTab />
+          </TabsContent>
+
+
 
           <TabsContent value="layout" className="m-0 p-4 sm:p-6">
             {loading ? (
