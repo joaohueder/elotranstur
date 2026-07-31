@@ -70,7 +70,6 @@ type Props = {
   onSubmit?: (dados: {
     nome: string;
     whatsapp: string;
-    mensagem: string;
   }) => Promise<string | null>;
   /** Modo demonstração: o formulário não envia nada. */
   preview?: boolean;
@@ -447,16 +446,13 @@ function Formulario({
   m,
   onSubmit,
   preview,
-  compacto,
 }: {
   m: LandingModel;
   onSubmit?: Props["onSubmit"];
   preview?: boolean;
-  compacto?: boolean;
 }) {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [mensagem, setMensagem] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
@@ -504,7 +500,7 @@ function Formulario({
           return;
         }
         setEnviando(true);
-        const msg = await onSubmit({ nome, whatsapp, mensagem });
+        const msg = await onSubmit({ nome, whatsapp });
         setEnviando(false);
         if (msg) setErro(msg);
         else setOk(true);
@@ -515,10 +511,10 @@ function Formulario({
           className="text-lg font-semibold"
           style={{ fontFamily: "var(--lp-title)" }}
         >
-          Receba todos os detalhes
+          Fale com a agência
         </p>
         <p className="text-sm" style={{ color: "var(--lp-muted)" }}>
-          Preencha e um consultor fala com você hoje mesmo.
+          Preencha e um consultor entra em contato pelo WhatsApp.
         </p>
       </div>
 
@@ -541,17 +537,6 @@ function Formulario({
         className="h-11 w-full px-3 text-sm outline-none"
         style={inputStyle}
       />
-      {!compacto && (
-        <textarea
-          value={mensagem}
-          onChange={(e) => setMensagem(e.target.value)}
-          placeholder="Mensagem (opcional)"
-          aria-label="Mensagem"
-          rows={3}
-          className="w-full resize-none px-3 py-2 text-sm outline-none"
-          style={inputStyle}
-        />
-      )}
 
       {erro && (
         <p className="text-sm" style={{ color: "#dc2626" }}>
@@ -838,9 +823,6 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
   const formulario = (
     <Formulario m={m} onSubmit={onSubmit} preview={preview} />
   );
-  const formularioCompacto = (
-    <Formulario m={m} onSubmit={onSubmit} preview={preview} compacto />
-  );
 
   const botaoAncora = (
     <a
@@ -943,7 +925,7 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
                   <p className="max-w-xl text-base opacity-90">{viagem.subtitulo}</p>
                 )}
               </div>
-              <div className="hidden lg:block">{formularioCompacto}</div>
+             <div className="hidden lg:block">{formulario}</div>
             </div>
           </div>
         </div>
@@ -1316,7 +1298,7 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
               {contagem}
             </div>
           </div>
-          <div>{formularioCompacto}</div>
+          <div>{formulario}</div>
         </div>
 
         <div className="mx-auto max-w-6xl space-y-10 px-5 pb-12">

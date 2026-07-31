@@ -41,13 +41,11 @@ export default function LandingViagem() {
   async function enviarLead(dados: {
     nome: string;
     whatsapp: string;
-    mensagem: string;
   }): Promise<string | null> {
     const { data, error } = await supabase.rpc("landing_lead", {
       _slug: slug,
       _nome: dados.nome,
       _whatsapp: dados.whatsapp,
-      _mensagem: dados.mensagem || null,
     });
     if (error) return "Não foi possível enviar agora. Tente novamente.";
     const res = (data ?? {}) as { ok?: boolean; message?: string };

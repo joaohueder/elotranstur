@@ -1042,5 +1042,5 @@ alter table public.viagens
 create unique index if not exists viagens_landing_slug_uidx
   on public.viagens (landing_slug) where landing_slug is not null;
 
--- Funções públicas landing_viagem(text) e landing_lead(text,text,text,text):
+-- Funções públicas landing_viagem(text) e landing_lead(text,text,text):
 -- ver arquivo supabase/sql/016-landing-pages.sql (execute-o na íntegra).
