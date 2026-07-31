@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
@@ -43,8 +44,8 @@ export default function Viagens() {
   const podeEditar = isAdmin || can("viagens", "edit");
   const podeExcluir = isAdmin || can("viagens", "delete");
 
-  const carregar = useCallback(async () => {
-    setLoading(true);
+  const carregar = useCallback(async (silencioso = false) => {
+    if (!silencioso) setLoading(true);
     try {
       const { data, error } = await supabase
         .from("viagens")
@@ -69,6 +70,8 @@ export default function Viagens() {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  useRealtime(["viagens"], () => void carregar(true));
 
   const filtradas = useMemo(() => {
     const ordemSituacao: Record<string, number> = {
