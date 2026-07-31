@@ -23,12 +23,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate("/painel", { replace: true });
     });
   }, [navigate]);
+
+  const BLOCKED_MESSAGE =
+    "Seu acesso está bloqueado. Procure o administrador do sistema para liberar sua conta.";
+
+  const isBlockedError = (error: unknown) => {
+    const err = error as { code?: string; status?: number; message?: string };
+    const code = (err?.code ?? "").toLowerCase();
+    const message = (err?.message ?? "").toLowerCase();
+    return (
+      code === "user_banned" ||
+      message.includes("banned") ||
+      message.includes("blocked") ||
+      message.includes("disabled")
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +56,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+    setAuthError(null);
     try {
       // Define a persistência ANTES do login: com "Manter conectado" a
       // sessão é salva por 30 dias; sem, expira ao fechar a aba.
@@ -51,9 +68,17 @@ export default function LoginPage() {
       if (error) throw error;
       navigate("/painel", { replace: true });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Não foi possível continuar.",
-      );
+      if (isBlockedError(error)) {
+        setAuthError(BLOCKED_MESSAGE);
+        toast.error(BLOCKED_MESSAGE);
+      } else {
+        const message =
+          error instanceof Error && error.message
+            ? "E-mail ou senha inválidos."
+            : "Não foi possível continuar.";
+        setAuthError(message);
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -129,6 +154,15 @@ export default function LoginPage() {
               Insira suas credenciais para gerenciar suas operações.
             </p>
           </div>
+
+          {authError && (
+            <div
+              role="alert"
+              className="mb-6 border-l-2 border-destructive bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {authError}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
