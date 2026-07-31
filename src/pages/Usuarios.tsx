@@ -161,95 +161,13 @@ export default function Usuarios() {
   );
 
   function abrirNovo() {
-    setForm(EMPTY_FORM);
-    setFormOpen(true);
+    navigate("/usuarios/novo");
   }
 
   function abrirEdicao(u: UsuarioRow) {
-    setForm({
-      id: u.id,
-      nome: u.nome ?? "",
-      email: u.email,
-      senha: "",
-      isAdmin: u.is_admin,
-      ativo: u.ativo,
-      permissoes: u.permissoes,
-    });
-    setFormOpen(true);
+    navigate(`/usuarios/${u.id}`);
   }
 
-  function permissaoDe(modulo: string): ModulePermission {
-    return form.permissoes[modulo] ?? EMPTY_PERMISSION;
-  }
-
-  function togglePermissao(modulo: string, acao: keyof ModulePermission, value: boolean) {
-    setForm((prev) => {
-      const atual = prev.permissoes[modulo] ?? EMPTY_PERMISSION;
-      const next: ModulePermission = { ...atual, [acao]: value };
-      if (acao !== "view" && value) next.view = true;
-      if (acao === "view" && !value) {
-        next.edit = false;
-        next.delete = false;
-      }
-      return { ...prev, permissoes: { ...prev.permissoes, [modulo]: next } };
-    });
-  }
-
-  async function salvar() {
-    if (!form.nome.trim()) {
-      showNegative("Dados incompletos", "Informe o nome do usuário.");
-      return;
-    }
-    if (!form.id) {
-      if (!form.email.trim()) {
-        showNegative("Dados incompletos", "Informe o e-mail do usuário.");
-        return;
-      }
-      if (form.senha.length < 8) {
-        showNegative("Senha inválida", "A senha deve ter no mínimo 8 caracteres.");
-        return;
-      }
-    } else if (form.senha && form.senha.length < 8) {
-      showNegative("Senha inválida", "A nova senha deve ter no mínimo 8 caracteres.");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      if (form.id) {
-        const { error } = await supabase.rpc("admin_save_user", {
-          _user_id: form.id,
-          _nome: form.nome.trim(),
-          _is_admin: form.isAdmin,
-          _ativo: form.ativo,
-          _permissoes: form.permissoes,
-          _nova_senha: form.senha || null,
-        });
-        if (error) throw error;
-        showSuccess("Usuário atualizado", `As alterações de ${form.nome} foram salvas.`);
-      } else {
-        const { error } = await supabase.rpc("admin_create_user", {
-          _email: form.email.trim(),
-          _senha: form.senha,
-          _nome: form.nome.trim(),
-          _is_admin: form.isAdmin,
-          _ativo: form.ativo,
-          _permissoes: form.permissoes,
-        });
-        if (error) throw error;
-        showSuccess("Usuário criado", `${form.nome} já pode acessar o sistema.`);
-      }
-      setFormOpen(false);
-      await carregar();
-      await refresh();
-    } catch (err) {
-      const message =
-        (err as { message?: string })?.message ?? "Erro desconhecido ao salvar.";
-      showError("Falha ao salvar usuário", message, err);
-    } finally {
-      setSaving(false);
-    }
-  }
 
   async function alternarAtivo(u: UsuarioRow) {
     if (u.id === userId) {
