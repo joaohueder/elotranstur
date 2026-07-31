@@ -69,11 +69,21 @@ export default function LoginPage() {
         persistRememberMe(false);
         const invalidCredentials =
           error.status === 400 || /invalid login credentials/i.test(error.message);
+        const serverUnavailable =
+          error.name === "AuthRetryableFetchError" ||
+          (typeof error.status === "number" && error.status >= 500) ||
+          !error.status;
 
         if (invalidCredentials) {
           showNegative(
             "Não foi possível entrar",
             "E-mail ou senha inválidos. Verifique os dados e tente novamente. Se o seu acesso estiver bloqueado, procure o administrador do sistema.",
+          );
+        } else if (serverUnavailable) {
+          showError(
+            "Servidor de autenticação indisponível",
+            "Não conseguimos falar com o servidor de autenticação do sistema. Isso costuma ser uma falha temporária do servidor ou da sua conexão. Tente novamente em instantes e, se persistir, envie os detalhes abaixo ao administrador do sistema.",
+            error,
           );
         } else {
           showError(
@@ -84,6 +94,7 @@ export default function LoginPage() {
         }
         return;
       }
+
 
       navigate("/", { replace: true });
     } catch (err) {
