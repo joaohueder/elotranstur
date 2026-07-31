@@ -1,9 +1,4 @@
 export const MODULES = [
-  { key: "viagens", label: "Viagens" },
-  { key: "leads", label: "Leads" },
-  { key: "crm", label: "CRM" },
-  { key: "site", label: "Site institucional" },
-  { key: "landing_pages", label: "Landing pages" },
   { key: "usuarios", label: "Usuários" },
   { key: "configuracoes", label: "Configurações" },
 ] as const;
