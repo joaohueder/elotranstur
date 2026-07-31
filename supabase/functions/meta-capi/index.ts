@@ -127,21 +127,18 @@ Deno.serve(async (req) => {
       if (!pixel) return json({ error: "Informe o ID do Pixel." }, 400);
       if (!token) return json({ error: "Informe o token da API de Conversões." }, 400);
 
-      // 1) O token consegue ler o Pixel?
-      const info = await fetch(
-        `${GRAPH}/${pixel}?fields=id,name&access_token=${encodeURIComponent(token)}`,
-      );
-      const infoBody = await info.json().catch(() => ({}));
-      if (!info.ok) {
-        return json(
-          {
-            error:
-              infoBody?.error?.message ??
-              `Falha ao consultar o Pixel (HTTP ${info.status}).`,
-            details: infoBody,
-          },
-          400,
+      // 1) Tenta ler o nome do Pixel (opcional).
+      // Tokens da API de Conversões costumam NÃO ter permissão de leitura
+      // (erro #100 Missing Permission) — isso não impede o envio de eventos.
+      let infoBody: Record<string, any> = {};
+      try {
+        const info = await fetch(
+          `${GRAPH}/${pixel}?fields=id,name&access_token=${encodeURIComponent(token)}`,
         );
+        infoBody = (await info.json().catch(() => ({}))) as Record<string, any>;
+        if (!info.ok) infoBody = {};
+      } catch {
+        infoBody = {};
       }
 
       // 2) O token consegue ENVIAR eventos? (evento de teste)
