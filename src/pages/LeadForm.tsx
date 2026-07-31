@@ -318,11 +318,20 @@ export default function LeadForm() {
                   </SelectTrigger>
                   <SelectContent>
                     {viagens
-                      .filter((v) => !viagensInteresse.includes(v.id))
+                      .filter(
+                        (v) =>
+                          v.situacao === "ativa" &&
+                          !viagensInteresse.includes(v.id),
+                      )
+                      .sort((a, b) =>
+                        `${a.data_partida}T${a.hora_partida || "00:00"}`.localeCompare(
+                          `${b.data_partida}T${b.hora_partida || "00:00"}`,
+                        ),
+                      )
                       .map((v) => (
                         <SelectItem key={v.id} value={v.id}>
                           {v.destino} · {formatarData(v.data_partida)} ·{" "}
-                          {situacaoLabel(v.situacao)}
+                          {formatarHora(v.hora_partida)}
                         </SelectItem>
                       ))}
                   </SelectContent>
