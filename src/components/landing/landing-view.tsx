@@ -1004,7 +1004,14 @@ export function LandingView({
       aria-label="Formulário de contato"
     >
       <div className="lp-flutuante pointer-events-auto max-h-[92vh] w-full overflow-y-auto">
-        {formulario}
+        <Formulario
+          m={m}
+          onSubmit={onSubmit}
+          whatsappUrl={whatsappUrl}
+          preview={preview}
+          compacto
+          ancora={false}
+        />
       </div>
     </aside>
   );
