@@ -251,16 +251,6 @@ export default function Leads() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  <a
-                    href={whatsappLink(lead.whatsapp)}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Abre uma conversa no WhatsApp com este lead"
-                    className="grid h-9 w-9 place-items-center rounded-sm border border-border text-muted-foreground hover:bg-muted"
-                    aria-label={`Abrir WhatsApp de ${lead.nome}`}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                  </a>
                   {podeEditar && (
                     <HintButton
                       hint="Abre a tela de cadastro para editar os dados deste lead"
