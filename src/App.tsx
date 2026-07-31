@@ -11,6 +11,7 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { supabase } from "@/lib/supabase";
+import { useAuthz } from "@/lib/use-authz";
 import Login from "@/pages/Login";
 import Painel from "@/pages/Painel";
 import Configuracoes from "@/pages/Configuracoes";
@@ -41,6 +42,20 @@ function RequireAuth({ children }: { children: ReactNode }) {
   if (status === "out") {
     return <Navigate to="/login" replace />;
   }
+  return <>{children}</>;
+}
+
+/** Exige permissão de visualização no módulo (admin sempre passa). */
+function RequireModule({
+  modulo,
+  children,
+}: {
+  modulo: string;
+  children: ReactNode;
+}) {
+  const { loading, can } = useAuthz();
+  if (loading) return <div className="min-h-screen bg-background" />;
+  if (!can(modulo, "view")) return <Navigate to="/painel" replace />;
   return <>{children}</>;
 }
 
@@ -80,7 +95,9 @@ export default function App() {
               path="/usuarios"
               element={
                 <RequireAuth>
-                  <Usuarios />
+                  <RequireModule modulo="usuarios">
+                    <Usuarios />
+                  </RequireModule>
                 </RequireAuth>
               }
             />
@@ -88,7 +105,9 @@ export default function App() {
               path="/configuracoes"
               element={
                 <RequireAuth>
-                  <Configuracoes />
+                  <RequireModule modulo="configuracoes">
+                    <Configuracoes />
+                  </RequireModule>
                 </RequireAuth>
               }
             />

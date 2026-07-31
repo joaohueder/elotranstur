@@ -8,13 +8,13 @@ import { supabase, clearRememberMe } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 
 const navItems = [
-  { to: "/painel", label: "Painel", icon: LayoutDashboard, adminOnly: false },
-  { to: "/usuarios", label: "Usuários", icon: Users, adminOnly: true },
+  { to: "/painel", label: "Painel", icon: LayoutDashboard, modulo: null },
+  { to: "/usuarios", label: "Usuários", icon: Users, modulo: "usuarios" },
   {
     to: "/configuracoes",
     label: "Configurações",
     icon: Settings,
-    adminOnly: false,
+    modulo: "configuracoes",
   },
 ] as const;
 
@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string | null>(null);
-  const { isAdmin } = useAuthz();
+  const { can } = useAuthz();
 
   useEffect(() => {
     let active = true;
@@ -78,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav className="border-b border-border bg-background/60 backdrop-blur">
         <div className="app-container flex items-center gap-1 overflow-x-auto px-8">
           {navItems
-            .filter((item) => !item.adminOnly || isAdmin)
+            .filter((item) => !item.modulo || can(item.modulo, "view"))
             .map((item) => (
               <NavLink
                 key={item.to}
