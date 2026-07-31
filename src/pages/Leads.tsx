@@ -75,9 +75,10 @@ export default function Leads() {
   async function excluirLead(lead: CrmLead) {
     if (!podeExcluir) return;
     const ok = await confirm({
-      titulo: "Excluir lead",
-      descricao: `Tem certeza que deseja excluir o lead "${lead.nome}"? Esta ação não poderá ser desfeita.`,
-      confirmar: "Excluir",
+      title: "Excluir lead",
+      message: `Tem certeza que deseja excluir o lead "${lead.nome}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Excluir",
+      variant: "destructive",
     });
     if (!ok) return;
     try {
