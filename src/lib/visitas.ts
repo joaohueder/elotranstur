@@ -51,9 +51,14 @@ export function VisitTracker() {
       if (error) console.warn("registrar_visita", error.message);
     };
 
-    registrar();
-    const timer = setInterval(registrar, 60_000);
-    return () => clearInterval(timer);
+    void registrar();
+    const timer = setInterval(() => void registrar(), 60_000);
+    const aoVoltar = () => void registrar();
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", aoVoltar);
+    };
   }, [pathname]);
 
   return null;
