@@ -24,7 +24,7 @@ import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
-import { useCrmData, whatsappLink, type CrmLead } from "@/lib/crm";
+import { useCrmData, type CrmLead } from "@/lib/crm";
 
 /** Formata um timestamp ISO completo em data e hora no padrão brasileiro. */
 function formatarDataHora(iso: string): string {
