@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { ForgotPasswordModal } from "@/components/forgot-password-modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { useSeo } from "@/lib/seo";
 import { supabase, setRememberMe as persistRememberMe } from "@/lib/supabase";
 
 import loginHero from "../assets/login-hero.jpg";
+
 
 export default function LoginPage() {
   useSeo({
