@@ -83,16 +83,25 @@ export default function ViagemForm() {
     setNovoItem("");
   }
 
-  /** Move um item incluso para cima ou para baixo na ordem. */
-  function moverItem(indice: number, direcao: -1 | 1) {
+  /** Reordena os itens inclusos movendo o item de `origem` para `destinoIdx`. */
+  function reordenar(origem: number, destinoIdx: number) {
     setItens((prev) => {
-      const destino = indice + direcao;
-      if (destino < 0 || destino >= prev.length) return prev;
+      if (
+        origem === destinoIdx ||
+        origem < 0 ||
+        destinoIdx < 0 ||
+        origem >= prev.length ||
+        destinoIdx >= prev.length
+      ) {
+        return prev;
+      }
       const copia = [...prev];
-      [copia[indice], copia[destino]] = [copia[destino], copia[indice]];
+      const [movido] = copia.splice(origem, 1);
+      copia.splice(destinoIdx, 0, movido);
       return copia;
     });
   }
+
 
   async function salvar() {
     if (!destino.trim()) {
