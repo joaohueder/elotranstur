@@ -98,6 +98,16 @@ export default function LandingViagem() {
     }
     const res = (data ?? {}) as { ok?: boolean; message?: string };
     if (!res.ok) return res.message || "Não foi possível enviar agora.";
+
+    // Meta Ads: conversão de Lead (Pixel + API de Conversões, deduplicados).
+    void rastrearMeta("Lead", {
+      userData: { nome: dados.nome, whatsapp: dados.whatsapp },
+      customData: {
+        content_name: tituloViagem,
+        content_category: [viagem?.destino, viagem?.uf].filter(Boolean).join("/"),
+      },
+    });
+
     return null;
   }
 
