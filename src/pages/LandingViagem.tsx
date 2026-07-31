@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { supabase } from "@/lib/supabase";
 import { useSeo } from "@/lib/seo";
+import { useLayoutSettings } from "@/lib/layout-settings";
 import { capaDa } from "@/lib/viagens";
 
 
@@ -13,6 +14,7 @@ export default function LandingViagem() {
   const { slug } = useParams();
   const [viagem, setViagem] = useState<LandingViagem | null>(null);
   const [loading, setLoading] = useState(true);
+  const { seo } = useLayoutSettings();
 
   useEffect(() => {
     let ativo = true;
@@ -34,14 +36,14 @@ export default function LandingViagem() {
     ? [tituloViagem, viagem.subtitulo].filter(Boolean).join(" — ") ||
       (viagem.descricao ?? "").slice(0, 155) ||
       `Viagem para ${viagem.destino}. Garanta sua vaga com a ELO Transporte e Turismo.`
-    : "Conheça as viagens da ELO Transporte e Turismo.";
+    : seo.description;
 
   useSeo({
     title: viagem
-      ? `${tituloViagem} · ELO Transporte e Turismo`
-      : "Viagem · ELO Transporte e Turismo",
+      ? `${tituloViagem} · ${seo.siteName}`
+      : `Viagem · ${seo.siteName}`,
     description: descricaoCompartilhada,
-    image: viagem ? capaDa(viagem.imagens ?? []) : null,
+    image: (viagem ? capaDa(viagem.imagens ?? []) : null) || seo.imageUrl || null,
   });
 
 

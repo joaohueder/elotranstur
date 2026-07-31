@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Monitor, Save } from "lucide-react";
+import { Loader2, Monitor, Save, Search } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { CrmTab } from "@/components/configuracoes/crm-tab";
@@ -8,11 +8,15 @@ import { EmailTab } from "@/components/configuracoes/email-tab";
 
 import { Button } from "@/components/ui/button";
 import { HelpTip, HintButton } from "@/components/help";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFeedback } from "@/lib/feedback";
 import {
   DEFAULT_MAX_WIDTH,
+  type SeoSettings,
   MAX_MAX_WIDTH,
   MIN_MAX_WIDTH,
   useLayoutSettings,
@@ -20,30 +24,41 @@ import {
 import { useAuthz } from "@/lib/use-authz";
 
 export default function Configuracoes() {
-  const { maxWidth, loading, save } = useLayoutSettings();
+  const { maxWidth, seo, loading, save } = useLayoutSettings();
   const { can, isAdmin } = useAuthz();
   const feedback = useFeedback();
 
   const podeEditar = isAdmin || can("configuracoes", "edit");
   const [valor, setValor] = useState<number>(maxWidth || DEFAULT_MAX_WIDTH);
   const [salvando, setSalvando] = useState(false);
+  const [formSeo, setFormSeo] = useState<SeoSettings>(seo);
 
   useEffect(() => {
     setValor(maxWidth);
   }, [maxWidth]);
 
+  useEffect(() => {
+    setFormSeo(seo);
+  }, [seo]);
+
+  const seoAlterado =
+    formSeo.siteName !== seo.siteName ||
+    formSeo.title !== seo.title ||
+    formSeo.description !== seo.description ||
+    formSeo.imageUrl !== seo.imageUrl;
+
   async function salvar() {
     setSalvando(true);
     try {
-      await save(valor);
+      await save(valor, formSeo);
       feedback.showSuccess(
         "Configurações salvas",
-        `A largura máxima do sistema agora é de ${valor}px.`,
+        `Largura máxima de ${valor}px e informações de SEO atualizadas.`,
       );
     } catch (err) {
       feedback.showError(
         "Não foi possível salvar",
-        "Ocorreu um erro ao gravar as configurações de layout. Tente novamente.",
+        "Ocorreu um erro ao gravar as configurações de layout e SEO. Tente novamente.",
         err,
       );
 
@@ -52,7 +67,7 @@ export default function Configuracoes() {
     }
   }
 
-  const alterado = valor !== maxWidth;
+  const alterado = valor !== maxWidth || seoAlterado;
 
   return (
     <AppShell>
@@ -160,18 +175,116 @@ export default function Configuracoes() {
                   </p>
                 )}
 
+                <div className="space-y-4 border-t border-border pt-6">
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-border text-muted-foreground">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                        SEO do site
+                        <HelpTip texto="Informações que aparecem no Google e na miniatura ao compartilhar links do site." />
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Usado nas páginas públicas. O sistema (painel e login)
+                        nunca é indexado pelos buscadores.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 rounded-sm border border-border p-4 sm:p-5">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label className="flex items-center gap-1.5 text-xs">
+                          Nome do site
+                          <HelpTip texto="Nome da empresa/marca exibido junto ao título das páginas." />
+                        </Label>
+                        <Input
+                          className="rounded-sm"
+                          value={formSeo.siteName}
+                          disabled={!podeEditar}
+                          onChange={(e) =>
+                            setFormSeo((f) => ({ ...f, siteName: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="flex items-center gap-1.5 text-xs">
+                          Título padrão
+                          <HelpTip texto="Título que aparece na aba do navegador e no resultado do Google (até 60 caracteres)." />
+                        </Label>
+                        <Input
+                          className="rounded-sm"
+                          maxLength={70}
+                          value={formSeo.title}
+                          disabled={!podeEditar}
+                          onChange={(e) =>
+                            setFormSeo((f) => ({ ...f, title: e.target.value }))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5 text-xs">
+                        Descrição padrão
+                        <HelpTip texto="Resumo do site mostrado abaixo do título no Google (até 160 caracteres)." />
+                      </Label>
+                      <Textarea
+                        className="rounded-sm"
+                        rows={3}
+                        maxLength={180}
+                        value={formSeo.description}
+                        disabled={!podeEditar}
+                        onChange={(e) =>
+                          setFormSeo((f) => ({ ...f, description: e.target.value }))
+                        }
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        {formSeo.description.length}/160 caracteres recomendados
+                      </p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5 text-xs">
+                        Imagem de compartilhamento (URL)
+                        <HelpTip texto="Endereço de uma imagem (1200x630) usada como miniatura ao compartilhar o link em WhatsApp e redes sociais." />
+                      </Label>
+                      <Input
+                        className="rounded-sm"
+                        placeholder="https://..."
+                        value={formSeo.imageUrl}
+                        disabled={!podeEditar}
+                        onChange={(e) =>
+                          setFormSeo((f) => ({ ...f, imageUrl: e.target.value }))
+                        }
+                      />
+                    </div>
+
+                    <div className="rounded-sm bg-muted/60 p-3 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Indexação:</span>{" "}
+                      apenas as landing pages públicas (/v/...) são liberadas para o
+                      Google. Painel, login e recuperação de senha ficam com
+                      <code className="mx-1">noindex</code>.
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
                   <HintButton
-                    hint="Desfaz a alteração e volta para a largura salva anteriormente."
+                    hint="Desfaz as alterações e volta para os valores salvos anteriormente."
                     variant="outline"
                     className="w-full rounded-sm sm:w-auto"
                     disabled={!alterado || salvando}
-                    onClick={() => setValor(maxWidth)}
+                    onClick={() => {
+                      setValor(maxWidth);
+                      setFormSeo(seo);
+                    }}
                   >
                     Cancelar
                   </HintButton>
                   <HintButton
-                    hint="Grava a nova largura máxima do sistema."
+                    hint="Grava a largura máxima e as informações de SEO do site."
                     className="w-full rounded-sm sm:w-auto sm:min-w-32"
                     disabled={!podeEditar || salvando}
                     onClick={() => void salvar()}

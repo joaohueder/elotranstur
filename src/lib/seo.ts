@@ -1,4 +1,34 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+/** Rotas públicas que PODEM ser indexadas pelos buscadores. */
+const ROTAS_INDEXAVEIS = [/^\/v\//];
+
+/** Define a metatag robots da página. */
+export function useRobots(noindex: boolean) {
+  useEffect(() => {
+    let el = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (!el) {
+      el = document.createElement("meta");
+      el.setAttribute("name", "robots");
+      document.head.appendChild(el);
+    }
+    el.setAttribute(
+      "content",
+      noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large",
+    );
+  }, [noindex]);
+}
+
+/**
+ * Aplica a política de indexação: o sistema (painel, login, recuperação de
+ * senha) fica fora do Google; apenas as páginas públicas são indexáveis.
+ */
+export function RobotsPolicy() {
+  const { pathname } = useLocation();
+  useRobots(!ROTAS_INDEXAVEIS.some((r) => r.test(pathname)));
+  return null;
+}
 
 type Seo = {
   title: string;
