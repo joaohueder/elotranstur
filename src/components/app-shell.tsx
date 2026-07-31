@@ -28,6 +28,15 @@ const PATHS: Record<string, string> = {
   configuracoes: "/configuracoes",
 };
 
+/** Explicações simples de cada módulo, exibidas ao passar o mouse no menu. */
+const MENU_HINTS: Record<string, string> = {
+  viagens: "Cadastre e acompanhe as viagens da empresa.",
+  crm: "Acompanhe seus leads e o andamento das negociações.",
+  usuarios: "Crie usuários e defina o que cada um pode acessar.",
+  configuracoes: "Ajustes gerais do sistema, como layout, e-mail e CRM.",
+};
+
+
 /**
  * Layout padrão do sistema ELO: header fixo + barra de menu fixa + main + rodapé.
  */
