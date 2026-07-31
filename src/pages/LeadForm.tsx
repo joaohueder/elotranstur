@@ -107,6 +107,13 @@ export default function LeadForm() {
   const [salvandoNota, setSalvandoNota] = useState(false);
 
   useEffect(() => {
+    if (abaAtiva === "notas" && !novaNotaDataHora) {
+      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abaAtiva]);
+
+  useEffect(() => {
     let ativo = true;
     (async () => {
       setLoading(true);
@@ -278,10 +285,6 @@ export default function LeadForm() {
       feedback.showNegative("Descrição obrigatória", "Informe o conteúdo da nota.");
       return;
     }
-    if (!novaNotaDataHora) {
-      feedback.showNegative("Data/hora obrigatória", "Informe quando a nota foi registrada.");
-      return;
-    }
     if (!id) {
       feedback.showNegative(
         "Lead não salvo",
@@ -293,9 +296,13 @@ export default function LeadForm() {
 
     setSalvandoNota(true);
     try {
+      const dataHoraFinal = novaNotaDataHora
+        ? dataHoraLocalParaUTC(novaNotaDataHora)
+        : new Date().toISOString();
+
       const { error } = await supabase.from("crm_lead_notas").insert({
         lead_id: id,
-        data_hora: dataHoraLocalParaUTC(novaNotaDataHora),
+        data_hora: dataHoraFinal,
         descricao: novaNotaDescricao.trim(),
       });
       if (error) throw error;
@@ -642,17 +649,31 @@ export default function LeadForm() {
                   Nova anotação
                   <HelpTip texto="Registre contatos, observações ou qualquer informação importante sobre o lead. A data/hora ajuda a reconstruir o histórico." />
                 </h3>
-                <div className="grid gap-4 sm:grid-cols-[260px_1fr]">
+                <div className="grid gap-4 sm:grid-cols-[280px_1fr]">
                   <div>
-                    <FieldLabel help="Momento em que a anotação foi feita">
+                    <FieldLabel help="Momento em que a anotação foi feita. Já vem preenchida automaticamente, mas você pode ajustar se quiser">
                       Data e hora
                     </FieldLabel>
-                    <Input
-                      type="datetime-local"
-                      value={novaNotaDataHora}
-                      onChange={(e) => setNovaNotaDataHora(e.target.value)}
-                      className="mt-1.5"
-                    />
+                    <div className="mt-1.5 flex gap-2">
+                      <Input
+                        type="datetime-local"
+                        value={novaNotaDataHora}
+                        onChange={(e) => setNovaNotaDataHora(e.target.value)}
+                        className="flex-1"
+                      />
+                      <HintButton
+                        type="button"
+                        variant="outline"
+                        hint="Preenche a data e hora com o momento atual"
+                        onClick={() =>
+                          setNovaNotaDataHora(
+                            dataHoraUTCParaLocal(new Date().toISOString()),
+                          )
+                        }
+                      >
+                        Agora
+                      </HintButton>
+                    </div>
                   </div>
                   <div>
                     <FieldLabel help="Texto livre com o registro da conversa, observação ou próximo passo">
