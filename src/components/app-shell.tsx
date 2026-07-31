@@ -1,11 +1,19 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  RefreshCw,
+  Settings,
+  Users,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { supabase, clearRememberMe } from "@/lib/supabase";
-import { useAuthz } from "@/lib/use-authz";
+import { useAuthz, refreshAuthz } from "@/lib/use-authz";
+
 
 const navItems = [
   { to: "/painel", label: "Painel", icon: LayoutDashboard, modulo: null },
