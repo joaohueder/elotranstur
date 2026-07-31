@@ -1012,37 +1012,13 @@ export function LandingView({
     </div>
   );
 
-  /** Formulário flutuante (desktop): acompanha a rolagem sem cobrir o conteúdo.
-   *  Alinhado à borda direita do container centralizado (--app-max-width). */
-  const formularioFlutuante = (
-    <aside
-      className="pointer-events-none fixed inset-y-0 z-[80] hidden w-[24rem] items-center px-5 lg:flex"
-      aria-label="Formulário de contato"
-      style={{
-        right: "calc((100vw - min(100vw, var(--app-max-width, 1280px))) / 2)",
-      }}
-    >
-      <div className="lp-flutuante pointer-events-auto max-h-[92vh] w-full overflow-y-auto">
-        <Formulario
-          m={m}
-          onSubmit={onSubmit}
-          whatsappUrl={whatsappUrl}
-          preview={preview}
-          compacto
-          ancora={false}
-        />
-      </div>
-    </aside>
-  );
-
   const wrapper = (children: ReactNode) => (
     <div
       ref={raiz}
-      className="lp-root min-h-full w-full pb-24 lg:pb-0 lg:pr-[24rem]"
+      className="lp-root min-h-full w-full pb-24"
       style={{ ...themeVars(m, p), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
     >
       {children}
-      {formularioFlutuante}
       {barraMobile}
       {fotoAberta !== null && (
         <Lightbox
