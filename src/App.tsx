@@ -141,6 +141,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
         </LayoutSettingsProvider>
+        </ConfirmProvider>
       </FeedbackProvider>
       </TooltipProvider>
     </QueryClientProvider>
