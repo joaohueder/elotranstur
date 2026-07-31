@@ -402,6 +402,22 @@ export default function Viagens() {
                     </HintButton>
                   </>
                 )}
+                {podeEditar && (
+                  <HintButton
+                    hint="Cria uma cópia desta viagem como Rascunho."
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-md"
+                    disabled={clonando === v.id}
+                    onClick={() => void clonar(v)}
+                  >
+                    {clonando === v.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CopyPlus className="h-4 w-4" />
+                    )}
+                  </HintButton>
+                )}
                 {podeExcluir && (
                   <HintButton
                     hint="Exclui esta viagem definitivamente."
