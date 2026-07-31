@@ -47,23 +47,50 @@ function admin() {
   );
 }
 
-async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: string) {
-  const { data: cfg, error } = await db
+type SmtpCfg = {
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password: string;
+  smtp_secure: boolean;
+  from_name: string;
+  from_email: string;
+  reply_to: string;
+  ativo?: boolean;
+};
+
+// Lê o SMTP salvo em Configurações > E-mail. O override permite testar
+// exatamente os valores digitados na tela antes de salvar.
+async function carregarSmtp(
+  db: ReturnType<typeof admin>,
+  override?: Partial<SmtpCfg>,
+): Promise<SmtpCfg> {
+  const { data, error } = await db
     .from("app_email_settings")
     .select("*")
     .eq("id", true)
     .maybeSingle();
 
   if (error) throw new Error(`Falha ao ler configuração de e-mail: ${error.message}`);
-  if (!cfg?.smtp_host || !cfg?.from_email) {
+
+  const cfg = { ...(data ?? {}), ...(override ?? {}) } as SmtpCfg;
+  // Senha em branco no override significa "usar a senha já salva".
+  if (!cfg.smtp_password) cfg.smtp_password = data?.smtp_password ?? "";
+
+  if (!cfg.smtp_host || !cfg.from_email) {
     throw new Error(
-      "SMTP não configurado. Configure o servidor de e-mail em Configurações > E-mail.",
+      "SMTP não configurado. Preencha o servidor e o e-mail remetente em Configurações > E-mail.",
     );
   }
-  if (cfg.ativo === false) {
-    throw new Error("O envio de e-mails está desativado em Configurações > E-mail.");
-  }
+  return cfg;
+}
 
+async function enviarSmtp(
+  cfg: SmtpCfg,
+  para: string,
+  assunto: string,
+  html: string,
+) {
   const porta = Number(cfg.smtp_port);
   const tlsImplicito = porta === 465 ? true : Boolean(cfg.smtp_secure) && porta !== 587;
 
@@ -77,6 +104,24 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
         : undefined,
     },
   });
+
+  await client.send({
+    from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
+    to: para,
+    replyTo: cfg.reply_to || undefined,
+    subject: assunto,
+    html,
+  });
+
+  await client.close();
+}
+
+async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: string) {
+  const cfg = await carregarSmtp(db);
+  if (cfg.ativo === false) {
+    throw new Error("O envio de e-mails está desativado em Configurações > E-mail.");
+  }
+
 
   await client.send({
     from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
