@@ -82,6 +82,7 @@ export default function LeadForm() {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [origem, setOrigem] = useState<string>("WhatsApp");
+  const origemDoSistema = origens.some((o) => o.sistema && o.nome === origem);
   const [stageId, setStageId] = useState<string>("");
 
   const [viagens, setViagens] = useState<ViagemOpcao[]>([]);
