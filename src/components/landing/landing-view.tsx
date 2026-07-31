@@ -415,17 +415,27 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
   );
 
   const miniGaleria = galeria.length > 0 && (
-    <div className="grid grid-cols-3 gap-2">
-      {galeria.map((img) => (
-        <Foto
-          key={img.url}
-          url={img.url}
-          className={`aspect-[4/3] w-full transition ${
-            capaAtiva === img.url ? "opacity-100 ring-2 ring-offset-2" : "opacity-80 hover:opacity-100"
-          }`}
-          onClick={() => setCapaSelecionada(img.url)}
-        />
-      ))}
+    <div className="space-y-3">
+      <p
+        className="text-[10px] uppercase tracking-[0.22em]"
+        style={{ color: "var(--lp-muted)" }}
+      >
+        Galeria
+      </p>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+        {galeria.map((img) => (
+          <Foto
+            key={img.url}
+            url={img.url}
+            className={`aspect-[4/3] w-full transition ${
+              capaAtiva === img.url
+                ? "opacity-100 ring-2 ring-offset-2"
+                : "opacity-80 hover:opacity-100"
+            }`}
+            onClick={() => setCapaSelecionada(img.url)}
+          />
+        ))}
+      </div>
     </div>
   );
 
