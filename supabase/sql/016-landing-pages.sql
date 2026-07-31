@@ -80,8 +80,7 @@ grant execute on function public.landing_viagem(text) to anon, authenticated;
 create or replace function public.landing_lead(
   _slug     text,
   _nome     text,
-  _whatsapp text,
-  _mensagem text default null
+  _whatsapp text
 )
 returns json
 language plpgsql
@@ -121,15 +120,10 @@ begin
   values (v_lead, v_viagem.id)
   on conflict do nothing;
 
-  if coalesce(btrim(_mensagem), '') <> '' then
-    insert into public.crm_lead_notas (lead_id, descricao, data_hora)
-    values (v_lead, btrim(_mensagem), now());
-  end if;
-
   return json_build_object('ok', true, 'lead_id', v_lead);
 end;
 $$;
 
-grant execute on function public.landing_lead(text, text, text, text) to anon, authenticated;
+grant execute on function public.landing_lead(text, text, text) to anon, authenticated;
 
 commit;
