@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
+  Eye,
   GripVertical,
   ImagePlus,
   Loader2,
@@ -11,6 +12,14 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import { AppShell } from "@/components/app-shell";
 import { FieldLabel, HelpTip, HintButton, SectionTitle } from "@/components/help";
@@ -74,6 +83,7 @@ export default function ViagemForm() {
   const [landingModelo, setLandingModelo] = useState<string>(DEFAULT_LANDING_MODEL);
   const [landingSlug, setLandingSlug] = useState("");
   const [landingAtiva, setLandingAtiva] = useState(true);
+  const [previewModelo, setPreviewModelo] = useState<string | null>(null);
   const inputArquivo = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -735,12 +745,11 @@ export default function ViagemForm() {
                 {LANDING_MODELS.map((m) => {
                   const ativo = landingModelo === m.key;
                   return (
-                    <button
+                    <div
                       key={m.key}
-                      type="button"
                       onClick={() => setLandingModelo(m.key)}
                       title={m.descricao}
-                      className={`rounded-sm border p-3 text-left transition-colors ${
+                      className={`rounded-sm border p-3 text-left transition-colors cursor-pointer ${
                         ativo
                           ? "border-brand-accent ring-1 ring-brand-accent"
                           : "border-border hover:bg-muted"
@@ -775,37 +784,60 @@ export default function ViagemForm() {
                       <span className="block text-xs text-muted-foreground">
                         {m.descricao}
                       </span>
-                    </button>
+                      <HintButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 h-8 w-full text-xs font-semibold uppercase tracking-widest"
+                        hint={`Abre uma pré-visualização do modelo ${m.nome} em uma janela sobreposta.`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewModelo(m.key);
+                        }}
+                      >
+                        <Eye className="mr-2 h-3.5 w-3.5" />
+                        Preview
+                      </HintButton>
+                    </div>
                   );
                 })}
               </div>
             </div>
 
-            <div className="mt-8">
-              <SectionTitle
-                titulo="Pré-visualização"
-                help="Veja como a página ficará para o cliente com os dados atuais."
-              />
-              <div className="mt-4 max-h-[600px] overflow-auto rounded-sm border border-border">
-                <LandingView
-                  preview
-                  modelo={landingModelo}
-                  viagem={{
-                    id: id ?? "preview",
-                    titulo: titulo || null,
-                    subtitulo: subtitulo || null,
-                    descricao: descricao || null,
-                    destino: destino || "Destino da viagem",
-                    data_partida: dataPartida || "2026-01-01",
-                    hora_partida: horaPartida || null,
-                    valor: parseValor(valor),
-                    vagas: Number(vagas) || 0,
-                    itens_inclusos: itens,
-                    imagens,
-                  }}
-                />
-              </div>
-            </div>
+            <Dialog
+              open={!!previewModelo}
+              onOpenChange={(open) => !open && setPreviewModelo(null)}
+            >
+              <DialogContent className="max-w-5xl w-[calc(100%-2rem)] max-h-[90vh] gap-0 overflow-hidden rounded-sm border-border p-0">
+                <DialogHeader className="border-b border-border px-6 py-4 text-left">
+                  <DialogTitle className="font-serif text-xl text-foreground">
+                    Pré-visualização · {LANDING_MODELS.find((m) => m.key === previewModelo)?.nome}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Veja como a página ficará para o cliente com os dados atuais.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="max-h-[calc(90vh-8rem)] overflow-auto">
+                  <LandingView
+                    preview
+                    modelo={previewModelo ?? landingModelo}
+                    viagem={{
+                      id: id ?? "preview",
+                      titulo: titulo || null,
+                      subtitulo: subtitulo || null,
+                      descricao: descricao || null,
+                      destino: destino || "Destino da viagem",
+                      data_partida: dataPartida || "2026-01-01",
+                      hora_partida: horaPartida || null,
+                      valor: parseValor(valor),
+                      vagas: Number(vagas) || 0,
+                      itens_inclusos: itens,
+                      imagens,
+                    }}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           <div className="flex justify-end gap-3 border-t border-border p-6">
