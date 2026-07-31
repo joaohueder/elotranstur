@@ -32,6 +32,7 @@ import {
   type CrmLeadNota,
   type CrmStage,
 } from "@/lib/crm";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { ViagemCountdown } from "@/components/viagem-countdown";
@@ -66,6 +67,7 @@ export default function LeadForm() {
   const feedback = useFeedback();
 
   const { origens } = useCrmOrigens(true);
+  const { confirm } = useConfirm();
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -287,6 +289,16 @@ export default function LeadForm() {
 
   async function excluirNota(notaId: string) {
     if (!id) return;
+    const confirmado = await confirm({
+      title: "Excluir anotação",
+      message:
+        "Tem certeza que deseja remover esta anotação? Esta ação não poderá ser desfeita.",
+      confirmText: "Sim, excluir",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+    if (!confirmado) return;
+
     try {
       const { error } = await supabase
         .from("crm_lead_notas")

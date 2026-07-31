@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ConfirmProvider } from "@/lib/confirm";
 import { FeedbackProvider } from "@/lib/feedback";
 
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
@@ -44,6 +45,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={200}>
       <FeedbackProvider>
+        <ConfirmProvider>
         <LayoutSettingsProvider>
         <BrowserRouter>
 
@@ -139,6 +141,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
         </LayoutSettingsProvider>
+        </ConfirmProvider>
       </FeedbackProvider>
       </TooltipProvider>
     </QueryClientProvider>
