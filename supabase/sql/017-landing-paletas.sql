@@ -18,7 +18,7 @@ update public.viagens
 set landing_modelo = 'aurora'
 where landing_modelo not in (
   'aurora','impacto','diagonal','editorial','cartaz','bilhete','flutuante',
-  'sereno','mosaico','expresso','convite','holofote','camadas','stories','painel'
+  'sereno','horizonte','expresso','convite','holofote','camadas','stories','painel'
 );
 
 -- 3) Leitura pública da landing page agora devolve a paleta ------------
