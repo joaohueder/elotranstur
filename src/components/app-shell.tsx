@@ -1,11 +1,19 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  RefreshCw,
+  Settings,
+  Users,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { supabase, clearRememberMe } from "@/lib/supabase";
-import { useAuthz } from "@/lib/use-authz";
+import { useAuthz, refreshAuthz } from "@/lib/use-authz";
+
 
 const navItems = [
   { to: "/painel", label: "Painel", icon: LayoutDashboard, modulo: null },
@@ -22,7 +30,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const { can } = useAuthz();
+
+  async function handleRefreshPermissions() {
+    setRefreshing(true);
+    try {
+      await refreshAuthz();
+      toast.success("Permissões atualizadas.");
+    } catch {
+      toast.error("Não foi possível atualizar as permissões.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
 
   useEffect(() => {
     let active = true;
@@ -63,6 +85,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
             )}
             <Button
+              variant="ghost"
+              className="rounded-none text-xs font-semibold uppercase tracking-widest"
+              onClick={handleRefreshPermissions}
+              disabled={refreshing}
+              title="Revalida papel e permissões direto no banco"
+            >
+              <RefreshCw
+                className={`mr-2 size-3.5 ${refreshing ? "animate-spin" : ""}`}
+              />
+              {refreshing ? "Atualizando" : "Atualizar permissões"}
+            </Button>
+            <Button
+
               variant="outline"
               className="rounded-none text-xs font-semibold uppercase tracking-widest"
               onClick={handleSignOut}
