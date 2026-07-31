@@ -62,7 +62,7 @@ import {
 } from "@/components/ui/table";
 import { useSeo } from "@/lib/seo";
 import { supabase } from "@/lib/supabase";
-import { useAuthz } from "@/lib/use-authz";
+import { useAuthz, refreshAuthz } from "@/lib/use-authz";
 import {
   MODULES,
   type AppRole,
@@ -318,6 +318,7 @@ export default function UsuariosPage() {
     setCreateOpen(false);
     setForm(EMPTY_FORM);
     toast.success("Usuário criado com sucesso.");
+    void refreshAuthz();
     await load();
     setSelectedId(userId);
   }
@@ -332,6 +333,7 @@ export default function UsuariosPage() {
     }
     setDeleteTarget(null);
     toast.success("Usuário excluído.");
+    void refreshAuthz();
     setSelectedId(null);
     await load();
   }
@@ -507,6 +509,7 @@ export default function UsuariosPage() {
     setUsers(applyConfirmed);
     setSaving(false);
     toast.success("Alterações salvas.");
+    void refreshAuthz();
     setSelectedId(null);
     setDraft(null);
 
