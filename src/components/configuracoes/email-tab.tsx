@@ -297,7 +297,16 @@ export function EmailTab() {
               min={1}
               max={65535}
               value={form.smtp_port}
-              onChange={(e) => set("smtp_port", Number(e.target.value))}
+              onChange={(e) => {
+                const porta = Number(e.target.value);
+                setForm((p) => ({
+                  ...p,
+                  smtp_port: porta,
+                  // 465 = SSL implícito (ligado); 587/25 = STARTTLS (desligado).
+                  smtp_secure:
+                    porta === 465 ? true : porta === 587 || porta === 25 ? false : p.smtp_secure,
+                }));
+              }}
             />
           </div>
 
@@ -305,15 +314,22 @@ export function EmailTab() {
             <div>
               <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                 Conexão segura
-                <HelpTip texto="Ativa a criptografia SSL/TLS na conexão com o servidor de e-mail." />
+                <HelpTip texto="Ative para a porta 465 (SSL direto). Para a porta 587, deixe desligado: a criptografia é negociada automaticamente (STARTTLS)." />
               </p>
-              <p className="text-xs text-muted-foreground">SSL / TLS</p>
+              <p className="text-xs text-muted-foreground">
+                {form.smtp_port === 465
+                  ? "SSL / TLS — obrigatório na porta 465"
+                  : form.smtp_port === 587
+                    ? "STARTTLS — deixe desligado na porta 587"
+                    : "SSL / TLS"}
+              </p>
             </div>
             <Switch
               checked={form.smtp_secure}
               onCheckedChange={(v) => set("smtp_secure", v)}
             />
           </div>
+
 
           <div className="space-y-2">
             <FieldLabel

@@ -78,16 +78,22 @@ Deno.serve(async (req) => {
       return json({ error: "SMTP não configurado. Salve as configurações primeiro." }, 400);
     }
 
+    // A porta 465 exige TLS implícito; 587/25 usam STARTTLS (tls = false).
+    // Garantimos isso aqui para evitar erro de conexão por configuração invertida.
+    const porta = Number(cfg.smtp_port);
+    const tlsImplicito = porta === 465 ? true : Boolean(cfg.smtp_secure) && porta !== 587;
+
     const client = new SMTPClient({
       connection: {
         hostname: cfg.smtp_host,
-        port: Number(cfg.smtp_port),
-        tls: Boolean(cfg.smtp_secure),
+        port: porta,
+        tls: tlsImplicito,
         auth: cfg.smtp_user
           ? { username: cfg.smtp_user, password: cfg.smtp_password }
           : undefined,
       },
     });
+
 
     await client.send({
       from: cfg.from_name
