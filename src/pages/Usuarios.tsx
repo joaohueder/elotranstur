@@ -89,7 +89,8 @@ function formatarData(value: string | null) {
 }
 
 export default function Usuarios() {
-  const { can, userId, isAdmin, refresh } = useAuthz();
+  const navigate = useNavigate();
+  const { can, userId, isAdmin } = useAuthz();
   const { showSuccess, showNegative, showError } = useFeedback();
 
   const [rows, setRows] = useState<UsuarioRow[]>([]);
@@ -97,10 +98,8 @@ export default function Usuarios() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "inativos" | "admins">("todos");
 
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [formOpen, setFormOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState<UsuarioRow | null>(null);
+
 
   const podeEditar = can("usuarios", "edit");
   const podeExcluir = can("usuarios", "delete");
