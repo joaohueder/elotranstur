@@ -240,7 +240,7 @@ export default function UsuarioForm() {
                     />
                   </div>
 
-                  <div className="space-y-2 lg:col-span-2">
+                  <div className="space-y-2">
                     <Label className="text-[10px] uppercase tracking-widest">
                       {editando ? "Nova senha (opcional)" : "Senha"}
                     </Label>
@@ -252,6 +252,25 @@ export default function UsuarioForm() {
                       className="rounded-sm"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest">
+                      Confirmar senha
+                    </Label>
+                    <Input
+                      type="password"
+                      value={form.confirmarSenha}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, confirmarSenha: e.target.value }))
+                      }
+                      placeholder="Repita a senha"
+                      className="rounded-sm"
+                    />
+                    {form.confirmarSenha && form.senha !== form.confirmarSenha && (
+                      <p className="text-xs text-destructive">As senhas não conferem.</p>
+                    )}
+                  </div>
+
 
                   <div className="flex items-center justify-between border border-border p-4">
                     <div>
