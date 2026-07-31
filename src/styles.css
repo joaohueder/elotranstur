@@ -399,6 +399,32 @@ body {
   flex-wrap: nowrap;
 }
 
+/* No celular todas as abas aparecem na tela, sem rolagem horizontal */
+@media (max-width: 767px) {
+  .tabs-scroll,
+  .tabs-scroll [data-slot="tabs-list"],
+  .tabs-scroll [role="tablist"] {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    overflow-x: visible;
+    gap: 0.25rem;
+  }
+  .tabs-scroll [role="tab"] {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.8125rem;
+  }
+}
+
+
 @media (max-width: 767px) {
   /* Evita o zoom automático do iOS ao focar campos */
   input,
