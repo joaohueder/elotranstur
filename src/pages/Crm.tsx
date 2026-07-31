@@ -343,15 +343,6 @@ export default function Crm() {
                                 />
                               </div>
                             </div>
-                            <a
-                              href={whatsappLink(lead.whatsapp)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-border text-muted-foreground"
-                              aria-label={`Abrir WhatsApp de ${lead.nome}`}
-                            >
-                              <MessageCircle className="h-4 w-4" />
-                            </a>
                           </div>
 
                           <LeadViagens viagens={lead.viagens} />
