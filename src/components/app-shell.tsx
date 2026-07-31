@@ -179,7 +179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
 
-            <Link to="/" className="flex items-center gap-2 sm:gap-3">
+            <Link to="/dashboard" className="flex items-center gap-2 sm:gap-3" title="Vai para o painel principal do sistema.">
             <span className="grid h-8 w-12 place-items-center rounded-sm bg-brand-accent font-serif text-base font-bold italic text-primary-foreground sm:h-9 sm:w-14 sm:text-lg">
               ELO
             </span>
