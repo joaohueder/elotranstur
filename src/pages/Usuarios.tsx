@@ -83,10 +83,17 @@ export default function Usuarios() {
   const podeExcluir = can("usuarios", "delete");
 
   const carregar = useCallback(async (silencioso = false) => {
+    // Evita chamar a RPC sem sessão (ex.: logo após o logout), o que geraria
+    // "permission denied for function admin_list_users".
+    const { data: sessao } = await supabase.auth.getSession();
+    if (!sessao.session) return;
+
     if (!silencioso) setLoading(true);
     const { data, error } = await supabase.rpc("admin_list_users");
     setLoading(false);
     if (error) {
+      const { data: aindaLogado } = await supabase.auth.getSession();
+      if (!aindaLogado.session) return;
       showError(
         "Falha ao carregar usuários",
         "Não foi possível obter a lista de usuários do sistema. Verifique sua conexão e suas permissões.",
