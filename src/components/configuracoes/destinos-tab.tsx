@@ -245,6 +245,12 @@ export function DestinosTab() {
               />
 
               <div className="flex items-center justify-between gap-3 sm:justify-end">
+                {!d.novo && usos(d.nome) > 0 && (
+                  <span className="flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    <Lock className="h-3 w-3" />
+                    Em uso ({usos(d.nome)})
+                  </span>
+                )}
                 <label className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Switch
                     checked={d.ativo}
@@ -256,16 +262,22 @@ export function DestinosTab() {
                 </label>
                 {(podeExcluir || d.novo) && (
                   <HintButton
-                    hint="Remove este destino da lista."
+                    hint={
+                      !d.novo && usos(d.nome) > 0
+                        ? "Este destino está sendo usado em viagens e não pode ser excluído."
+                        : "Remove este destino da lista."
+                    }
                     variant="outline"
                     size="icon"
                     className="rounded-sm text-destructive"
+                    disabled={!d.novo && usos(d.nome) > 0}
                     onClick={() => void remover(index)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </HintButton>
                 )}
               </div>
+
             </li>
           ))}
           {lista.length === 0 && (
