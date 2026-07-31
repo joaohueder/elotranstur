@@ -127,16 +127,7 @@ export default function UsuariosPage() {
     // Fonte principal: RPC de admin que lê direto de auth.users.
     const listRes = await supabase.rpc("admin_list_users");
 
-    const permsRes = await supabase
-      .from("user_permissions")
-      .select("user_id, modulo, can_view, can_edit, can_delete");
-
     const permsByUser = new Map<string, Record<string, PermissionRow>>();
-    for (const p of (permsRes.data ?? []) as PermissionRow[]) {
-      const current = permsByUser.get(p.user_id) ?? {};
-      current[p.modulo] = p;
-      permsByUser.set(p.user_id, current);
-    }
 
     let list: ManagedUser[] = [];
 
@@ -148,15 +139,29 @@ export default function UsuariosPage() {
           nome: string | null;
           ativo: boolean;
           role: AppRole;
+          permissions?: Omit<PermissionRow, "user_id">[] | null;
         }[]
-      ).map((u) => ({
-        id: u.id,
-        email: u.email,
-        nome: u.nome,
-        ativo: u.ativo,
-        role: u.role,
-        permissions: permsByUser.get(u.id) ?? {},
-      }));
+      ).map((u) => {
+        const perms: Record<string, PermissionRow> = {};
+        for (const p of u.permissions ?? []) {
+          if (!p?.modulo) continue;
+          perms[p.modulo] = {
+            user_id: u.id,
+            modulo: p.modulo,
+            can_view: !!p.can_view,
+            can_edit: !!p.can_edit,
+            can_delete: !!p.can_delete,
+          };
+        }
+        return {
+          id: u.id,
+          email: u.email,
+          nome: u.nome,
+          ativo: u.ativo,
+          role: u.role,
+          permissions: perms,
+        };
+      });
     } else {
       // Fallback: tabelas públicas (requer profiles populado).
       setLoadError(
