@@ -3,7 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, RefreshCw, Users, Settings, KanbanSquare, Bus } from "lucide-react";
 import { useState } from "react";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { MODULES } from "@/lib/permissions";
+
 import { supabase, clearRememberMe } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";

@@ -5,8 +5,8 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FieldLabel, HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFeedback } from "@/lib/feedback";
@@ -188,14 +188,15 @@ export default function UsuarioForm() {
               Defina os dados de acesso, o papel e as permissões por módulo.
             </p>
           </div>
-          <Button
+          <HintButton
+            hint="Volta para a lista de usuários sem salvar."
             variant="outline"
             className="rounded-sm"
             onClick={() => navigate("/usuarios")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
-          </Button>
+          </HintButton>
         </div>
 
         {loading ? (
@@ -216,12 +217,22 @@ export default function UsuarioForm() {
                     </TabsTrigger>
                   )}
                 </TabsList>
+                <HelpTip
+                  className="ml-2"
+                  texto={
+                    aba === "modulos"
+                      ? "Defina quais módulos este usuário pode ver, editar ou excluir."
+                      : "Informações básicas de acesso deste usuário."
+                  }
+                />
               </div>
 
               <TabsContent value="dados" className="m-0 p-6">
                 <div className="grid gap-5 lg:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest">Nome</Label>
+                    <FieldLabel className="text-[10px] uppercase tracking-widest" help="Nome completo do usuário, exibido no sistema.">
+                      Nome
+                    </FieldLabel>
                     <Input
                       value={form.nome}
                       onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))}
@@ -230,7 +241,9 @@ export default function UsuarioForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest">E-mail</Label>
+                    <FieldLabel className="text-[10px] uppercase tracking-widest" help="E-mail usado para login. Não pode ser alterado após criado.">
+                      E-mail
+                    </FieldLabel>
                     <Input
                       type="email"
                       value={form.email}
@@ -241,9 +254,12 @@ export default function UsuarioForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest">
+                    <FieldLabel
+                      className="text-[10px] uppercase tracking-widest"
+                      help={editando ? "Preencha apenas se quiser trocar a senha deste usuário." : "Senha inicial usada pelo usuário para acessar o sistema."}
+                    >
                       {editando ? "Nova senha (opcional)" : "Senha"}
-                    </Label>
+                    </FieldLabel>
                     <Input
                       type="password"
                       value={form.senha}
@@ -254,9 +270,9 @@ export default function UsuarioForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest">
+                    <FieldLabel className="text-[10px] uppercase tracking-widest" help="Digite a mesma senha novamente para confirmar.">
                       Confirmar senha
-                    </Label>
+                    </FieldLabel>
                     <Input
                       type="password"
                       value={form.confirmarSenha}
@@ -274,7 +290,10 @@ export default function UsuarioForm() {
 
                   <div className="flex items-center justify-between border border-border p-4">
                     <div>
-                      <p className="text-sm font-medium text-foreground">Administrador</p>
+                      <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                        Administrador
+                        <HelpTip texto="Se ativado, o usuário terá acesso irrestrito a todos os módulos do sistema." />
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Acesso total a todos os módulos.
                       </p>
@@ -287,7 +306,10 @@ export default function UsuarioForm() {
 
                   <div className="flex items-center justify-between border border-border p-4">
                     <div>
-                      <p className="text-sm font-medium text-foreground">Usuário ativo</p>
+                      <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                        Usuário ativo
+                        <HelpTip texto="Controla se o usuário pode entrar no sistema agora." />
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Se desativado, o acesso é bloqueado imediatamente.
                       </p>
@@ -311,8 +333,9 @@ export default function UsuarioForm() {
                           key={m.key}
                           className="overflow-hidden rounded-sm border border-border"
                         >
-                          <div className="border-b border-border bg-muted/60 px-4 py-2.5 text-sm font-medium text-foreground">
+                          <div className="flex items-center gap-1.5 border-b border-border bg-muted/60 px-4 py-2.5 text-sm font-medium text-foreground">
                             {m.label}
+                            <HelpTip texto="Ver: consultar dados. Editar: alterar. Excluir: apagar registros deste módulo." />
                           </div>
                           <div className="divide-y divide-border">
                             {(
@@ -347,13 +370,23 @@ export default function UsuarioForm() {
                   {/* Desktop: matriz */}
                   <div className="hidden overflow-hidden rounded-sm border border-border sm:block">
                     <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/60 px-4 py-2.5">
-                      <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                         Permissões por módulo
+                        <HelpTip texto="Marque o que este usuário pode fazer em cada módulo do sistema." />
                       </span>
                       <div className="grid grid-cols-3 gap-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
-                        <span className="w-14">Ver</span>
-                        <span className="w-14">Editar</span>
-                        <span className="w-14">Excluir</span>
+                        <span className="flex w-14 items-center justify-center gap-1">
+                          Ver
+                          <HelpTip texto="Permite apenas visualizar os dados deste módulo." />
+                        </span>
+                        <span className="flex w-14 items-center justify-center gap-1">
+                          Editar
+                          <HelpTip texto="Permite criar e alterar registros deste módulo." />
+                        </span>
+                        <span className="flex w-14 items-center justify-center gap-1">
+                          Excluir
+                          <HelpTip texto="Permite apagar registros deste módulo." />
+                        </span>
                       </div>
                     </div>
 
@@ -389,14 +422,16 @@ export default function UsuarioForm() {
               )}
 
               <div className="flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end">
-                <Button
+                <HintButton
+                  hint="Descarta as alterações e volta para a lista de usuários."
                   variant="outline"
                   className="w-full rounded-sm sm:w-auto"
                   onClick={() => navigate("/usuarios")}
                 >
                   Cancelar
-                </Button>
-                <Button
+                </HintButton>
+                <HintButton
+                  hint="Grava os dados e permissões deste usuário."
                   className="w-full rounded-sm sm:w-auto sm:min-w-32"
                   disabled={saving}
                   onClick={() => void salvar()}
@@ -407,7 +442,7 @@ export default function UsuarioForm() {
                     <Save className="mr-2 h-4 w-4" />
                   )}
                   Salvar
-                </Button>
+                </HintButton>
               </div>
             </Tabs>
           </div>
