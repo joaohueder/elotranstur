@@ -34,9 +34,29 @@ Deno.serve(async (req) => {
     const { data: userData } = await asUser.auth.getUser();
     if (!userData?.user) return json({ error: "Não autenticado" }, 401);
 
-    const { data: isAdmin, error: adminErr } = await asUser.rpc("is_admin");
-    if (adminErr) return json({ error: adminErr.message }, 400);
+    // Valida papel de admin. Usa a RPC is_admin e, se ela não existir na
+    // instância, cai para a leitura direta da tabela user_roles.
+    let isAdmin = false;
+    const { data: rpcAdmin, error: adminErr } = await asUser.rpc("is_admin");
+    if (adminErr) {
+      const { data: papel, error: papelErr } = await asUser
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (papelErr) {
+        return json(
+          { error: `Falha ao verificar permissões: ${adminErr.message} / ${papelErr.message}` },
+          400,
+        );
+      }
+      isAdmin = Boolean(papel);
+    } else {
+      isAdmin = Boolean(rpcAdmin);
+    }
     if (!isAdmin) return json({ error: "Acesso negado: somente administradores" }, 403);
+
 
     const { destinatario } = (await req.json()) as { destinatario?: string };
     if (!destinatario) return json({ error: "Informe o destinatário" }, 400);
