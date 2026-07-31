@@ -58,27 +58,6 @@ type ViagemOpcao = Pick<
   | "situacao"
 >;
 
-function dataHoraLocalParaUTC(value: string): string {
-  if (!value) return "";
-  const tzOffset = new Date().getTimezoneOffset();
-  const [data, hora] = value.split("T");
-  const [ano, mes, dia] = data.split("-").map(Number);
-  const [hh, mm] = (hora || "00:00").split(":").map(Number);
-  const localDate = new Date(ano, mes - 1, dia, hh, mm, 0, 0);
-  const utcDate = new Date(localDate.getTime() - tzOffset * 60 * 1000);
-  return utcDate.toISOString().slice(0, 16);
-}
-
-function dataHoraUTCParaLocal(iso: string): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const ano = d.getFullYear();
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const dia = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${ano}-${mes}-${dia}T${hh}:${mm}`;
-}
 
 export default function LeadForm() {
   const { id } = useParams();
