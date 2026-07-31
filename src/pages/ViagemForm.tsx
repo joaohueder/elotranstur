@@ -424,16 +424,32 @@ export default function ViagemForm() {
             />
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <FieldLabel htmlFor="destino" help="Cidade ou local para onde a viagem vai acontecer.">
+              <FieldLabel htmlFor="destino" help="Escolha o local para onde a viagem vai acontecer. Os destinos são cadastrados em Configurações › Destinos.">
                 Destino
               </FieldLabel>
-              <Input
-                id="destino"
-                value={destino}
-                onChange={(e) => setDestino(e.target.value)}
-                placeholder="Ex.: Gramado - RS"
-                className="mt-1.5"
-              />
+              <Select value={destino} onValueChange={setDestino}>
+                <SelectTrigger id="destino" className="mt-1.5">
+                  <SelectValue
+                    placeholder={
+                      carregandoDestinos
+                        ? "Carregando destinos..."
+                        : "Selecione o destino"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {opcoesDestino.map((nome) => (
+                    <SelectItem key={nome} value={nome}>
+                      {nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!carregandoDestinos && destinosAtivos.length === 0 && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Nenhum destino cadastrado. Cadastre em Configurações › Destinos.
+                </p>
+              )}
             </div>
 
             <div>
