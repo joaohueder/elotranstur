@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { supabase } from "@/lib/supabase";
 import { useSeo } from "@/lib/seo";
+import { capaDa } from "@/lib/viagens";
+
 
 /** Landing page pública de uma viagem (/v/:slug). */
 export default function LandingViagem() {
@@ -27,16 +29,21 @@ export default function LandingViagem() {
     };
   }, [slug]);
 
+  const tituloViagem = viagem?.titulo || viagem?.destino || "";
+  const descricaoCompartilhada = viagem
+    ? [tituloViagem, viagem.subtitulo].filter(Boolean).join(" — ") ||
+      (viagem.descricao ?? "").slice(0, 155) ||
+      `Viagem para ${viagem.destino}. Garanta sua vaga com a ELO Transporte e Turismo.`
+    : "Conheça as viagens da ELO Transporte e Turismo.";
+
   useSeo({
     title: viagem
-      ? `${viagem.titulo || viagem.destino} · ELO Transporte e Turismo`
+      ? `${tituloViagem} · ELO Transporte e Turismo`
       : "Viagem · ELO Transporte e Turismo",
-    description: viagem
-      ? viagem.subtitulo ||
-        (viagem.descricao ?? "").slice(0, 155) ||
-        `Viagem para ${viagem.destino}. Garanta sua vaga com a ELO Transporte e Turismo.`
-      : "Conheça as viagens da ELO Transporte e Turismo.",
+    description: descricaoCompartilhada,
+    image: viagem ? capaDa(viagem.imagens ?? []) : null,
   });
+
 
   async function enviarLead(dados: {
     nome: string;
