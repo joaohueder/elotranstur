@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
@@ -43,6 +44,7 @@ import {
 export default function Viagens() {
   const navigate = useNavigate();
   const feedback = useFeedback();
+  const { confirm } = useConfirm();
   const { can, isAdmin } = useAuthz();
 
   const [viagens, setViagens] = useState<Viagem[]>([]);
@@ -134,6 +136,13 @@ export default function Viagens() {
 
   async function excluir(v: Viagem) {
     if (!podeExcluir) return;
+    const ok = await confirm({
+      title: "Excluir viagem",
+      message: `Tem certeza que deseja excluir a viagem para "${v.destino}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Sim, excluir",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setExcluindo(v.id);
     try {
       const { error } = await supabase.from("viagens").delete().eq("id", v.id);

@@ -22,6 +22,7 @@ import {
   type CrmOrigem,
   type CrmStage,
 } from "@/lib/crm";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
@@ -58,6 +59,7 @@ function GroupHeader({
 
 export function CrmTab() {
   const feedback = useFeedback();
+  const { confirm } = useConfirm();
   const { can, isAdmin } = useAuthz();
   const { stages, leads, loading: loadingStages, reload: reloadStages } =
     useCrmData();
@@ -124,6 +126,13 @@ export function CrmTab() {
       );
       return;
     }
+    const ok = await confirm({
+      title: "Excluir etapa",
+      message: `Tem certeza que deseja excluir a etapa "${item.nome}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Sim, excluir",
+      variant: "destructive",
+    });
+    if (!ok) return;
     try {
       const { error: err } = await supabase
         .from("crm_stages")
@@ -245,6 +254,13 @@ export function CrmTab() {
       return;
     }
     if (!podeExcluir) return;
+    const ok = await confirm({
+      title: "Excluir origem",
+      message: `Tem certeza que deseja excluir a origem "${item.nome}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Sim, excluir",
+      variant: "destructive",
+    });
+    if (!ok) return;
     try {
       const { error: err } = await supabase
         .from("crm_origens")
