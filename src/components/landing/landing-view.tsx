@@ -72,6 +72,8 @@ type Props = {
     nome: string;
     whatsapp: string;
   }) => Promise<string | null>;
+  /** Link do WhatsApp da empresa aberto após o envio (com nome e destino). */
+  whatsappUrl?: (dados: { nome: string; whatsapp: string }) => string | null;
   /** Modo demonstração: o formulário não envia nada. */
   preview?: boolean;
 };
