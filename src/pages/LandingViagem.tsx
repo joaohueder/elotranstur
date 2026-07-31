@@ -54,11 +54,11 @@ export default function LandingViagem() {
     const digitos = (empresa?.whatsapp ?? "").replace(/\D/g, "");
     if (digitos.length < 10 || !viagem) return null;
     const numero = digitos.length <= 11 ? `55${digitos}` : digitos;
-    const local = [viagem.titulo || viagem.destino, viagem.uf]
+    const local = [viagem.destino, viagem.uf]
       .filter(Boolean)
       .join(" / ");
     const texto =
-      `Olá! Meu nome é ${dados.nome} e tenho interesse em viajar para ${local}.` +
+      `Olá! Meu nome é ${dados.nome} e tenho interesse em viajar para ${local}. ` +
       `Gostaria de receber mais informações sobre formas de pagamento e tudo o que está incluso no pacote. Pode me ajudar?`;
     return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
   }
