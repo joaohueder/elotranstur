@@ -289,6 +289,16 @@ export default function LeadForm() {
 
   async function excluirNota(notaId: string) {
     if (!id) return;
+    const confirmado = await confirm({
+      title: "Excluir anotação",
+      message:
+        "Tem certeza que deseja remover esta anotação? Esta ação não poderá ser desfeita.",
+      confirmText: "Sim, excluir",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+    if (!confirmado) return;
+
     try {
       const { error } = await supabase
         .from("crm_lead_notas")
