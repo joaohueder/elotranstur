@@ -194,6 +194,11 @@ export default function Configuracoes() {
             <EmailTab />
           </TabsContent>
 
+          <TabsContent value="integracao" className="m-0 p-4 sm:p-6">
+            <IntegracaoTab />
+          </TabsContent>
+
+
 
 
           <TabsContent value="layout" className="m-0 p-4 sm:p-6">
