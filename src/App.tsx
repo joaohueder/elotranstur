@@ -15,6 +15,8 @@ import ResetPassword from "@/pages/ResetPassword";
 import UsuarioForm from "@/pages/UsuarioForm";
 import Usuarios from "@/pages/Usuarios";
 import VerifyCode from "@/pages/VerifyCode";
+import Viagens from "@/pages/Viagens";
+import ViagemForm from "@/pages/ViagemForm";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,30 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verificar-codigo" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/viagens"
+              element={
+                <RequireModule modulo="viagens">
+                  <Viagens />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/viagens/nova"
+              element={
+                <RequireModule modulo="viagens">
+                  <ViagemForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/viagens/:id"
+              element={
+                <RequireModule modulo="viagens">
+                  <ViagemForm />
+                </RequireModule>
+              }
+            />
             <Route
               path="/crm"
               element={
