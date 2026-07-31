@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFeedback } from "@/lib/feedback";
-import { supabase } from "@/lib/supabase";
+import { solicitarCodigoSenha } from "@/lib/password-reset";
 
 interface ForgotPasswordModalProps {
   open: boolean;
@@ -54,10 +54,7 @@ export function ForgotPasswordModal({
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(alvo, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      await solicitarCodigoSenha(alvo);
 
       onOpenChange(false);
       navigate(`/verificar-codigo?email=${encodeURIComponent(alvo)}`);

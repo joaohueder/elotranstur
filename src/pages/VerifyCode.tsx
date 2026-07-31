@@ -11,8 +11,12 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useFeedback } from "@/lib/feedback";
+import {
+  resetTokenStore,
+  solicitarCodigoSenha,
+  verificarCodigoSenha,
+} from "@/lib/password-reset";
 import { useSeo } from "@/lib/seo";
-import { supabase } from "@/lib/supabase";
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
