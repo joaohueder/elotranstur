@@ -1192,6 +1192,7 @@ export function LandingView({
             <Sparkles className="h-3.5 w-3.5" />
             Saída garantida — vagas limitadas
           </p>
+          </div>
         </div>
       </div>
 
