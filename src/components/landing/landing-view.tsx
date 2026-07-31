@@ -309,14 +309,14 @@ function Slider({
       </div>
 
       {miniaturas && total > 1 && (
-        <div className="lp-scroll-x mt-3 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-6">
           {urls.map((url, idx) => (
             <button
               key={`thumb-${url}-${idx}`}
               type="button"
               onClick={() => ir(idx)}
               aria-label={`Ver foto ${idx + 1}`}
-              className="h-16 w-24 shrink-0 overflow-hidden transition duration-300 hover:opacity-100"
+              className="aspect-[3/2] h-auto w-full overflow-hidden transition duration-300 hover:opacity-100"
               style={{
                 borderRadius: "calc(var(--lp-radius) * 0.6)",
                 outline:
@@ -827,7 +827,7 @@ export function LandingView({
 
   const confianca = (
     <div
-      className="lp-scroll-x flex gap-2.5 overflow-x-auto px-4 pb-1 sm:justify-center sm:overflow-visible sm:px-6"
+      className="flex flex-wrap justify-center gap-2 px-4 sm:gap-2.5 sm:px-6"
       aria-label="Diferenciais da agência"
     >
       {[
