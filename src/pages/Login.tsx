@@ -34,6 +34,7 @@ export default function LoginPage() {
   // 1) Listener registrado ANTES de qualquer checagem de sessão.
   // 2) getUser() revalida o token no servidor de auth (não confia no storage).
   const redirected = useRef(false);
+  const loginInProgress = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -45,7 +46,9 @@ export default function LoginPage() {
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && event !== "SIGNED_OUT") go();
+      // Durante o login manual, aguarda a duração da sessão ser registrada
+      // antes de sair desta tela. Isso evita desmontar a página no SIGNED_IN.
+      if (session && event !== "SIGNED_OUT" && !loginInProgress.current) go();
     });
 
     supabase.auth.getSession().then(({ data }) => {
@@ -68,6 +71,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+    loginInProgress.current = true;
     try {
       // Define a persistência ANTES do login: com "Manter conectado" a
       // sessão é salva por 30 dias; sem, expira ao fechar a aba.
@@ -79,6 +83,7 @@ export default function LoginPage() {
       });
 
       if (error) {
+        loginInProgress.current = false;
         persistRememberMe(false);
         const invalidCredentials =
           error.status === 400 || /invalid login credentials/i.test(error.message);
@@ -110,18 +115,29 @@ export default function LoginPage() {
 
       // Registra no banco a duração real desta sessão (30 dias ou 6 horas),
       // para que o módulo de usuários mostre a expiração correta.
-      try {
-        await supabase.rpc("registrar_expiracao_sessao", { p_remember: rememberMe });
-      } catch {
-        // não bloqueia o login
+      const { error: sessionMetaError } = await supabase.rpc(
+        "registrar_expiracao_sessao",
+        { p_remember: rememberMe },
+      );
+      if (sessionMetaError) {
+        await supabase.auth.signOut({ scope: "local" });
+        persistRememberMe(false);
+        loginInProgress.current = false;
+        showError(
+          "Falha ao configurar a sessão",
+          "O acesso não foi concluído porque não foi possível registrar corretamente o prazo da sessão. Execute a atualização SQL indicada e tente novamente.",
+          sessionMetaError,
+        );
+        return;
       }
 
-
+      loginInProgress.current = false;
       if (!redirected.current) {
         redirected.current = true;
         navigate("/", { replace: true });
       }
     } catch (err) {
+      loginInProgress.current = false;
       persistRememberMe(false);
       showError(
         "Erro inesperado",
