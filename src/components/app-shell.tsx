@@ -111,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[86vw] max-w-xs p-0">
+              <SheetContent side="left" className="flex w-[86vw] max-w-xs flex-col p-0">
                 <SheetTitle className="sr-only">Menu do sistema</SheetTitle>
 
                 <div className="flex items-center gap-3 border-b border-border px-4 py-4">
