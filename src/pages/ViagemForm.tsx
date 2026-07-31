@@ -142,7 +142,7 @@ export default function ViagemForm() {
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : (
-        <div className="max-w-2xl rounded-sm border border-border bg-background p-6">
+        <div className="w-full rounded-sm border border-border bg-background p-6">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label htmlFor="destino">Destino</Label>

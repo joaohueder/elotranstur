@@ -99,7 +99,7 @@ export default function Configuracoes() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               </div>
             ) : (
-              <div className="max-w-2xl space-y-6">
+              <div className="w-full space-y-6">
                 <div className="flex items-start gap-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-border text-muted-foreground">
                     <Monitor className="h-4 w-4" />
