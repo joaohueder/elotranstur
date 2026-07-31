@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CalendarDays,
   Loader2,
+  Lock,
   MapPin,
   Plus,
   Save,
