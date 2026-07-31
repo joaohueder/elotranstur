@@ -5,6 +5,9 @@ import type { ReactNode } from "react";
 import { FeedbackProvider } from "@/lib/feedback";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
+import Crm from "@/pages/Crm";
+import CrmEtapas from "@/pages/CrmEtapas";
+import LeadForm from "@/pages/LeadForm";
 import Configuracoes from "@/pages/Configuracoes";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
@@ -44,6 +47,38 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verificar-codigo" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/crm"
+              element={
+                <RequireModule modulo="crm">
+                  <Crm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/crm/etapas"
+              element={
+                <RequireModule modulo="crm">
+                  <CrmEtapas />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/crm/leads/novo"
+              element={
+                <RequireModule modulo="crm">
+                  <LeadForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/crm/leads/:id"
+              element={
+                <RequireModule modulo="crm">
+                  <LeadForm />
+                </RequireModule>
+              }
+            />
             <Route
               path="/usuarios"
               element={
