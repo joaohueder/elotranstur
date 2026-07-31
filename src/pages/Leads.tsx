@@ -106,6 +106,41 @@ export default function Leads() {
       );
   }, [leads, busca, filtroEtapa, filtroOrigem]);
 
+  /** Evolução: quantidade de leads criados nos últimos 6 meses. */
+  const evolucao = useMemo(() => {
+    const base = new Date();
+    const meses = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(base.getFullYear(), base.getMonth() - (5 - i), 1);
+      return {
+        chave: `${d.getFullYear()}-${d.getMonth()}`,
+        mes: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
+        total: 0,
+      };
+    });
+    const idx = new Map(meses.map((m, i) => [m.chave, i]));
+    for (const l of leads) {
+      const d = new Date(l.created_at);
+      if (Number.isNaN(d.getTime())) continue;
+      const i = idx.get(`${d.getFullYear()}-${d.getMonth()}`);
+      if (i !== undefined) meses[i].total += 1;
+    }
+    return meses;
+  }, [leads]);
+
+  /** Distribuição de leads por origem. */
+  const porOrigem = useMemo(() => {
+    const mapa = new Map<string, number>();
+    for (const l of leads) {
+      const nome = l.origem || "Sem origem";
+      mapa.set(nome, (mapa.get(nome) ?? 0) + 1);
+    }
+    return Array.from(mapa, ([nome, total]) => ({ nome, total })).sort(
+      (a, b) => b.total - a.total,
+    );
+  }, [leads]);
+
+
+
   async function excluirLead(lead: CrmLead) {
     if (!podeExcluir) return;
     const ok = await confirm({
