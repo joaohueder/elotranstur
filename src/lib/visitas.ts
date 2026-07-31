@@ -213,3 +213,74 @@ export function useVisitas() {
 
   return { visitas: dados, loading, error, reload: load };
 }
+
+export type VisitaDetalhada = {
+  id: string;
+  visitor_id: string;
+  created_at: string;
+  updated_at?: string | null;
+  path: string;
+  referrer?: string | null;
+  ip?: string | null;
+  cidade?: string | null;
+  regiao?: string | null;
+  pais?: string | null;
+  provedor?: string | null;
+  user_agent?: string | null;
+  dispositivo?: string | null;
+  navegador?: string | null;
+  sistema?: string | null;
+  idioma?: string | null;
+  resolucao?: string | null;
+  fuso?: string | null;
+  query?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
+  fbclid?: string | null;
+  gclid?: string | null;
+  virou_lead?: boolean | null;
+  lead_id?: string | null;
+  lead_nome?: string | null;
+  lead_whatsapp?: string | null;
+  lead_origem?: string | null;
+  lead_etapa?: string | null;
+  detalhes?: Record<string, unknown> | null;
+};
+
+/** Últimas visitas registradas, atualizadas a cada 30 segundos. */
+export function useUltimasVisitas(limite = 10) {
+  const [visitas, setVisitas] = useState<VisitaDetalhada[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+
+  const load = useCallback(
+    async (silencioso = false) => {
+      if (!silencioso) setLoading(true);
+      try {
+        const { data, error: err } = await supabase.rpc(
+          "dashboard_ultimas_visitas",
+          { _limite: limite },
+        );
+        if (err) throw err;
+        setVisitas((data ?? []) as VisitaDetalhada[]);
+        setError(null);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [limite],
+  );
+
+  useEffect(() => {
+    void load();
+    const t = setInterval(() => void load(true), 30_000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  return { visitas, loading, error, reload: load };
+}
