@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Loader2, MapPin, Plus, Save, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronUp, Loader2, Lock, MapPin, Plus, Save, Trash2 } from "lucide-react";
 
 import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useDestinos, type Destino } from "@/lib/destinos";
 import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 
@@ -23,8 +24,29 @@ export function DestinosTab() {
 
   const [drafts, setDrafts] = useState<DestinoDraft[] | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [emUso, setEmUso] = useState<Record<string, number>>({});
+
+  const carregarUso = useCallback(async () => {
+    const { data } = await supabase.from("viagens").select("destino");
+    const mapa: Record<string, number> = {};
+    for (const linha of data ?? []) {
+      const chave = (linha.destino ?? "").trim().toLowerCase();
+      if (!chave) continue;
+      mapa[chave] = (mapa[chave] ?? 0) + 1;
+    }
+    setEmUso(mapa);
+  }, []);
+
+  useEffect(() => {
+    void carregarUso();
+  }, [carregarUso]);
+
+  useRealtime(["viagens"], () => void carregarUso());
+
+  const usos = (nome: string) => emUso[(nome ?? "").trim().toLowerCase()] ?? 0;
 
   const lista: DestinoDraft[] = drafts ?? destinos.map((d) => ({ ...d }));
+
 
   function update(index: number, patch: Partial<DestinoDraft>) {
     setDrafts(lista.map((d, i) => (i === index ? { ...d, ...patch } : { ...d })));
