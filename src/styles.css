@@ -308,6 +308,32 @@
   animation: lp-pulse 2.6s ease-out infinite;
 }
 
+/* Botão piscante do formulário de leads */
+@keyframes lp-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--lp-accent) 60%, transparent);
+  }
+  45% {
+    opacity: 0.92;
+    transform: scale(1.03);
+    filter: brightness(1.12);
+    box-shadow: 0 0 18px 4px color-mix(in srgb, var(--lp-accent) 45%, transparent);
+  }
+  55% {
+    opacity: 0.92;
+    transform: scale(1.03);
+    filter: brightness(1.12);
+    box-shadow: 0 0 18px 4px color-mix(in srgb, var(--lp-accent) 45%, transparent);
+  }
+}
+.lp-blink {
+  animation: lp-blink 1.4s ease-in-out infinite;
+}
+
 /* Barra fixa de ação no celular */
 .lp-barra {
   animation: lp-rise-in 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
