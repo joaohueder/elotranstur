@@ -47,7 +47,13 @@ export default function LandingViagem() {
       _nome: dados.nome,
       _whatsapp: dados.whatsapp,
     });
-    if (error) return "Não foi possível enviar agora. Tente novamente.";
+    if (error) {
+      console.error("landing_lead error", error);
+      const codigo = (error as { code?: string }).code;
+      return `Não foi possível enviar agora${codigo ? ` (${codigo})` : ""}: ${
+        error.message || "erro desconhecido"
+      }`;
+    }
     const res = (data ?? {}) as { ok?: boolean; message?: string };
     if (!res.ok) return res.message || "Não foi possível enviar agora.";
     return null;
