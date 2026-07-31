@@ -71,6 +71,36 @@ export function whatsappLink(value: string): string {
   return `https://wa.me/55${d}`;
 }
 
+const UNIDADES = [
+  { limite: 365 * 24 * 60 * 60 * 1000, singular: "ano", plural: "anos", divisor: 365 * 24 * 60 * 60 * 1000 },
+  { limite: 30 * 24 * 60 * 60 * 1000, singular: "mês", plural: "meses", divisor: 30 * 24 * 60 * 60 * 1000 },
+  { limite: 24 * 60 * 60 * 1000, singular: "dia", plural: "dias", divisor: 24 * 60 * 60 * 1000 },
+  { limite: 60 * 60 * 1000, singular: "hora", plural: "horas", divisor: 60 * 60 * 1000 },
+  { limite: 60 * 1000, singular: "min", plural: "min", divisor: 60 * 1000 },
+];
+
+/** Retorna o tempo de vida do lead em linguagem natural (ex.: "1 dia", "2 meses", "agora"). */
+export function tempoDeVida(createdAt: string): string {
+  const diff = Date.now() - new Date(createdAt).getTime();
+  if (diff < 60_000) return "agora";
+  for (const u of UNIDADES) {
+    if (diff >= u.limite) {
+      const valor = Math.floor(diff / u.divisor);
+      return `${valor} ${valor === 1 ? u.singular : u.plural}`;
+    }
+  }
+  return "agora";
+}
+
+/** Indica se a etapa representa um funil finalizado (fechado ou perdido). */
+export function isStageFinal(stage: CrmStage): boolean {
+  const nome = stage.nome
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  return nome.includes("fechado") || nome.includes("perdido") || nome.includes("ganho") || nome.includes("convertido");
+}
+
 /** Carrega etapas e leads do CRM, incluindo as viagens de interesse. */
 export function useCrmData() {
   const [stages, setStages] = useState<CrmStage[]>([]);
