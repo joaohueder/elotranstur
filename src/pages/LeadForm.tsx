@@ -32,6 +32,7 @@ import {
   type CrmLeadNota,
   type CrmStage,
 } from "@/lib/crm";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { ViagemCountdown } from "@/components/viagem-countdown";
