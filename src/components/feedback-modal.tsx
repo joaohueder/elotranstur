@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { AlertOctagon, AlertTriangle, Camera, CheckCircle2, Copy } from "lucide-react";
 
+import { HintButton } from "@/components/help";
 import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
