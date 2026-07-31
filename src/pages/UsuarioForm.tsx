@@ -301,8 +301,51 @@ export default function UsuarioForm() {
               </TabsContent>
 
               {!form.isAdmin && (
-                <TabsContent value="modulos" className="m-0 p-6">
-                  <div className="overflow-hidden rounded-sm border border-border">
+                <TabsContent value="modulos" className="m-0 p-4 sm:p-6">
+                  {/* Mobile: cartões por módulo */}
+                  <div className="space-y-3 sm:hidden">
+                    {MODULES.map((m) => {
+                      const p = permissaoDe(m.key);
+                      return (
+                        <div
+                          key={m.key}
+                          className="overflow-hidden rounded-sm border border-border"
+                        >
+                          <div className="border-b border-border bg-muted/60 px-4 py-2.5 text-sm font-medium text-foreground">
+                            {m.label}
+                          </div>
+                          <div className="divide-y divide-border">
+                            {(
+                              [
+                                ["view", "Ver"],
+                                ["edit", "Editar"],
+                                ["delete", "Excluir"],
+                              ] as const
+                            ).map(([acao, rotulo]) => (
+                              <label
+                                key={acao}
+                                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3"
+                              >
+                                <span className="text-sm text-muted-foreground">
+                                  {rotulo}
+                                </span>
+                                <Checkbox
+                                  aria-label={`${rotulo} ${m.label}`}
+                                  checked={p[acao]}
+                                  onCheckedChange={(v) =>
+                                    togglePermissao(m.key, acao, Boolean(v))
+                                  }
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop: matriz */}
+                  <div className="hidden overflow-hidden rounded-sm border border-border sm:block">
                     <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/60 px-4 py-2.5">
                       <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                         Permissões por módulo
@@ -342,6 +385,7 @@ export default function UsuarioForm() {
                     })}
                   </div>
                 </TabsContent>
+
               )}
 
               <div className="flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end">
