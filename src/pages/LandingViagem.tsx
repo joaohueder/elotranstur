@@ -1,0 +1,84 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+
+import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
+import { supabase } from "@/lib/supabase";
+import { setSeo } from "@/lib/seo";
+
+/** Landing page pública de uma viagem (/v/:slug). */
+export default function LandingViagem() {
+  const { slug } = useParams();
+  const [viagem, setViagem] = useState<LandingViagem | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase.rpc("landing_viagem", { _slug: slug });
+      if (!ativo) return;
+      const v = (data ?? null) as LandingViagem | null;
+      setViagem(v);
+      setLoading(false);
+      if (v) {
+        setSeo({
+          title: `${v.titulo || v.destino} · ELO Transporte e Turismo`,
+          description:
+            v.subtitulo ||
+            (v.descricao ?? "").slice(0, 155) ||
+            `Viagem para ${v.destino}. Garanta sua vaga com a ELO Transporte e Turismo.`,
+        });
+      }
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, [slug]);
+
+  async function enviarLead(dados: {
+    nome: string;
+    whatsapp: string;
+    mensagem: string;
+  }): Promise<string | null> {
+    const { data, error } = await supabase.rpc("landing_lead", {
+      _slug: slug,
+      _nome: dados.nome,
+      _whatsapp: dados.whatsapp,
+      _mensagem: dados.mensagem || null,
+    });
+    if (error) return "Não foi possível enviar agora. Tente novamente.";
+    const res = (data ?? {}) as { ok?: boolean; message?: string };
+    if (!res.ok) return res.message || "Não foi possível enviar agora.";
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-muted text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!viagem) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-muted px-6 text-center">
+        <div>
+          <h1 className="font-serif text-3xl text-foreground">
+            Página não encontrada
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Esta viagem não está mais disponível.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <LandingView viagem={viagem} onSubmit={enviarLead} />
+    </div>
+  );
+}
