@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
+import { PublicShell } from "@/components/public-shell";
 import { supabase } from "@/lib/supabase";
 import { useSeo } from "@/lib/seo";
 import { useLayoutSettings } from "@/lib/layout-settings";
