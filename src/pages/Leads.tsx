@@ -9,6 +9,16 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
 
 import { AppShell } from "@/components/app-shell";
 import { HelpTip, HintButton } from "@/components/help";
@@ -25,6 +35,18 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { useCrmData, type CrmLead } from "@/lib/crm";
+
+const CORES_PIZZA = [
+  "hsl(var(--primary))",
+  "hsl(var(--brand-accent, var(--primary)))",
+  "#0ea5e9",
+  "#f59e0b",
+  "#10b981",
+  "#8b5cf6",
+  "#ef4444",
+  "#64748b",
+];
+
 
 /** Formata um timestamp ISO completo em data e hora no padrão brasileiro. */
 function formatarDataHora(iso: string): string {
