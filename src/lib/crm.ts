@@ -155,8 +155,8 @@ export function useCrmOrigens(somenteAtivas = false) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silencioso = false) => {
+    if (!silencioso) setLoading(true);
     setError(null);
     try {
       let query = supabase
