@@ -282,7 +282,33 @@ export default function ViagemForm() {
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : (
-        <div className="w-full rounded-sm border border-border bg-background p-6">
+        <div className="w-full rounded-sm border border-border bg-background">
+          <Tabs value={aba} onValueChange={setAba}>
+            <div className="flex items-center border-b border-border px-6 pt-6">
+              <TabsList className="rounded-sm">
+                <TabsTrigger value="dados" className="rounded-sm">
+                  Dados da Viagem
+                </TabsTrigger>
+                <TabsTrigger value="apresentacao" className="rounded-sm">
+                  Apresentação
+                </TabsTrigger>
+                <TabsTrigger value="galeria" className="rounded-sm">
+                  Galeria de fotos
+                </TabsTrigger>
+              </TabsList>
+              <HelpTip
+                className="ml-2"
+                texto={
+                  aba === "apresentacao"
+                    ? "Textos que o cliente vê divulgando a viagem."
+                    : aba === "galeria"
+                      ? "Fotos da viagem, com escolha da capa e ordenação."
+                      : "Informações operacionais: destino, datas, preço e vagas."
+                }
+              />
+            </div>
+
+          <TabsContent value="apresentacao" className="m-0 p-6">
           <SectionTitle
             titulo="Apresentação"
             help="Textos que aparecem para o cliente divulgando a viagem."
