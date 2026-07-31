@@ -595,14 +595,15 @@ function Formulario({
         // consegue navegar depois para o esquema do WhatsApp. Nele usamos a
         // navegação da própria aba, que abre o app corretamente.
         const android = /android/i.test(navigator.userAgent);
-        const abrir = (destino: string) => {
-          if (janela && !janela.closed) janela.location.href = destino;
-          else window.location.href = destino;
-        };
         // Fora do Android a janela é aberta ainda dentro do clique
         // para não ser bloqueada pelo navegador.
         const janela =
           url && !android ? window.open("", "_blank", "noopener") : null;
+        const abrir = (destino: string) => {
+          if (janela && !janela.closed) janela.location.href = destino;
+          else window.location.href = destino;
+        };
+
 
         if (preview || !onSubmit) {
           if (url) abrir(url);
