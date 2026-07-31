@@ -1094,7 +1094,7 @@ export function LandingView({
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0">
             <div
-              className={`${secao} pointer-events-auto grid gap-7 pb-7 sm:pb-9 lg:grid-cols-[1.25fr_.85fr] lg:items-end`}
+              className={`${secao} pointer-events-auto grid gap-7 pb-7 sm:pb-9`}
             >
               <div className="lp-rise space-y-3.5 text-white">
                 <div className="flex flex-wrap items-center gap-2">
