@@ -9,9 +9,6 @@ begin;
 -- O PostgREST não consegue escolher a função correta enquanto coexistirem
 -- as versões de 3 e 4 parâmetros. A versão atual aceita somente:
 -- slug, nome e WhatsApp.
-revoke all on function public.landing_lead(text, text, text, text)
-  from public, anon, authenticated;
-
 drop function if exists public.landing_lead(text, text, text, text);
 
 grant execute on function public.landing_lead(text, text, text)
