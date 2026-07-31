@@ -45,6 +45,11 @@ import {
   LANDING_MODELS,
   slugify,
 } from "@/lib/landing-models";
+import {
+  DEFAULT_LANDING_PALETTE,
+  LANDING_PALETTES,
+  getLandingPalette,
+} from "@/lib/landing-palettes";
 import { LandingView } from "@/components/landing/landing-view";
 import { DevicePreviewFrame } from "@/components/device-preview-frame";
 
@@ -91,6 +96,7 @@ export default function ViagemForm() {
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [arrastandoImg, setArrastandoImg] = useState<number | null>(null);
   const [landingModelo, setLandingModelo] = useState<string>(DEFAULT_LANDING_MODEL);
+  const [landingPaleta, setLandingPaleta] = useState<string>(DEFAULT_LANDING_PALETTE);
   const [landingSlug, setLandingSlug] = useState("");
   const [landingAtiva, setLandingAtiva] = useState(true);
   const [previewModelo, setPreviewModelo] = useState<string | null>(null);
@@ -107,7 +113,7 @@ export default function ViagemForm() {
         const { data, error } = await supabase
           .from("viagens")
           .select(
-            "titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, landing_modelo, landing_slug, landing_ativa",
+            "titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, landing_modelo, landing_paleta, landing_slug, landing_ativa",
           )
           .eq("id", id)
           .maybeSingle();
@@ -125,6 +131,9 @@ export default function ViagemForm() {
         setImagens((data.imagens ?? []) as ViagemImagem[]);
         setSituacao((data.situacao ?? "rascunho") as ViagemSituacao);
         setLandingModelo((data.landing_modelo as string) ?? DEFAULT_LANDING_MODEL);
+        setLandingPaleta(
+          (data.landing_paleta as string) ?? DEFAULT_LANDING_PALETTE,
+        );
         setLandingSlug((data.landing_slug as string) ?? "");
         setLandingAtiva(data.landing_ativa !== false);
       } catch (err) {
@@ -274,6 +283,7 @@ export default function ViagemForm() {
         imagens,
         situacao,
         landing_modelo: landingModelo,
+        landing_paleta: landingPaleta,
         landing_slug:
           slugify(landingSlug || titulo || destino) ||
           slugify(destino) ||
@@ -900,6 +910,7 @@ export default function ViagemForm() {
                   <LandingView
                     preview
                     modelo={previewModelo ?? landingModelo}
+                    paleta={landingPaleta}
                     viagem={{
                       id: id ?? "preview",
                       titulo: titulo || null,
