@@ -297,7 +297,7 @@ export default function Usuarios() {
           ].map((kpi) => (
             <div
               key={kpi.label}
-              className="flex items-center gap-4 border border-border bg-background p-5"
+              className="flex items-center gap-3 border border-border bg-background p-4 sm:gap-4 sm:p-5"
             >
               <span className="grid h-10 w-10 place-items-center rounded-sm bg-muted text-muted-foreground">
                 <kpi.icon className="h-4 w-4" />
@@ -340,7 +340,7 @@ export default function Usuarios() {
                 title={`Mostrar apenas usuários: ${label}`}
                 onClick={() => setFiltro(key)}
                 className={cn(
-                  "h-11 rounded-sm border px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+                  "h-11 shrink-0 rounded-sm border px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors",
                   filtro === key
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-background text-muted-foreground hover:text-foreground",
@@ -362,13 +362,13 @@ export default function Usuarios() {
             Nenhum usuário encontrado.
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {filtrados.map((u) => (
               <article
                 key={u.id}
                 className="flex flex-col border border-border bg-background transition-shadow hover:shadow-lg"
               >
-                <div className="flex items-start gap-4 p-6">
+                <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-sm bg-brand-accent font-serif text-base font-bold text-primary-foreground">
                     {iniciais(u.nome, u.email)}
                   </span>
@@ -395,7 +395,7 @@ export default function Usuarios() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
+                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
                   <div>
                     <p className="uppercase tracking-widest">Criado em</p>
                     <p className="mt-0.5 text-foreground">{formatarData(u.created_at)}</p>
@@ -408,7 +408,7 @@ export default function Usuarios() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
+                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
                       Sessão
@@ -441,7 +441,7 @@ export default function Usuarios() {
                   </div>
                 </div>
 
-                <div className="border-t border-border px-6 py-4">
+                <div className="border-t border-border px-4 py-4 sm:px-6">
                   <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                     Permissões
                     <HelpTip texto="Módulos que este usuário pode ver, editar ou excluir." />
@@ -472,7 +472,7 @@ export default function Usuarios() {
                   </div>
                 </div>
 
-                <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border px-6 py-4">
+                <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border px-4 py-4 sm:px-6">
                   <HintButton
                     hint="Abre a tela para editar os dados e permissões deste usuário."
                     variant="outline"
