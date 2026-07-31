@@ -92,12 +92,15 @@ export function ForgotPasswordModal({
           </DialogHeader>
 
           <div className="space-y-2 px-6 pb-6">
-            <Label
-              htmlFor="recovery-email"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              E-MAIL
-            </Label>
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor="recovery-email"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                E-MAIL
+              </Label>
+              <HelpTip texto="E-mail da sua conta. O código de recuperação chega nele." />
+            </div>
             <Input
               id="recovery-email"
               type="email"
@@ -111,22 +114,25 @@ export function ForgotPasswordModal({
           </div>
 
           <DialogFooter className="flex-col-reverse gap-2 border-t border-border bg-muted/50 p-4 sm:flex-row sm:justify-end">
-            <Button
+            <HintButton
+              hint="Fecha esta janela sem enviar o código"
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
               className="rounded-none text-xs font-semibold uppercase tracking-widest"
             >
               Cancelar
-            </Button>
-            <Button
+            </HintButton>
+            <HintButton
+              hint="Envia um código de 6 caracteres para o e-mail informado"
               type="submit"
               disabled={loading}
               className="rounded-none bg-primary px-6 py-5 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
             >
               {loading ? "Enviando..." : "Enviar código"}
-            </Button>
+            </HintButton>
           </DialogFooter>
+
         </form>
       </DialogContent>
     </Dialog>
