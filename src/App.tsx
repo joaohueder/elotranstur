@@ -56,6 +56,8 @@ export default function App() {
         <LayoutSettingsProvider>
         <BrowserRouter>
           <RobotsPolicy />
+          <MetaPixelTracker />
+
 
           <Routes>
             <Route path="/" element={<Home />} />
