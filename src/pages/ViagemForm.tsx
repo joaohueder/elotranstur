@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Plus, Save, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Plus,
+  Save,
+  X,
+} from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -15,7 +23,12 @@ import {
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
-import { VIAGEM_SITUACOES, type ViagemSituacao } from "@/lib/viagens";
+import {
+  VIAGEM_SITUACOES,
+  maskValor,
+  parseValor,
+  type ViagemSituacao,
+} from "@/lib/viagens";
 
 export default function ViagemForm() {
   const { id } = useParams();
@@ -28,6 +41,7 @@ export default function ViagemForm() {
   const [destino, setDestino] = useState("");
   const [dataPartida, setDataPartida] = useState("");
   const [situacao, setSituacao] = useState<ViagemSituacao>("rascunho");
+  const [valor, setValor] = useState("");
   const [itens, setItens] = useState<string[]>([]);
   const [novoItem, setNovoItem] = useState("");
 
@@ -39,13 +53,14 @@ export default function ViagemForm() {
       try {
         const { data, error } = await supabase
           .from("viagens")
-          .select("destino, data_partida, itens_inclusos, situacao")
+          .select("destino, data_partida, valor, itens_inclusos, situacao")
           .eq("id", id)
           .maybeSingle();
         if (error) throw error;
         if (!ativo || !data) return;
         setDestino(data.destino ?? "");
         setDataPartida(data.data_partida ?? "");
+        setValor(maskValor(String(Math.round(Number(data.valor ?? 0) * 100))));
         setItens((data.itens_inclusos ?? []) as string[]);
         setSituacao((data.situacao ?? "rascunho") as ViagemSituacao);
       } catch (err) {
@@ -65,14 +80,25 @@ export default function ViagemForm() {
   }, [id]);
 
   function adicionarItem() {
-    const valor = novoItem.trim();
-    if (!valor) return;
-    if (itens.some((i) => i.toLowerCase() === valor.toLowerCase())) {
+    const texto = novoItem.trim();
+    if (!texto) return;
+    if (itens.some((i) => i.toLowerCase() === texto.toLowerCase())) {
       feedback.showNegative("Item duplicado", "Este item já foi adicionado.");
       return;
     }
-    setItens((prev) => [...prev, valor]);
+    setItens((prev) => [...prev, texto]);
     setNovoItem("");
+  }
+
+  /** Move um item incluso para cima ou para baixo na ordem. */
+  function moverItem(indice: number, direcao: -1 | 1) {
+    setItens((prev) => {
+      const destino = indice + direcao;
+      if (destino < 0 || destino >= prev.length) return prev;
+      const copia = [...prev];
+      [copia[indice], copia[destino]] = [copia[destino], copia[indice]];
+      return copia;
+    });
   }
 
   async function salvar() {
@@ -93,6 +119,7 @@ export default function ViagemForm() {
       const payload = {
         destino: destino.trim(),
         data_partida: dataPartida,
+        valor: parseValor(valor),
         itens_inclusos: itens,
         situacao,
       };
@@ -167,6 +194,23 @@ export default function ViagemForm() {
             </div>
 
             <div>
+              <Label htmlFor="valor">Valor</Label>
+              <div className="relative mt-1.5">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                  R$
+                </span>
+                <Input
+                  id="valor"
+                  value={valor}
+                  onChange={(e) => setValor(maskValor(e.target.value))}
+                  placeholder="0,00"
+                  inputMode="numeric"
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div>
               <Label>Situação</Label>
               <Select
                 value={situacao}
@@ -206,26 +250,59 @@ export default function ViagemForm() {
               </div>
 
               {itens.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <ul className="mt-3 divide-y divide-border rounded-sm border border-border">
                   {itens.map((item, i) => (
-                    <span
+                    <li
                       key={`${item}-${i}`}
-                      className="flex items-center gap-2 rounded-sm bg-muted px-2.5 py-1 text-xs text-foreground"
+                      className="flex items-center gap-3 px-3 py-2"
                     >
-                      {item}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setItens((prev) => prev.filter((_, idx) => idx !== i))
-                        }
-                        className="text-muted-foreground hover:text-destructive"
-                        aria-label={`Remover ${item}`}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
+                      <span className="w-6 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 text-sm text-foreground">
+                        {item}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          disabled={i === 0}
+                          onClick={() => moverItem(i, -1)}
+                          aria-label={`Mover ${item} para cima`}
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          disabled={i === itens.length - 1}
+                          onClick={() => moverItem(i, 1)}
+                          aria-label={`Mover ${item} para baixo`}
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() =>
+                            setItens((prev) =>
+                              prev.filter((_, idx) => idx !== i),
+                            )
+                          }
+                          aria-label={`Remover ${item}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               ) : (
                 <p className="mt-2 text-xs text-muted-foreground">
                   Nenhum item incluso adicionado.

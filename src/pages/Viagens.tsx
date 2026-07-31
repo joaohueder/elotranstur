@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import {
   VIAGEM_SITUACOES,
   formatarData,
+  formatarValor,
   situacaoClasses,
   situacaoLabel,
   type Viagem,
@@ -43,7 +44,9 @@ export default function Viagens() {
     try {
       const { data, error } = await supabase
         .from("viagens")
-        .select("id, destino, data_partida, itens_inclusos, situacao, created_at")
+        .select(
+          "id, destino, data_partida, valor, itens_inclusos, situacao, created_at",
+        )
         .order("data_partida", { ascending: true });
       if (error) throw error;
       setViagens((data ?? []) as Viagem[]);
@@ -169,7 +172,10 @@ export default function Viagens() {
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Partida · {formatarData(v.data_partida)}
+                  Partida · {formatarData(v.data_partida)} · Valor{" "}
+                  <span className="text-foreground">
+                    {formatarValor(v.valor)}
+                  </span>
                 </p>
                 {(v.itens_inclusos ?? []).length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">

@@ -889,3 +889,6 @@ for each row execute function public.set_updated_at();
 
 
 commit;
+
+alter table public.viagens
+  add column if not exists valor numeric(12,2) not null default 0;
