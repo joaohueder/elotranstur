@@ -48,6 +48,38 @@ export default function App() {
             <Route path="/verificar-codigo" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route
+              path="/crm"
+              element={
+                <RequireModule modulo="crm">
+                  <Crm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/crm/etapas"
+              element={
+                <RequireModule modulo="crm">
+                  <CrmEtapas />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/crm/leads/novo"
+              element={
+                <RequireModule modulo="crm">
+                  <LeadForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/crm/leads/:id"
+              element={
+                <RequireModule modulo="crm">
+                  <LeadForm />
+                </RequireModule>
+              }
+            />
+            <Route
               path="/usuarios"
               element={
                 <RequireModule modulo="usuarios">
