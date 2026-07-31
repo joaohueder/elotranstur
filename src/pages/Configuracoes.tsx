@@ -15,6 +15,7 @@ import { CrmTab } from "@/components/configuracoes/crm-tab";
 import { DestinosTab } from "@/components/configuracoes/destinos-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 import { EmpresaTab } from "@/components/configuracoes/empresa-tab";
+import { IntegracaoTab } from "@/components/configuracoes/integracao-tab";
 
 import { Button } from "@/components/ui/button";
 import { HelpTip, HintButton } from "@/components/help";
