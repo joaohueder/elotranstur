@@ -53,6 +53,7 @@ export default function Viagens() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("todas");
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [clonando, setClonando] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
 
   const landingUrl = (v: Viagem) =>
