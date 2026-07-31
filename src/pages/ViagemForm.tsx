@@ -254,56 +254,48 @@ export default function ViagemForm() {
                   {itens.map((item, i) => (
                     <li
                       key={`${item}-${i}`}
-                      className="flex items-center gap-3 px-3 py-2"
+                      draggable
+                      onDragStart={() => setArrastando(i)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (arrastando !== null && arrastando !== i) {
+                          reordenar(arrastando, i);
+                          setArrastando(i);
+                        }
+                      }}
+                      onDragEnd={() => setArrastando(null)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setArrastando(null);
+                      }}
+                      className={`flex cursor-grab items-center gap-3 px-3 py-2 transition-opacity active:cursor-grabbing ${
+                        arrastando === i ? "bg-muted opacity-60" : ""
+                      }`}
                     >
+                      <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <span className="w-6 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <span className="flex-1 text-sm text-foreground">
                         {item}
                       </span>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          disabled={i === 0}
-                          onClick={() => moverItem(i, -1)}
-                          aria-label={`Mover ${item} para cima`}
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          disabled={i === itens.length - 1}
-                          onClick={() => moverItem(i, 1)}
-                          aria-label={`Mover ${item} para baixo`}
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() =>
-                            setItens((prev) =>
-                              prev.filter((_, idx) => idx !== i),
-                            )
-                          }
-                          aria-label={`Remover ${item}`}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() =>
+                          setItens((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        aria-label={`Remover ${item}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </li>
                   ))}
                 </ul>
               ) : (
+
                 <p className="mt-2 text-xs text-muted-foreground">
                   Nenhum item incluso adicionado.
                 </p>
