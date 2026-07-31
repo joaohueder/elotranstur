@@ -27,24 +27,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/painel", { replace: true });
+      if (data.session) navigate("/", { replace: true });
     });
   }, [navigate]);
-
-  const BLOCKED_MESSAGE =
-    "Seu acesso está bloqueado. Procure o administrador do sistema para liberar sua conta.";
-
-  const isBlockedError = (error: unknown) => {
-    const err = error as { code?: string; status?: number; message?: string };
-    const code = (err?.code ?? "").toLowerCase();
-    const message = (err?.message ?? "").toLowerCase();
-    return (
-      code === "user_banned" ||
-      message.includes("banned") ||
-      message.includes("blocked") ||
-      message.includes("disabled")
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,23 +51,12 @@ export default function LoginPage() {
         password,
       });
       if (error) throw error;
-      navigate("/painel", { replace: true });
-    } catch (error) {
-      let message = "E-mail ou senha inválidos.";
-      if (isBlockedError(error)) {
-        message = BLOCKED_MESSAGE;
-      } else {
-        // O GoTrue devolve "Invalid login credentials" também para contas
-        // banidas/inativas; consultamos o status real no banco.
-        const { data: blocked } = await supabase.rpc("login_is_blocked", {
-          _email: email,
-        });
-        if (blocked === true) message = BLOCKED_MESSAGE;
-      }
+      navigate("/", { replace: true });
+    } catch {
+      const message = "E-mail ou senha inválidos.";
       setAuthError(message);
       toast.error(message);
     } finally {
-
       setLoading(false);
     }
   };
