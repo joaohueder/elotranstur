@@ -1050,7 +1050,7 @@ export function LandingView({
               )}
               <div className="pt-1">{preco}</div>
               <div className="lp-reveal">{contagem()}</div>
-              <div className="hidden lg:block">{formulario}</div>
+              <div className="hidden">{null}</div>
             </div>
 
             <div className="lp-reveal order-0 lg:order-none lg:sticky lg:top-6">
