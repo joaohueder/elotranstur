@@ -41,25 +41,8 @@ type UsuarioRow = {
   permissoes: PermissionMap;
 };
 
-type FormState = {
-  id: string | null;
-  nome: string;
-  email: string;
-  senha: string;
-  isAdmin: boolean;
-  ativo: boolean;
-  permissoes: PermissionMap;
-};
 
-const EMPTY_FORM: FormState = {
-  id: null,
-  nome: "",
-  email: "",
-  senha: "",
-  isAdmin: false,
-  ativo: true,
-  permissoes: {},
-};
+
 
 function iniciais(nome: string | null, email: string) {
   const base = (nome || email).trim();
