@@ -47,6 +47,7 @@ export default function ViagemForm() {
 
   const [loading, setLoading] = useState(Boolean(id));
   const [salvando, setSalvando] = useState(false);
+  const [aba, setAba] = useState("dados");
   const [titulo, setTitulo] = useState("");
   const [subtitulo, setSubtitulo] = useState("");
   const [descricao, setDescricao] = useState("");
