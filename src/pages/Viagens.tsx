@@ -19,7 +19,9 @@ import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
 import {
   VIAGEM_SITUACOES,
+  capaDa,
   formatarData,
+  formatarHora,
   formatarValor,
   situacaoClasses,
   situacaoLabel,
@@ -46,7 +48,7 @@ export default function Viagens() {
       const { data, error } = await supabase
         .from("viagens")
         .select(
-          "id, destino, data_partida, valor, itens_inclusos, situacao, created_at",
+          "id, titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, created_at",
         )
         .order("data_partida", { ascending: true });
       if (error) throw error;
@@ -73,6 +75,7 @@ export default function Viagens() {
       const okTermo =
         !termo ||
         v.destino.toLowerCase().includes(termo) ||
+        (v.titulo ?? "").toLowerCase().includes(termo) ||
         (v.itens_inclusos ?? []).some((i) => i.toLowerCase().includes(termo));
       const okSituacao = filtro === "todas" || v.situacao === filtro;
       return okTermo && okSituacao;
@@ -170,10 +173,19 @@ export default function Viagens() {
               key={v.id}
               className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="min-w-0">
+              <div className="flex min-w-0 gap-4">
+                {capaDa(v.imagens) && (
+                  <img
+                    src={capaDa(v.imagens)!}
+                    alt={`Foto de capa da viagem para ${v.destino}`}
+                    loading="lazy"
+                    className="h-20 w-28 shrink-0 rounded-sm border border-border object-cover"
+                  />
+                )}
+                <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3">
                   <h2 className="font-serif text-lg text-foreground">
-                    {v.destino}
+                    {v.titulo || v.destino}
                   </h2>
                   <span
                     className={cn(
@@ -184,11 +196,19 @@ export default function Viagens() {
                     {situacaoLabel(v.situacao)}
                   </span>
                 </div>
+                {v.subtitulo && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {v.subtitulo}
+                  </p>
+                )}
                 <p className="mt-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Partida · {formatarData(v.data_partida)} · Valor{" "}
+                  {v.destino} · Partida {formatarData(v.data_partida)}
+                  {v.hora_partida ? ` às ${formatarHora(v.hora_partida)}` : ""} ·
+                  Por pessoa{" "}
                   <span className="text-foreground">
                     {formatarValor(v.valor)}
-                  </span>
+                  </span>{" "}
+                  · {v.vagas || 0} vagas
                 </p>
                 {(v.itens_inclusos ?? []).length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -202,6 +222,7 @@ export default function Viagens() {
                     ))}
                   </div>
                 )}
+                </div>
               </div>
 
               <div className="flex shrink-0 gap-2">
