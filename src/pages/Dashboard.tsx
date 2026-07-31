@@ -27,9 +27,11 @@ import {
 } from "recharts";
 
 import { AppShell } from "@/components/app-shell";
+import { UltimasVisitas } from "@/components/dashboard/ultimas-visitas";
 import { HelpTip } from "@/components/help";
 import { useCrmData, isStageFinal } from "@/lib/crm";
 import { useVisitas } from "@/lib/visitas";
+
 
 const CORES = [
   "#6366f1",
@@ -475,6 +477,11 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </Painel>
           </div>
+
+          {/* LINHA 4 — últimas visitas */}
+          <UltimasVisitas />
+
+
 
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
