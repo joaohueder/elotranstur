@@ -219,6 +219,7 @@ export function CrmTab() {
         nome: "",
         posicao: listaOrigens.length,
         ativo: true,
+        sistema: false,
         novo: true,
       },
     ]);
@@ -231,6 +232,13 @@ export function CrmTab() {
         listaOrigens
           .filter((_, i) => i !== index)
           .map((o, i) => ({ ...o, posicao: i })),
+      );
+      return;
+    }
+    if (item.sistema) {
+      feedback.showNegative(
+        "Origem do sistema",
+        `A origem "${item.nome}" é usada pelo próprio sistema e não pode ser excluída.`,
       );
       return;
     }
@@ -287,13 +295,13 @@ export function CrmTab() {
         if (err) throw err;
       }
       for (const o of existentes) {
+        // Origens do sistema (ex.: Landing Page) só permitem reordenar.
+        const payload = o.sistema
+          ? { posicao: o.posicao }
+          : { nome: o.nome.trim(), posicao: o.posicao, ativo: o.ativo };
         const { error: err } = await supabase
           .from("crm_origens")
-          .update({
-            nome: o.nome.trim(),
-            posicao: o.posicao,
-            ativo: o.ativo,
-          })
+          .update(payload)
           .eq("id", o.id);
         if (err) throw err;
       }
@@ -480,7 +488,7 @@ export function CrmTab() {
 
                 <Input
                   value={o.nome}
-                  disabled={!podeEditar}
+                  disabled={!podeEditar || o.sistema}
                   placeholder="Nome da origem"
                   onChange={(e) => updateOrigem(index, { nome: e.target.value })}
                   className="flex-1 rounded-sm"
@@ -490,12 +498,19 @@ export function CrmTab() {
                   <label className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Switch
                       checked={o.ativo}
-                      disabled={!podeEditar}
+                      disabled={!podeEditar || o.sistema}
                       onCheckedChange={(v) => updateOrigem(index, { ativo: v })}
                     />
                     Ativa
                   </label>
-                  {(podeExcluir || o.novo) && (
+                  {o.sistema && (
+                    <span className="flex items-center gap-1 rounded-sm bg-muted px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <Lock className="h-3 w-3" />
+                      Sistema
+                      <HelpTip texto="Origem usada automaticamente pelo sistema (landing pages). Não pode ser editada nem excluída." />
+                    </span>
+                  )}
+                  {!o.sistema && (podeExcluir || o.novo) && (
                     <HintButton
                       hint="Remove esta origem da lista."
                       variant="outline"

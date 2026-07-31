@@ -164,7 +164,7 @@ export function useCrmOrigens(somenteAtivas = false) {
     try {
       let query = supabase
         .from("crm_origens")
-        .select("id, nome, posicao, ativo")
+        .select("id, nome, posicao, ativo, sistema")
         .order("posicao", { ascending: true });
       if (somenteAtivas) query = query.eq("ativo", true);
       const { data, error: err } = await query;
