@@ -27,8 +27,37 @@ drop function if exists public.admin_create_user(text, text, text, text) cascade
 drop function if exists public.admin_delete_user(uuid) cascade;
 drop function if exists public.admin_sync_profiles() cascade;
 
+-- 3.1) Varredura: apaga QUALQUER função restante no schema public
+do $$
+declare r record;
+begin
+  for r in
+    select p.oid::regprocedure as sig
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+  loop
+    execute format('drop function if exists %s cascade', r.sig);
+  end loop;
+end $$;
+
 -- 4) Tipos
 drop type if exists public.app_role cascade;
+
+-- 4.1) Varredura: apaga QUALQUER tipo/enum restante criado no schema public
+do $$
+declare r record;
+begin
+  for r in
+    select t.oid::regtype as tp
+    from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where n.nspname = 'public' and t.typtype in ('e','c','d')
+      and not exists (select 1 from pg_class c where c.oid = t.typrelid and c.relkind <> 'c')
+  loop
+    execute format('drop type if exists %s cascade', r.tp);
+  end loop;
+end $$;
 
 -- 5) (OPCIONAL) Apagar TODOS os usuários de autenticação.
 --    Comente esta linha se quiser manter suas contas de login.
