@@ -4,6 +4,8 @@ import {
   ChevronUp,
   KanbanSquare,
   Loader2,
+  Lock,
+
   Plus,
   Save,
   Tag,
