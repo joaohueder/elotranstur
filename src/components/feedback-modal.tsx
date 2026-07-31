@@ -114,7 +114,8 @@ export function FeedbackModal({ state, onClose }: Props) {
         <div className="flex flex-col-reverse gap-3 border-t border-border bg-background px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           {isError ? (
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button
+              <HintButton
+                hint="Salva uma imagem desta tela para você enviar ao suporte"
                 type="button"
                 variant="outline"
                 size="sm"
@@ -124,8 +125,9 @@ export function FeedbackModal({ state, onClose }: Props) {
               >
                 <Camera className="mr-2 h-3.5 w-3.5" />
                 {capturing ? "Capturando..." : "Print screen"}
-              </Button>
-              <Button
+              </HintButton>
+              <HintButton
+                hint="Copia o texto técnico do erro para colar e enviar ao suporte"
                 type="button"
                 variant="outline"
                 size="sm"
@@ -135,20 +137,22 @@ export function FeedbackModal({ state, onClose }: Props) {
               >
                 <Copy className="mr-2 h-3.5 w-3.5" />
                 {copied ? "Copiado!" : "Copiar erro original"}
-              </Button>
+              </HintButton>
             </div>
           ) : (
             <span className="hidden sm:block" />
           )}
 
-          <Button
+          <HintButton
+            hint="Fecha esta mensagem e volta para a tela"
             type="button"
             size="sm"
             className="h-9 rounded-none px-8 text-xs font-semibold uppercase tracking-widest"
             onClick={onClose}
           >
             Fechar
-          </Button>
+          </HintButton>
+
         </div>
       </DialogContent>
     </Dialog>
