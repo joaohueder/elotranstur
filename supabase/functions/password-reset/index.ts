@@ -47,23 +47,50 @@ function admin() {
   );
 }
 
-async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: string) {
-  const { data: cfg, error } = await db
+type SmtpCfg = {
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password: string;
+  smtp_secure: boolean;
+  from_name: string;
+  from_email: string;
+  reply_to: string;
+  ativo?: boolean;
+};
+
+// Lê o SMTP salvo em Configurações > E-mail. O override permite testar
+// exatamente os valores digitados na tela antes de salvar.
+async function carregarSmtp(
+  db: ReturnType<typeof admin>,
+  override?: Partial<SmtpCfg>,
+): Promise<SmtpCfg> {
+  const { data, error } = await db
     .from("app_email_settings")
     .select("*")
     .eq("id", true)
     .maybeSingle();
 
   if (error) throw new Error(`Falha ao ler configuração de e-mail: ${error.message}`);
-  if (!cfg?.smtp_host || !cfg?.from_email) {
+
+  const cfg = { ...(data ?? {}), ...(override ?? {}) } as SmtpCfg;
+  // Senha em branco no override significa "usar a senha já salva".
+  if (!cfg.smtp_password) cfg.smtp_password = data?.smtp_password ?? "";
+
+  if (!cfg.smtp_host || !cfg.from_email) {
     throw new Error(
-      "SMTP não configurado. Configure o servidor de e-mail em Configurações > E-mail.",
+      "SMTP não configurado. Preencha o servidor e o e-mail remetente em Configurações > E-mail.",
     );
   }
-  if (cfg.ativo === false) {
-    throw new Error("O envio de e-mails está desativado em Configurações > E-mail.");
-  }
+  return cfg;
+}
 
+async function enviarSmtp(
+  cfg: SmtpCfg,
+  para: string,
+  assunto: string,
+  html: string,
+) {
   const porta = Number(cfg.smtp_port);
   const tlsImplicito = porta === 465 ? true : Boolean(cfg.smtp_secure) && porta !== 587;
 
@@ -82,8 +109,24 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
     from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
     to: para,
     replyTo: cfg.reply_to || undefined,
-    subject: `${codigo} é o seu código de recuperação · ELO`,
-    html: `
+    subject: assunto,
+    html,
+  });
+
+  await client.close();
+}
+
+async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: string) {
+  const cfg = await carregarSmtp(db);
+  if (cfg.ativo === false) {
+    throw new Error("O envio de e-mails está desativado em Configurações > E-mail.");
+  }
+
+  await enviarSmtp(
+    cfg,
+    para,
+    `${codigo} é o seu código de recuperação · ELO`,
+    `
       <div style="font-family:Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#111827">
         <p style="letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 8px">
           ELO Transporte e Turismo
@@ -101,9 +144,7 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
         </p>
       </div>
     `,
-  });
-
-  await client.close();
+  );
 }
 
 Deno.serve(async (req) => {
@@ -116,11 +157,69 @@ Deno.serve(async (req) => {
       code?: string;
       token?: string;
       password?: string;
+      destinatario?: string;
+      smtp?: Record<string, unknown>;
     };
 
     const db = admin();
     const email = (body.email ?? "").trim().toLowerCase();
     const acao = body.action;
+
+    // Teste de envio a partir de Configurações > E-mail (somente admin).
+    if (acao === "test") {
+      const asUser = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        {
+          global: {
+            headers: { Authorization: req.headers.get("Authorization") ?? "" },
+          },
+        },
+      );
+
+      const { data: userData } = await asUser.auth.getUser();
+      if (!userData?.user) return json({ error: "Não autenticado" }, 401);
+
+      const { data: papel } = await asUser
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!papel) {
+        return json({ error: "Acesso negado: somente administradores" }, 403);
+      }
+
+      const destinatario = (body.destinatario ?? "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(destinatario)) {
+        return json({ error: "Informe um destinatário válido." }, 400);
+      }
+
+      const cfg = await carregarSmtp(db, body.smtp as Partial<SmtpCfg>);
+      await enviarSmtp(
+        cfg,
+        destinatario,
+        "Teste de envio · ELO Transporte e Turismo",
+        `
+          <div style="font-family:Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#111827">
+            <p style="letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 8px">
+              ELO Transporte e Turismo
+            </p>
+            <h1 style="font-size:22px;margin:0 0 16px">Teste de envio bem-sucedido</h1>
+            <p style="font-size:14px;line-height:1.6;color:#374151;margin:0 0 12px">
+              Esta mensagem foi enviada usando o SMTP configurado no sistema
+              (${cfg.smtp_host}:${cfg.smtp_port}).
+            </p>
+            <p style="font-size:12px;color:#9ca3af;margin-top:24px">
+              Enviado em ${new Date().toLocaleString("pt-BR")}
+            </p>
+          </div>
+        `,
+      );
+
+      return json({ ok: true });
+    }
+
 
     if (acao === "request") {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

@@ -197,20 +197,32 @@ export function EmailTab() {
 
     setTestando(true);
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "send-test-email",
-        { body: { destinatario: alvo } },
-      );
+      const { data, error } = await supabase.functions.invoke("password-reset", {
+        body: {
+          action: "test",
+          destinatario: alvo,
+          // Envia o SMTP digitado na tela; senha em branco usa a já salva.
+          smtp: {
+            smtp_host: form.smtp_host.trim(),
+            smtp_port: form.smtp_port,
+            smtp_user: form.smtp_user.trim(),
+            smtp_password: form.smtp_password || "",
+            smtp_secure: form.smtp_secure,
+            from_name: form.from_name.trim(),
+            from_email: form.from_email.trim(),
+            reply_to: form.reply_to.trim(),
+          },
+        },
+      });
       if (error) throw await detalharErroFuncao(error);
       if (data && typeof data === "object" && (data as { error?: string }).error) {
         throw new Error((data as { error: string }).error);
       }
 
-
       setTesteAberto(false);
       feedback.showSuccess(
         "E-mail de teste enviado",
-        `Enviamos uma mensagem de teste para ${alvo}. Verifique a caixa de entrada e o spam.`,
+        `Enviamos uma mensagem de teste para ${alvo} usando o SMTP configurado. Verifique a caixa de entrada e o spam.`,
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -222,10 +234,12 @@ export function EmailTab() {
       feedback.showError(
         "Falha no envio de teste",
         naoPublicada
-          ? "A função de envio de e-mail ainda não está publicada no seu servidor Supabase. Peça ao responsável pela infraestrutura para publicar a função 'send-test-email' e tente novamente."
-          : "Não foi possível enviar o e-mail de teste. Confira o servidor, a porta, o usuário e a senha do SMTP.",
+          ? "O serviço de e-mail do sistema ainda não está publicado no servidor. Peça ao responsável pela infraestrutura para publicar a função 'password-reset' e tente novamente."
+          : "Não foi possível enviar o e-mail de teste com o SMTP informado. Confira o servidor, a porta, o usuário e a senha.",
         err,
       );
+
+
 
     } finally {
       setTestando(false);
