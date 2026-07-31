@@ -506,12 +506,15 @@ function Formulario({
   whatsappUrl,
   preview,
   compacto = false,
+  ancora = true,
 }: {
   m: LandingModel;
   onSubmit?: Props["onSubmit"];
   whatsappUrl?: Props["whatsappUrl"];
   preview?: boolean;
   compacto?: boolean;
+  /** Só um formulário na página deve carregar a âncora #reservar. */
+  ancora?: boolean;
 }) {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
