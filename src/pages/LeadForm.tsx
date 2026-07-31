@@ -278,10 +278,6 @@ export default function LeadForm() {
       feedback.showNegative("Descrição obrigatória", "Informe o conteúdo da nota.");
       return;
     }
-    if (!novaNotaDataHora) {
-      feedback.showNegative("Data/hora obrigatória", "Informe quando a nota foi registrada.");
-      return;
-    }
     if (!id) {
       feedback.showNegative(
         "Lead não salvo",
@@ -293,9 +289,13 @@ export default function LeadForm() {
 
     setSalvandoNota(true);
     try {
+      const dataHoraFinal = novaNotaDataHora
+        ? dataHoraLocalParaUTC(novaNotaDataHora)
+        : new Date().toISOString();
+
       const { error } = await supabase.from("crm_lead_notas").insert({
         lead_id: id,
-        data_hora: dataHoraLocalParaUTC(novaNotaDataHora),
+        data_hora: dataHoraFinal,
         descricao: novaNotaDescricao.trim(),
       });
       if (error) throw error;
