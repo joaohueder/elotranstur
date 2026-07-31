@@ -358,6 +358,8 @@ export default function Crm() {
                             </a>
                           </div>
 
+                          <LeadViagens viagens={lead.viagens} />
+
                           <div className="mt-3 flex flex-wrap items-center gap-2">
                             {podeEditar && (
                               <Select
