@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import {
   DEFAULT_MAX_WIDTH,
@@ -43,6 +44,7 @@ export default function Configuracoes() {
   const { maxWidth, seo, loading, save } = useLayoutSettings();
   const { can, isAdmin } = useAuthz();
   const feedback = useFeedback();
+  const { confirm } = useConfirm();
   const { cropperUi, ajustarCorte } = useImageCropper({
     proporcoes: [
       { key: "1.91:1", label: "1.91:1 (compartilhamento)", valor: 1200 / 630 },
@@ -383,9 +385,19 @@ export default function Configuracoes() {
                                 size="sm"
                                 className="rounded-sm"
                                 disabled={!podeEditar || enviandoImagem}
-                                onClick={() =>
-                                  setFormSeo((f) => ({ ...f, imageUrl: "" }))
-                                }
+                                onClick={() => {
+                                  void (async () => {
+                                    const ok = await confirm({
+                                      title: "Remover imagem",
+                                      message:
+                                        "Tem certeza que deseja remover a imagem de compartilhamento? Esta ação não poderá ser desfeita após salvar.",
+                                      confirmText: "Sim, remover",
+                                      variant: "destructive",
+                                    });
+                                    if (!ok) return;
+                                    setFormSeo((f) => ({ ...f, imageUrl: "" }));
+                                  })();
+                                }}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Remover
