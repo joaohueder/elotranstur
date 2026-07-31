@@ -41,13 +41,14 @@ export function VisitTracker() {
     if (!ehPaginaPublica(pathname)) return;
     const id = visitorId();
 
-    const registrar = () => {
+    const registrar = async () => {
       if (document.visibilityState !== "visible") return;
-      void supabase.rpc("registrar_visita", {
+      const { error } = await supabase.rpc("registrar_visita", {
         _visitor: id,
         _path: pathname,
         _referrer: document.referrer || null,
       });
+      if (error) console.warn("registrar_visita", error.message);
     };
 
     registrar();
