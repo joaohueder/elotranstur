@@ -130,6 +130,9 @@ function createSelfHostedClient(): SupabaseClient {
 
 let _client: SupabaseClient | undefined;
 
+/** URL pública da instância Supabase auto-hospedada (usada em Edge Functions). */
+export const SUPABASE_BASE_URL = SUPABASE_URL;
+
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 export const supabase = new Proxy({} as SupabaseClient, {
