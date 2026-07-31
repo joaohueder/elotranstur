@@ -24,34 +24,19 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // O link de recuperação chega como #access_token=...&type=recovery.
-  // O listener é registrado antes de qualquer leitura de sessão.
+  // O acesso a esta tela depende do token gerado após a confirmação do
+  // código de 6 dígitos enviado pelo SMTP do sistema.
   useEffect(() => {
-    let active = true;
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (active && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN")) {
-        setReady(true);
-      }
-    });
-
-    const isRecovery = window.location.hash.includes("type=recovery");
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (data.session || isRecovery) setReady(true);
-      else {
-        showNegative(
-          "Link inválido ou expirado",
-          "Solicite um novo link de redefinição de senha na tela de login.",
-        );
-      }
-    });
-
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
+    if (resetTokenStore.get()) {
+      setReady(true);
+      return;
+    }
+    showNegative(
+      "Sessão de recuperação inválida",
+      "Solicite um novo código de recuperação na tela de login.",
+    );
   }, [showNegative]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
