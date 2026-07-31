@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConfirmProvider } from "@/lib/confirm";
 import { FeedbackProvider } from "@/lib/feedback";
 
+import { RobotsPolicy } from "@/lib/seo";
 import { PublicShell } from "@/components/public-shell";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 
@@ -54,6 +55,7 @@ export default function App() {
         <ConfirmProvider>
         <LayoutSettingsProvider>
         <BrowserRouter>
+          <RobotsPolicy />
 
           <Routes>
             <Route path="/" element={<Home />} />
