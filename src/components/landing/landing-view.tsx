@@ -37,6 +37,7 @@ import {
   type LandingModel,
 } from "@/lib/landing-models";
 import { getLandingPalette, type LandingPalette } from "@/lib/landing-palettes";
+import { formatWhatsapp } from "@/lib/crm";
 import {
   capaDa,
   formatarData,
