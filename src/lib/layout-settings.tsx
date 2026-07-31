@@ -93,7 +93,7 @@ export function LayoutSettingsProvider({ children }: { children: ReactNode }) {
       siteName: String(r.seo_site_name ?? DEFAULT_SEO.siteName),
       title: String(r.seo_title ?? DEFAULT_SEO.title),
       description: String(r.seo_description ?? DEFAULT_SEO.description),
-      imageUrl: String(r.seo_image_url ?? "" ?? ""),
+      imageUrl: String(r.seo_image_url ?? ""),
     };
     setSeo(proximo);
     window.localStorage.setItem(SEO_STORAGE_KEY, JSON.stringify(proximo));
