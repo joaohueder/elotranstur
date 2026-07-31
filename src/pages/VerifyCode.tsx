@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MailCheck } from "lucide-react";
 
+import { HelpTip, HintButton } from "@/components/help";
 import { Button } from "@/components/ui/button";
+
 import {
   InputOTP,
   InputOTPGroup,
