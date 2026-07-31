@@ -68,18 +68,21 @@ export default function LoginPage() {
       if (error) throw error;
       navigate("/painel", { replace: true });
     } catch (error) {
+      let message = "E-mail ou senha inválidos.";
       if (isBlockedError(error)) {
-        setAuthError(BLOCKED_MESSAGE);
-        toast.error(BLOCKED_MESSAGE);
+        message = BLOCKED_MESSAGE;
       } else {
-        const message =
-          error instanceof Error && error.message
-            ? "E-mail ou senha inválidos."
-            : "Não foi possível continuar.";
-        setAuthError(message);
-        toast.error(message);
+        // O GoTrue devolve "Invalid login credentials" também para contas
+        // banidas/inativas; consultamos o status real no banco.
+        const { data: blocked } = await supabase.rpc("login_is_blocked", {
+          _email: email,
+        });
+        if (blocked === true) message = BLOCKED_MESSAGE;
       }
+      setAuthError(message);
+      toast.error(message);
     } finally {
+
       setLoading(false);
     }
   };
