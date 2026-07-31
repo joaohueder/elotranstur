@@ -8,6 +8,10 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  CalendarDays,
+  Wallet,
+  Users,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -29,7 +33,98 @@ import {
   whatsappLink,
   type CrmLead,
   type CrmStage,
+  type CrmLeadViagem,
 } from "@/lib/crm";
+import { ViagemCountdown } from "@/components/viagem-countdown";
+import {
+  capaDa,
+  formatarData,
+  formatarHora,
+  formatarValor,
+} from "@/lib/viagens";
+
+function LeadViagens({
+  viagens,
+  compacto = false,
+}: {
+  viagens: CrmLeadViagem[];
+  compacto?: boolean;
+}) {
+  if (!viagens.length) return null;
+
+  const visiveis = compacto ? viagens.slice(0, 2) : viagens;
+  const restantes = compacto ? viagens.length - visiveis.length : 0;
+
+  return (
+    <div className={cn("space-y-2", compacto && "mt-3 border-t border-border pt-2")}>
+      <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <MapPin className="h-3 w-3" />
+        Viagens de interesse
+        <HelpTip texto="Viagens que o lead demonstrou interesse. Clique no lead para gerenciar." />
+      </p>
+      <div className={cn("grid gap-2", compacto ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2")}>
+        {visiveis.map((v) => {
+          const capa = capaDa(v.imagens);
+          return (
+            <div
+              key={v.id}
+              className="flex gap-2 rounded-sm border border-border bg-muted/20 p-2"
+            >
+              <div className="hidden h-14 w-14 shrink-0 overflow-hidden rounded-sm border border-border bg-muted sm:block">
+                {capa ? (
+                  <img
+                    src={capa}
+                    alt={`Foto de capa da viagem para ${v.destino}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium text-foreground">
+                  {v.titulo?.trim() || v.destino}
+                </p>
+                <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted-foreground">
+                  <CalendarDays className="h-3 w-3 shrink-0" />
+                  {formatarData(v.data_partida)}
+                  {v.hora_partida ? ` · ${formatarHora(v.hora_partida)}` : ""}
+                </p>
+                {!compacto && (
+                  <>
+                    <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted-foreground">
+                      <Wallet className="h-3 w-3 shrink-0" />
+                      {formatarValor(v.valor ?? 0)} por pessoa
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted-foreground">
+                      <Users className="h-3 w-3 shrink-0" />
+                      {v.vagas ?? 0} vagas
+                    </p>
+                  </>
+                )}
+                <div className="mt-1.5">
+                  <ViagemCountdown
+                    data={v.data_partida}
+                    hora={v.hora_partida}
+                    className="px-2 py-1 text-[10px]"
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {restantes > 0 && (
+        <p className="text-[10px] text-muted-foreground">
+          +{restantes} viagem{restantes === 1 ? "" : "ens"} de interesse
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function Crm() {
   const navigate = useNavigate();
@@ -263,6 +358,8 @@ export default function Crm() {
                             </a>
                           </div>
 
+                          <LeadViagens viagens={lead.viagens} />
+
                           <div className="mt-3 flex flex-wrap items-center gap-2">
                             {podeEditar && (
                               <Select
@@ -401,6 +498,8 @@ export default function Crm() {
               <span className="mt-2 inline-block rounded-sm bg-muted px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
                 {lead.origem}
               </span>
+
+              <LeadViagens viagens={lead.viagens} compacto />
 
               <div className="mt-3 flex items-center justify-between gap-1 border-t border-border pt-2">
                 <div className="flex gap-1">
