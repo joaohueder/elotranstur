@@ -309,7 +309,7 @@ function Slider({
       </div>
 
       {miniaturas && total > 1 && (
-        <div className="lp-scroll-x mt-3 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-6">
           {urls.map((url, idx) => (
             <button
               key={`thumb-${url}-${idx}`}
