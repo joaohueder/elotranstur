@@ -83,6 +83,15 @@ export default function ViagemForm() {
   const [subtitulo, setSubtitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [destino, setDestino] = useState("");
+  const { destinos: destinosAtivos, loading: carregandoDestinos } =
+    useDestinos(true);
+  const opcoesDestino = Array.from(
+    new Set(
+      [...destinosAtivos.map((d) => nomeDestino(d)), destino].filter(
+        (n): n is string => Boolean(n && n.trim()),
+      ),
+    ),
+  );
   const [dataPartida, setDataPartida] = useState("");
   const [horaPartida, setHoraPartida] = useState("");
   const [situacao, setSituacao] = useState<ViagemSituacao>("rascunho");
