@@ -255,19 +255,84 @@ export default function Configuracoes() {
 
                     <div className="space-y-1.5">
                       <Label className="flex items-center gap-1.5 text-xs">
-                        Imagem de compartilhamento (URL)
-                        <HelpTip texto="Endereço de uma imagem (1200x630) usada como miniatura ao compartilhar o link em WhatsApp e redes sociais." />
+                        Imagem de compartilhamento
+                        <HelpTip texto="Miniatura (1200x630) exibida ao compartilhar o link em WhatsApp e redes sociais. Envie uma imagem ou informe uma URL." />
                       </Label>
-                      <Input
-                        className="rounded-sm"
-                        placeholder="https://..."
-                        value={formSeo.imageUrl}
-                        disabled={!podeEditar}
-                        onChange={(e) =>
-                          setFormSeo((f) => ({ ...f, imageUrl: e.target.value }))
-                        }
-                      />
+
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                        <div className="grid h-[105px] w-[200px] shrink-0 place-items-center overflow-hidden rounded-sm border border-border bg-muted">
+                          {formSeo.imageUrl ? (
+                            <img
+                              src={formSeo.imageUrl}
+                              alt="Prévia da imagem de compartilhamento"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <Input
+                            className="rounded-sm"
+                            placeholder="https://..."
+                            value={formSeo.imageUrl}
+                            disabled={!podeEditar}
+                            onChange={(e) =>
+                              setFormSeo((f) => ({ ...f, imageUrl: e.target.value }))
+                            }
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            <input
+                              ref={inputImagemRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                void enviarImagemSeo(e.target.files?.[0] ?? null);
+                                e.target.value = "";
+                              }}
+                            />
+                            <HintButton
+                              hint="Escolha uma imagem do computador, ajuste o corte e envie."
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="rounded-sm"
+                              disabled={!podeEditar || enviandoImagem}
+                              onClick={() => inputImagemRef.current?.click()}
+                            >
+                              {enviandoImagem ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Upload className="mr-2 h-4 w-4" />
+                              )}
+                              Enviar imagem
+                            </HintButton>
+                            {formSeo.imageUrl && (
+                              <HintButton
+                                hint="Remove a imagem de compartilhamento atual."
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="rounded-sm"
+                                disabled={!podeEditar || enviandoImagem}
+                                onClick={() =>
+                                  setFormSeo((f) => ({ ...f, imageUrl: "" }))
+                                }
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remover
+                              </HintButton>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Tamanho recomendado: 1200x630 pixels (proporção 1.91:1).
+                          </p>
+                        </div>
+                      </div>
                     </div>
+
 
                     <div className="rounded-sm bg-muted/60 p-3 text-xs text-muted-foreground">
                       <span className="font-medium text-foreground">Indexação:</span>{" "}
