@@ -493,7 +493,9 @@ export default function Viagens() {
             </div>
           ))}
         </div>
+        </>
       )}
+
     </AppShell>
   );
 }
