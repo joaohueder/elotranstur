@@ -161,7 +161,8 @@ export default function LeadForm() {
       .from("crm_lead_notas")
       .select("id, lead_id, data_hora, descricao, created_by, created_at, updated_at")
       .eq("lead_id", leadId)
-      .order("data_hora", { ascending: false });
+      .order("data_hora", { ascending: false })
+      .order("created_at", { ascending: false });
     if (error) throw error;
     setNotas((data ?? []) as CrmLeadNota[]);
   }
