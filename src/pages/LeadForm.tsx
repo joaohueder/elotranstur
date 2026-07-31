@@ -264,19 +264,14 @@ export default function LeadForm() {
 
     setSalvandoNota(true);
     try {
-      const dataHoraFinal = novaNotaDataHora
-        ? dataHoraLocalParaUTC(novaNotaDataHora)
-        : new Date().toISOString();
-
       const { error } = await supabase.from("crm_lead_notas").insert({
         lead_id: id,
-        data_hora: dataHoraFinal,
+        data_hora: new Date().toISOString(),
         descricao: novaNotaDescricao.trim(),
       });
       if (error) throw error;
 
       setNovaNotaDescricao("");
-      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
       await carregarNotas(id);
       feedback.showSuccess("Nota adicionada", "A anotação foi salva no histórico do lead.");
     } catch (err) {
