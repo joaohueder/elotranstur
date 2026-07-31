@@ -211,6 +211,7 @@ export default function ViagemForm() {
 
   async function salvar() {
     if (!destino.trim()) {
+      setAba("dados");
       feedback.showNegative("Campo obrigatório", "Informe o destino da viagem.");
       return;
     }
