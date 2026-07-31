@@ -1,6 +1,16 @@
 import { type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, RefreshCw, Users, Settings, KanbanSquare, Bus, UserPlus } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  RefreshCw,
+  Users,
+  Settings,
+  KanbanSquare,
+  Bus,
+  UserPlus,
+  UserCog,
+} from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -8,11 +18,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { MODULES } from "@/lib/permissions";
 
 import { supabase, clearRememberMe } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
+
 
 const ICONS: Record<string, typeof Users> = {
   viagens: Bus,
