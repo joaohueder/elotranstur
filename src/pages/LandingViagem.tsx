@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { supabase } from "@/lib/supabase";
 import { useSeo } from "@/lib/seo";
+import { capaDa } from "@/lib/viagens";
+
 
 /** Landing page pública de uma viagem (/v/:slug). */
 export default function LandingViagem() {
