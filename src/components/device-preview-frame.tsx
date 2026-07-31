@@ -44,13 +44,14 @@ export function DevicePreviewFrame({
   }, [width]);
 
   return (
-    <iframe
-      ref={ref}
-      title="Pré-visualização"
-      className="mx-auto block border-0 bg-white"
-      style={{ width, height }}
-    >
+    <>
+      <iframe
+        ref={ref}
+        title="Pré-visualização"
+        className="mx-auto block border-0 bg-white"
+        style={{ width, height }}
+      />
       {body ? createPortal(children, body) : null}
-    </iframe>
+    </>
   );
 }
