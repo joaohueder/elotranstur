@@ -583,35 +583,55 @@ export default function Usuarios() {
             </div>
 
             {!form.isAdmin && (
-              <div className="border border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 border-b border-border bg-muted px-4 py-2 text-[10px] uppercase tracking-widest text-muted-foreground">
-                  <span>Módulo</span>
-                  <span>Ver</span>
-                  <span>Editar</span>
-                  <span>Excluir</span>
+              <div className="overflow-hidden rounded-sm border border-border">
+                <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/60 px-4 py-2.5">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Permissões por módulo
+                  </span>
+                  <div className="grid grid-cols-3 gap-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <span className="w-14">Ver</span>
+                    <span className="w-14">Editar</span>
+                    <span className="w-14">Excluir</span>
+                  </div>
                 </div>
+
                 {MODULES.map((m) => {
                   const p = permissaoDe(m.key);
                   return (
                     <div
                       key={m.key}
-                      className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
+                      className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/40"
                     >
-                      <span className="text-sm text-foreground">{m.label}</span>
-                      <Checkbox
-                        checked={p.view}
-                        onCheckedChange={(v) => togglePermissao(m.key, "view", Boolean(v))}
-                      />
-                      <Checkbox
-                        checked={p.edit}
-                        onCheckedChange={(v) => togglePermissao(m.key, "edit", Boolean(v))}
-                      />
-                      <Checkbox
-                        checked={p.delete}
-                        onCheckedChange={(v) =>
-                          togglePermissao(m.key, "delete", Boolean(v))
-                        }
-                      />
+                      <span className="truncate text-sm text-foreground">{m.label}</span>
+                      <div className="grid grid-cols-3 gap-1">
+                        <div className="flex w-14 justify-center">
+                          <Checkbox
+                            aria-label={`Ver ${m.label}`}
+                            checked={p.view}
+                            onCheckedChange={(v) =>
+                              togglePermissao(m.key, "view", Boolean(v))
+                            }
+                          />
+                        </div>
+                        <div className="flex w-14 justify-center">
+                          <Checkbox
+                            aria-label={`Editar ${m.label}`}
+                            checked={p.edit}
+                            onCheckedChange={(v) =>
+                              togglePermissao(m.key, "edit", Boolean(v))
+                            }
+                          />
+                        </div>
+                        <div className="flex w-14 justify-center">
+                          <Checkbox
+                            aria-label={`Excluir ${m.label}`}
+                            checked={p.delete}
+                            onCheckedChange={(v) =>
+                              togglePermissao(m.key, "delete", Boolean(v))
+                            }
+                          />
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
@@ -619,15 +639,19 @@ export default function Usuarios() {
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-2 flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
             <Button
               variant="outline"
-              className="rounded-sm"
+              className="w-full rounded-sm sm:w-auto"
               onClick={() => setFormOpen(false)}
             >
               Cancelar
             </Button>
-            <Button className="rounded-sm" disabled={saving} onClick={() => void salvar()}>
+            <Button
+              className="w-full rounded-sm sm:w-auto sm:min-w-32"
+              disabled={saving}
+              onClick={() => void salvar()}
+            >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Salvar
             </Button>
