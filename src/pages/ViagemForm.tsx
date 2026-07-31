@@ -637,6 +637,7 @@ export default function ViagemForm() {
           </div>
         </div>
       )}
+      {cropperUi}
     </AppShell>
   );
 }
