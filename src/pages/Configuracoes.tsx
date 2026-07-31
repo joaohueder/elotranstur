@@ -1,14 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  Image as ImageIcon,
-  Loader2,
-  Monitor,
-  Save,
-  Search,
-  Trash2,
-  Upload,
-} from "lucide-react";
-
+import { useEffect, useState } from "react";
+import { Loader2, Monitor, Save, Search } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { CrmTab } from "@/components/configuracoes/crm-tab";
@@ -16,7 +7,6 @@ import { DestinosTab } from "@/components/configuracoes/destinos-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 import { EmpresaTab } from "@/components/configuracoes/empresa-tab";
 
-import { Button } from "@/components/ui/button";
 import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,33 +22,16 @@ import {
   useLayoutSettings,
 } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
-import { useImageCropper } from "@/components/image-crop-modal";
-import { comprimirImagem } from "@/lib/image-compress";
-import { supabase } from "@/lib/supabase";
-
-const BUCKET_SEO = "viagens";
 
 export default function Configuracoes() {
   const { maxWidth, seo, loading, save } = useLayoutSettings();
   const { can, isAdmin } = useAuthz();
   const feedback = useFeedback();
-  const { cropperUi, ajustarCorte } = useImageCropper({
-    proporcoes: [
-      { key: "1.91:1", label: "1.91:1 (compartilhamento)", valor: 1200 / 630 },
-      { key: "16:9", label: "16:9", valor: 16 / 9 },
-      { key: "1:1", label: "1:1 (quadrado)", valor: 1 },
-    ],
-    proporcaoPadrao: 1200 / 630,
-    descricao:
-      "Arraste a imagem para posicionar e use o zoom. A área visível será usada como miniatura ao compartilhar o link.",
-  });
 
   const podeEditar = isAdmin || can("configuracoes", "edit");
   const [valor, setValor] = useState<number>(maxWidth || DEFAULT_MAX_WIDTH);
   const [salvando, setSalvando] = useState(false);
   const [formSeo, setFormSeo] = useState<SeoSettings>(seo);
-  const [enviandoImagem, setEnviandoImagem] = useState(false);
-  const inputImagemRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setValor(maxWidth);
@@ -68,51 +41,10 @@ export default function Configuracoes() {
     setFormSeo(seo);
   }, [seo]);
 
-  /** Abre o corte, comprime e envia a imagem de compartilhamento. */
-  async function enviarImagemSeo(arquivo: File | null) {
-    if (!arquivo) return;
-    if (!arquivo.type.startsWith("image/")) {
-      feedback.showNegative(
-        "Arquivo inválido",
-        `"${arquivo.name}" não é uma imagem.`,
-      );
-      return;
-    }
-    const recortado = await ajustarCorte(arquivo);
-    if (!recortado) return;
-
-    setEnviandoImagem(true);
-    try {
-      const otimizado = await comprimirImagem(recortado);
-      const extensao = otimizado.name.split(".").pop() ?? "jpg";
-      const caminho = `site/og-${crypto.randomUUID()}.${extensao}`;
-      const { error } = await supabase.storage
-        .from(BUCKET_SEO)
-        .upload(caminho, otimizado, {
-          upsert: false,
-          contentType: otimizado.type,
-          cacheControl: "31536000",
-        });
-      if (error) throw error;
-      const { data } = supabase.storage.from(BUCKET_SEO).getPublicUrl(caminho);
-      setFormSeo((f) => ({ ...f, imageUrl: data.publicUrl }));
-    } catch (err) {
-      feedback.showError(
-        "Não foi possível enviar",
-        "Ocorreu um erro ao enviar a imagem de compartilhamento.",
-        err,
-      );
-    } finally {
-      setEnviandoImagem(false);
-    }
-  }
-
-
   const seoAlterado =
     formSeo.siteName !== seo.siteName ||
     formSeo.title !== seo.title ||
-    formSeo.description !== seo.description ||
-    formSeo.imageUrl !== seo.imageUrl;
+    formSeo.description !== seo.description;
 
   async function salvar() {
     setSalvando(true);
@@ -319,85 +251,6 @@ export default function Configuracoes() {
                       </p>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label className="flex items-center gap-1.5 text-xs">
-                        Imagem de compartilhamento
-                        <HelpTip texto="Miniatura (1200x630) exibida ao compartilhar o link em WhatsApp e redes sociais. Envie uma imagem ou informe uma URL." />
-                      </Label>
-
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                        <div className="grid h-[105px] w-[200px] shrink-0 place-items-center overflow-hidden rounded-sm border border-border bg-muted">
-                          {formSeo.imageUrl ? (
-                            <img
-                              src={formSeo.imageUrl}
-                              alt="Prévia da imagem de compartilhamento"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
-
-                        <div className="flex-1 space-y-2">
-                          <Input
-                            className="rounded-sm"
-                            placeholder="https://..."
-                            value={formSeo.imageUrl}
-                            disabled={!podeEditar}
-                            onChange={(e) =>
-                              setFormSeo((f) => ({ ...f, imageUrl: e.target.value }))
-                            }
-                          />
-                          <div className="flex flex-wrap gap-2">
-                            <input
-                              ref={inputImagemRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                void enviarImagemSeo(e.target.files?.[0] ?? null);
-                                e.target.value = "";
-                              }}
-                            />
-                            <HintButton
-                              hint="Escolha uma imagem do computador, ajuste o corte e envie."
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="rounded-sm"
-                              disabled={!podeEditar || enviandoImagem}
-                              onClick={() => inputImagemRef.current?.click()}
-                            >
-                              {enviandoImagem ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              ) : (
-                                <Upload className="mr-2 h-4 w-4" />
-                              )}
-                              Enviar imagem
-                            </HintButton>
-                            {formSeo.imageUrl && (
-                              <HintButton
-                                hint="Remove a imagem de compartilhamento atual."
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="rounded-sm"
-                                disabled={!podeEditar || enviandoImagem}
-                                onClick={() =>
-                                  setFormSeo((f) => ({ ...f, imageUrl: "" }))
-                                }
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Remover
-                              </HintButton>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-muted-foreground">
-                            Tamanho recomendado: 1200x630 pixels (proporção 1.91:1).
-                          </p>
-                        </div>
-                      </div>
-                    </div>
 
 
                     <div className="rounded-sm bg-muted/60 p-3 text-xs text-muted-foreground">
@@ -441,9 +294,6 @@ export default function Configuracoes() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {cropperUi}
     </AppShell>
-
   );
 }
