@@ -534,13 +534,15 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
             )}
           </div>
         </div>
+        {miniGaleria && (
+          <div className="mx-auto max-w-5xl px-5 pt-10">{miniGaleria}</div>
+        )}
         <div className="mx-auto grid max-w-5xl gap-10 px-5 py-12 lg:grid-cols-[1.2fr_1fr]">
           <div className="space-y-8">
             {preco}
             {descricao}
             {infos}
             {inclusos}
-            {miniGaleria}
           </div>
           <div className="lg:sticky lg:top-10 lg:self-start">{formulario}</div>
           <div className="lg:col-span-2">{rodape}</div>
