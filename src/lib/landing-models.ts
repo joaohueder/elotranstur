@@ -57,7 +57,7 @@ export const LANDING_MODELS: LandingModel[] = [
     radius: "0.25rem",
     theme: {
       bg: "#0e1116", surface: "#161b22", fg: "#f4f2ee", muted: "#9aa2ad",
-      border: "#242c37", accent: "#d4a котор".replace(" котор", "b45"), accentFg: "#12151a",
+      border: "#242c37", accent: "#d4ab45", accentFg: "#12151a",
     },
   },
   {
