@@ -6,6 +6,8 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
+import VerifyCode from "@/pages/VerifyCode";
+
 
 const queryClient = new QueryClient();
 
@@ -17,7 +19,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/verificar-codigo" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

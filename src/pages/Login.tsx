@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { ForgotPasswordModal } from "@/components/forgot-password-modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { supabase, setRememberMe as persistRememberMe } from "@/lib/supabase";
 
 import loginHero from "../assets/login-hero.jpg";
 
+
 export default function LoginPage() {
   useSeo({
     title: "Login — ELO Transporte e Turismo",
@@ -19,12 +21,14 @@ export default function LoginPage() {
   });
 
   const navigate = useNavigate();
-  const { showSuccess, showNegative, showError } = useFeedback();
+  const { showNegative, showError } = useFeedback();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+
 
   // 1) Listener registrado ANTES de qualquer checagem de sessão.
   // 2) getUser() revalida o token no servidor de auth (não confia no storage).
@@ -109,33 +113,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleResetPassword = async () => {
-    if (!email.trim()) {
-      showNegative(
-        "E-mail obrigatório",
-        "Informe seu e-mail no campo acima para receber o link de redefinição de senha.",
-      );
-      return;
-    }
 
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
 
-      showSuccess(
-        "Link enviado",
-        "Enviamos um link de redefinição de senha para o seu e-mail. Verifique também a caixa de spam.",
-      );
-    } catch (err) {
-      showError(
-        "Falha ao enviar o link",
-        "Não conseguimos enviar o e-mail de redefinição de senha. Tente novamente em instantes.",
-        err,
-      );
-    }
-  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans lg:flex-row">
@@ -225,7 +204,7 @@ export default function LoginPage() {
                 </Label>
                 <button
                   type="button"
-                  onClick={handleResetPassword}
+                  onClick={() => setForgotOpen(true)}
                   className="text-xs font-medium text-brand-accent hover:underline"
                 >
                   Esqueceu a senha?
@@ -267,6 +246,13 @@ export default function LoginPage() {
           </form>
         </div>
       </div>
+
+      <ForgotPasswordModal
+        open={forgotOpen}
+        onOpenChange={setForgotOpen}
+        defaultEmail={email}
+      />
     </div>
+
   );
 }
