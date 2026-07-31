@@ -367,7 +367,7 @@ export default function LeadForm() {
                     .map((vid) => viagens.find((x) => x.id === vid))
                     .filter(
                       (v): v is ViagemOpcao =>
-                        Boolean(v) && v.situacao === "ativa",
+                        v !== undefined && v.situacao === "ativa",
                     )
                     .sort((a, b) =>
                       `${a.data_partida}T${a.hora_partida || "00:00"}`.localeCompare(
