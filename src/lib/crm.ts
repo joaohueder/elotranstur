@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
-import type { Viagem, ViagemImagem, ViagemSituacao } from "@/lib/viagens";
+import type { Viagem } from "@/lib/viagens";
+
+export type CrmLeadNota = {
+  id: string;
+  lead_id: string;
+  data_hora: string;
+  descricao: string;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 export type CrmStage = {
   id: string;
