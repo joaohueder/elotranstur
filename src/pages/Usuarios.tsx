@@ -462,12 +462,43 @@ export default function UsuariosPage() {
       }
     }
 
+    // Estado final confirmado pelo servidor.
+    const confirmedPermissions: Record<string, PermissionRow> = {};
+    for (const p of result.permissions ?? []) {
+      confirmedPermissions[p.modulo] = {
+        user_id: result.user_id,
+        modulo: p.modulo,
+        can_view: p.can_view,
+        can_edit: p.can_edit,
+        can_delete: p.can_delete,
+      };
+    }
+
+    const applyConfirmed = (list: ManagedUser[]) =>
+      list.map((u) =>
+        u.id === result.user_id
+          ? {
+              ...u,
+              nome: result.nome ?? null,
+              ativo: result.ativo ?? u.ativo,
+              role: (result.role ?? u.role) as AppRole,
+              permissions:
+                (result.role ?? u.role) === "admin" ? {} : confirmedPermissions,
+            }
+          : u,
+      );
+
+    setUsers(applyConfirmed);
     setSaving(false);
     toast.success("Alterações salvas.");
     setSelectedId(null);
     setDraft(null);
+
+    // Recarrega e reaplica o estado confirmado (a leitura pode ser filtrada por RLS).
     await load();
+    setUsers(applyConfirmed);
   }
+
 
 
 
