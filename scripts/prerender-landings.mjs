@@ -81,13 +81,14 @@ async function gerarCapaJpeg(dist, slug, urlImagem) {
 
 
 /** Troca/insere as metatags sociais do HTML da SPA. */
-function montarHtml(base, viagem) {
+function montarHtml(base, viagem, imagemPrevia) {
   const titulo = viagem.titulo || viagem.destino || "Viagem";
   const descricao =
     [titulo, viagem.subtitulo].filter(Boolean).join(" — ") ||
     String(viagem.descricao ?? "").slice(0, 155);
-  const imagem = capaDa(viagem.imagens);
+  const imagem = imagemPrevia ?? capaDa(viagem.imagens);
   const url = `${SITE_URL}/v/${viagem.slug}`;
+
 
   const tags = [
     `<title>${escapar(titulo)}</title>`,
