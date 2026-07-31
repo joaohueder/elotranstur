@@ -478,6 +478,11 @@ export default function Dashboard() {
             </Painel>
           </div>
 
+          {/* LINHA 4 — últimas visitas */}
+          <UltimasVisitas />
+
+
+
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
             Os números de visitas são atualizados automaticamente a cada 30

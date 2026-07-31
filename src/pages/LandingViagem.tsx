@@ -100,6 +100,11 @@ export default function LandingViagem() {
     const res = (data ?? {}) as { ok?: boolean; message?: string };
     if (!res.ok) return res.message || "Não foi possível enviar agora.";
 
+    // Marca a visita atual como convertida em lead (Dashboard).
+    void marcarVisitaLead(dados.whatsapp);
+
+
+
     // Meta Ads: conversão de Lead (Pixel + API de Conversões, deduplicados).
     void rastrearMeta("Lead", {
       userData: { nome: dados.nome, whatsapp: dados.whatsapp },
