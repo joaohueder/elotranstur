@@ -72,6 +72,8 @@ type Props = {
     nome: string;
     whatsapp: string;
   }) => Promise<string | null>;
+  /** Link do WhatsApp da empresa aberto após o envio (com nome e destino). */
+  whatsappUrl?: (dados: { nome: string; whatsapp: string }) => string | null;
   /** Modo demonstração: o formulário não envia nada. */
   preview?: boolean;
 };
@@ -446,10 +448,12 @@ function ctaStyle(m: LandingModel): CSSProperties {
 function Formulario({
   m,
   onSubmit,
+  whatsappUrl,
   preview,
 }: {
   m: LandingModel;
   onSubmit?: Props["onSubmit"];
+  whatsappUrl?: Props["whatsappUrl"];
   preview?: boolean;
 }) {
   const [nome, setNome] = useState("");
@@ -457,6 +461,7 @@ function Formulario({
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+  const [linkWhats, setLinkWhats] = useState<string | null>(null);
 
   const inputStyle: CSSProperties = {
     background: "var(--lp-bg)",
@@ -482,8 +487,22 @@ function Formulario({
         </span>
         <p className="text-base font-semibold">Recebemos o seu contato!</p>
         <p className="mt-1 text-sm" style={{ color: "var(--lp-muted)" }}>
-          Em breve nossa equipe fala com você no WhatsApp.
+          {linkWhats
+            ? "Estamos abrindo o WhatsApp para você falar com a agência."
+            : "Em breve nossa equipe fala com você no WhatsApp."}
         </p>
+        {linkWhats && (
+          <a
+            href={linkWhats}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex h-12 w-full items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.16em] transition hover:brightness-110"
+            style={ctaStyle(m)}
+          >
+            <Send className="h-4 w-4" />
+            Abrir o WhatsApp
+          </a>
+        )}
       </div>
     );
   }
@@ -504,15 +523,30 @@ function Formulario({
           setErro("Informe um WhatsApp válido com DDD.");
           return;
         }
+        const dados = { nome: nome.trim(), whatsapp };
+        const url = whatsappUrl?.(dados) ?? null;
+        setLinkWhats(url);
+        // A janela é aberta ainda dentro do clique para não ser bloqueada.
+        const janela = url ? window.open("", "_blank", "noopener") : null;
+
         if (preview || !onSubmit) {
+          if (janela && url) janela.location.href = url;
           setOk(true);
           return;
         }
         setEnviando(true);
-        const msg = await onSubmit({ nome: nome.trim(), whatsapp });
+        const msg = await onSubmit(dados);
         setEnviando(false);
-        if (msg) setErro(msg);
-        else setOk(true);
+        if (msg) {
+          janela?.close();
+          setErro(msg);
+          return;
+        }
+        if (url) {
+          if (janela) janela.location.href = url;
+          else window.location.href = url;
+        }
+        setOk(true);
       }}
     >
       <div>
@@ -578,7 +612,14 @@ function Formulario({
 /* LandingView                                                         */
 /* ------------------------------------------------------------------ */
 
-export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props) {
+export function LandingView({
+  viagem,
+  modelo,
+  paleta,
+  onSubmit,
+  whatsappUrl,
+  preview,
+}: Props) {
   const m = useMemo(
     () => getLandingModel(modelo ?? viagem.modelo),
     [modelo, viagem.modelo],
@@ -839,7 +880,12 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
   );
 
   const formulario = (
-    <Formulario m={m} onSubmit={onSubmit} preview={preview} />
+    <Formulario
+      m={m}
+      onSubmit={onSubmit}
+      whatsappUrl={whatsappUrl}
+      preview={preview}
+    />
   );
 
   const botaoAncora = (
