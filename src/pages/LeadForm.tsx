@@ -58,27 +58,6 @@ type ViagemOpcao = Pick<
   | "situacao"
 >;
 
-function dataHoraLocalParaUTC(value: string): string {
-  if (!value) return "";
-  const tzOffset = new Date().getTimezoneOffset();
-  const [data, hora] = value.split("T");
-  const [ano, mes, dia] = data.split("-").map(Number);
-  const [hh, mm] = (hora || "00:00").split(":").map(Number);
-  const localDate = new Date(ano, mes - 1, dia, hh, mm, 0, 0);
-  const utcDate = new Date(localDate.getTime() - tzOffset * 60 * 1000);
-  return utcDate.toISOString().slice(0, 16);
-}
-
-function dataHoraUTCParaLocal(iso: string): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const ano = d.getFullYear();
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const dia = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${ano}-${mes}-${dia}T${hh}:${mm}`;
-}
 
 export default function LeadForm() {
   const { id } = useParams();
@@ -102,16 +81,8 @@ export default function LeadForm() {
   const [viagemSelecionada, setViagemSelecionada] = useState<string>("");
 
   const [notas, setNotas] = useState<CrmLeadNota[]>([]);
-  const [novaNotaDataHora, setNovaNotaDataHora] = useState<string>("");
   const [novaNotaDescricao, setNovaNotaDescricao] = useState("");
   const [salvandoNota, setSalvandoNota] = useState(false);
-
-  useEffect(() => {
-    if (abaAtiva === "notas" && !novaNotaDataHora) {
-      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abaAtiva]);
 
   useEffect(() => {
     let ativo = true;
@@ -166,9 +137,6 @@ export default function LeadForm() {
           await carregarNotas(id);
         } else {
           setStageId(lista[0]?.id ?? "");
-          setNovaNotaDataHora(
-            dataHoraUTCParaLocal(new Date().toISOString()),
-          );
         }
       } catch (err) {
         feedback.showError(
@@ -296,19 +264,14 @@ export default function LeadForm() {
 
     setSalvandoNota(true);
     try {
-      const dataHoraFinal = novaNotaDataHora
-        ? dataHoraLocalParaUTC(novaNotaDataHora)
-        : new Date().toISOString();
-
       const { error } = await supabase.from("crm_lead_notas").insert({
         lead_id: id,
-        data_hora: dataHoraFinal,
+        data_hora: new Date().toISOString(),
         descricao: novaNotaDescricao.trim(),
       });
       if (error) throw error;
 
       setNovaNotaDescricao("");
-      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
       await carregarNotas(id);
       feedback.showSuccess("Nota adicionada", "A anotação foi salva no histórico do lead.");
     } catch (err) {
@@ -651,28 +614,12 @@ export default function LeadForm() {
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-[280px_1fr]">
                   <div>
-                    <FieldLabel help="Momento em que a anotação foi feita. Já vem preenchida automaticamente, mas você pode ajustar se quiser">
+                    <FieldLabel help="Momento em que a anotação foi feita. É preenchida automaticamente com a data/hora atual no momento do salvamento">
                       Data e hora
                     </FieldLabel>
-                    <div className="mt-1.5 flex gap-2">
-                      <Input
-                        type="datetime-local"
-                        value={novaNotaDataHora}
-                        onChange={(e) => setNovaNotaDataHora(e.target.value)}
-                        className="flex-1"
-                      />
-                      <HintButton
-                        type="button"
-                        variant="outline"
-                        hint="Preenche a data e hora com o momento atual"
-                        onClick={() =>
-                          setNovaNotaDataHora(
-                            dataHoraUTCParaLocal(new Date().toISOString()),
-                          )
-                        }
-                      >
-                        Agora
-                      </HintButton>
+                    <div className="mt-1.5 flex h-9 items-center rounded-sm border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      Será registrado automaticamente no momento do salvamento
                     </div>
                   </div>
                   <div>
