@@ -158,10 +158,183 @@
   margin-inline: auto;
 }
 
-/* Landing pages: aumenta a tipografia base em telas pequenas para melhor
-   legibilidade em anúncios e dispositivos móveis. */
-@media (max-width: 640px) {
-  html.landing-mobile-larger-font {
-    font-size: 18px;
+/* ------------------------------------------------------------------ */
+/* Landing pages públicas — animações e refinos                        */
+/* ------------------------------------------------------------------ */
+
+.lp-root {
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+/* Entrada suave ao rolar */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.lp-reveal.lp-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entradas imediatas do topo */
+@keyframes lp-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
+.lp-rise {
+  animation: lp-rise-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes lp-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-pop {
+  animation: lp-pop-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes lp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lp-fade {
+  animation: lp-fade-in 0.25s ease-out both;
+}
+
+/* Zoom lento na foto principal (Ken Burns) */
+@keyframes lp-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+.lp-kenburns {
+  animation: lp-kenburns 12s ease-out both;
+}
+
+/* Botão principal */
+.lp-cta {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.lp-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.32),
+    transparent
+  );
+  transform: skewX(-18deg);
+  animation: lp-shine 3.6s ease-in-out infinite;
+}
+@keyframes lp-shine {
+  0%,
+  55% {
+    left: -60%;
+  }
+  100% {
+    left: 130%;
+  }
+}
+.lp-cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+.lp-cta:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Cartões */
+.lp-card {
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease;
+}
+@media (hover: hover) {
+  .lp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--lp-shadow);
+  }
+}
+
+/* Campos do formulário */
+.lp-input:focus {
+  border-color: var(--lp-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lp-accent) 22%, transparent);
+}
+
+/* Selo de escassez */
+@keyframes lp-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--lp-accent) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--lp-accent) 0%, transparent);
+  }
+}
+.lp-pulse {
+  animation: lp-pulse 2.6s ease-out infinite;
+}
+
+/* Barra fixa de ação no celular */
+.lp-barra {
+  animation: lp-rise-in 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Rolagem horizontal sem barra visível */
+.lp-scroll-x {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.lp-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-reveal,
+  .lp-rise,
+  .lp-pop,
+  .lp-fade,
+  .lp-kenburns,
+  .lp-pulse,
+  .lp-barra,
+  .lp-cta::after {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
