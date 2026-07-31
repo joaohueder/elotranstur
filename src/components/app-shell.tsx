@@ -99,47 +99,97 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden text-right leading-tight md:block">
-              <p className="text-sm font-medium text-foreground">
-                {nome || email}
-              </p>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                {isAdmin ? "Administrador" : "Usuário"}
-              </p>
-            </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={handleRefresh}
-                  aria-label="Atualizar permissões"
-                  className="grid h-9 w-9 place-items-center rounded-sm border border-border text-muted-foreground hover:bg-muted"
-                >
-                  <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[240px] text-xs">
-                Recarrega o que você pode acessar, sem precisar sair e entrar de novo.
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex h-9 items-center gap-2 rounded-sm bg-primary px-4 text-[11px] font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  Sair
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[240px] text-xs">
-                Encerra sua sessão e volta para a tela de login.
-              </TooltipContent>
-            </Tooltip>
+          <div className="flex items-center gap-3">
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Menu da minha conta"
+                      className="flex h-10 items-center gap-2 rounded-sm border border-border px-2 text-left hover:bg-muted sm:px-3"
+                    >
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-semibold uppercase text-primary-foreground">
+                        {(nome || email || "?").charAt(0)}
+                      </span>
+                      <span className="hidden leading-tight md:block">
+                        <span className="block text-sm font-medium text-foreground">
+                          {nome || email}
+                        </span>
+                        <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                          {isAdmin ? "Administrador" : "Usuário"}
+                        </span>
+                      </span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[240px] text-xs">
+                  Abre o menu da sua conta: editar perfil, recarregar permissões
+                  e sair do sistema.
+                </TooltipContent>
+              </Tooltip>
 
+              <DropdownMenuContent align="end" className="w-64 rounded-sm">
+                <DropdownMenuLabel className="space-y-0.5">
+                  <span className="block text-sm font-medium text-foreground">
+                    {nome || "Minha conta"}
+                  </span>
+                  <span className="block text-xs font-normal text-muted-foreground">
+                    {email}
+                  </span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 rounded-sm"
+                  onSelect={() => navigate("/perfil")}
+                >
+                  <UserCog className="h-4 w-4" />
+                  <span className="flex-1">
+                    Editar perfil
+                    <span className="block text-[10px] font-normal text-muted-foreground">
+                      Altere seu nome e sua senha.
+                    </span>
+                  </span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 rounded-sm"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    void handleRefresh();
+                  }}
+                >
+                  <RefreshCw
+                    className={cn("h-4 w-4", refreshing && "animate-spin")}
+                  />
+                  <span className="flex-1">
+                    Recarregar permissões
+                    <span className="block text-[10px] font-normal text-muted-foreground">
+                      Atualiza o que você pode acessar, sem sair do sistema.
+                    </span>
+                  </span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 rounded-sm text-destructive focus:text-destructive"
+                  onSelect={() => void handleLogout()}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="flex-1">
+                    Sair
+                    <span className="block text-[10px] font-normal text-muted-foreground">
+                      Encerra a sessão e volta para o login.
+                    </span>
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+
         </div>
       </header>
 
