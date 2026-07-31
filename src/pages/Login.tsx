@@ -155,6 +155,15 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {authError && (
+            <div
+              role="alert"
+              className="mb-6 border-l-2 border-destructive bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {authError}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label
