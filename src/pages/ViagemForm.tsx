@@ -41,6 +41,7 @@ export default function ViagemForm() {
   const editando = Boolean(id);
   const navigate = useNavigate();
   const feedback = useFeedback();
+  const { cropperUi, ajustarCorte } = useImageCropper();
 
   const [loading, setLoading] = useState(Boolean(id));
   const [salvando, setSalvando] = useState(false);
