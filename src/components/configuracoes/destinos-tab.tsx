@@ -264,16 +264,20 @@ export function DestinosTab() {
                   <HintButton
                     hint={
                       !d.novo && usos(d.nome) > 0
-                        ? "Este destino está sendo usado em viagens e não pode ser excluído."
+                        ? `Este destino está sendo usado em ${usos(d.nome)} viagem(ns) e não pode ser excluído. Remova ou altere essas viagens primeiro.`
                         : "Remove este destino da lista."
                     }
                     variant="outline"
                     size="icon"
-                    className="rounded-sm text-destructive"
+                    className="rounded-sm text-destructive disabled:cursor-not-allowed disabled:opacity-40"
                     disabled={!d.novo && usos(d.nome) > 0}
                     onClick={() => void remover(index)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {!d.novo && usos(d.nome) > 0 ? (
+                      <Lock className="h-4 w-4" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </HintButton>
                 )}
               </div>
