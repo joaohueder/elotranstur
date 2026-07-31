@@ -398,11 +398,6 @@ export default function Usuarios() {
                       <span className="rounded-sm bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                         {u.is_admin ? "Administrador" : "Usuário"}
                       </span>
-                      {isOnline && (
-                        <span className="rounded-sm bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-800">
-                          Logado agora
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
