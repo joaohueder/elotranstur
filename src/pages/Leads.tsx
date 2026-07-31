@@ -4,7 +4,6 @@ import {
   CalendarDays,
   Loader2,
   MapPin,
-  MessageCircle,
   Pencil,
   Plus,
   Trash2,
