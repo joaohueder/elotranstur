@@ -70,7 +70,6 @@ type Props = {
   onSubmit?: (dados: {
     nome: string;
     whatsapp: string;
-    mensagem: string;
   }) => Promise<string | null>;
   /** Modo demonstração: o formulário não envia nada. */
   preview?: boolean;
