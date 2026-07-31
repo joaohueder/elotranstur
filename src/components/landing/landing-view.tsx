@@ -539,7 +539,7 @@ function Formulario({
 
   if (ok) {
     return (
-      <div className="lp-pop p-6 text-center sm:p-7" style={caixa} id="reservar">
+      <div className="lp-pop p-6 text-center sm:p-7" style={caixa} id={ancora ? "reservar" : undefined}>
         <span
           className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full"
           style={{ background: "var(--lp-accent)", color: "var(--lp-accent-fg)" }}
@@ -572,7 +572,7 @@ function Formulario({
 
   return (
     <form
-      id="reservar"
+      id={ancora ? "reservar" : undefined}
       className={compacto ? "space-y-3 p-5" : "space-y-3.5 p-5 sm:p-6"}
       style={caixa}
       onSubmit={async (e) => {
