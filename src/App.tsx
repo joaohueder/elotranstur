@@ -9,6 +9,7 @@ import { FeedbackProvider } from "@/lib/feedback";
 import { RobotsPolicy } from "@/lib/seo";
 import { PublicShell } from "@/components/public-shell";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
+import { MetaPixelTracker } from "@/lib/meta-ads";
 
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
@@ -56,6 +57,8 @@ export default function App() {
         <LayoutSettingsProvider>
         <BrowserRouter>
           <RobotsPolicy />
+          <MetaPixelTracker />
+
 
           <Routes>
             <Route path="/" element={<Home />} />

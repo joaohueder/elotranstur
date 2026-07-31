@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { PublicShell } from "@/components/public-shell";
 import { supabase } from "@/lib/supabase";
+import { rastrearMeta } from "@/lib/meta-ads";
 import { useSeo } from "@/lib/seo";
 import { useLayoutSettings } from "@/lib/layout-settings";
 import { capaDa } from "@/lib/viagens";
@@ -98,6 +99,16 @@ export default function LandingViagem() {
     }
     const res = (data ?? {}) as { ok?: boolean; message?: string };
     if (!res.ok) return res.message || "Não foi possível enviar agora.";
+
+    // Meta Ads: conversão de Lead (Pixel + API de Conversões, deduplicados).
+    void rastrearMeta("Lead", {
+      userData: { nome: dados.nome, whatsapp: dados.whatsapp },
+      customData: {
+        content_name: tituloViagem,
+        content_category: [viagem?.destino, viagem?.uf].filter(Boolean).join("/"),
+      },
+    });
+
     return null;
   }
 

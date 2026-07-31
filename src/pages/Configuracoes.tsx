@@ -15,6 +15,7 @@ import { CrmTab } from "@/components/configuracoes/crm-tab";
 import { DestinosTab } from "@/components/configuracoes/destinos-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 import { EmpresaTab } from "@/components/configuracoes/empresa-tab";
+import { IntegracaoTab } from "@/components/configuracoes/integracao-tab";
 
 import { Button } from "@/components/ui/button";
 import { HelpTip, HintButton } from "@/components/help";
@@ -170,6 +171,9 @@ export default function Configuracoes() {
               <TabsTrigger value="email" className="rounded-sm">
                 E-mail
               </TabsTrigger>
+              <TabsTrigger value="integracao" className="rounded-sm">
+                Integração
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -189,6 +193,11 @@ export default function Configuracoes() {
           <TabsContent value="email" className="m-0 p-4 sm:p-6">
             <EmailTab />
           </TabsContent>
+
+          <TabsContent value="integracao" className="m-0 p-4 sm:p-6">
+            <IntegracaoTab />
+          </TabsContent>
+
 
 
 
