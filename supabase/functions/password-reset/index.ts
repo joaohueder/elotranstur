@@ -1,0 +1,241 @@
+// Edge Function: recuperação de senha própria do sistema.
+// Envia o código de 6 dígitos pelo SMTP configurado em Configurações > E-mail.
+//
+// Deploy na instância auto-hospedada:
+//   supabase functions deploy password-reset --no-verify-jwt
+//
+// Ações (POST JSON): { action: "request" | "verify" | "reset", ... }
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json" },
+  });
+}
+
+const CODE_TTL_MIN = 15;
+const TOKEN_TTL_MIN = 15;
+const MAX_ATTEMPTS = 5;
+
+async function sha256(value: string) {
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  );
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function gerarCodigo() {
+  const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000;
+  return String(n).padStart(6, "0");
+}
+
+function admin() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+}
+
+async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: string) {
+  const { data: cfg, error } = await db
+    .from("app_email_settings")
+    .select("*")
+    .eq("id", true)
+    .maybeSingle();
+
+  if (error) throw new Error(`Falha ao ler configuração de e-mail: ${error.message}`);
+  if (!cfg?.smtp_host || !cfg?.from_email) {
+    throw new Error(
+      "SMTP não configurado. Configure o servidor de e-mail em Configurações > E-mail.",
+    );
+  }
+  if (cfg.ativo === false) {
+    throw new Error("O envio de e-mails está desativado em Configurações > E-mail.");
+  }
+
+  const porta = Number(cfg.smtp_port);
+  const tlsImplicito = porta === 465 ? true : Boolean(cfg.smtp_secure) && porta !== 587;
+
+  const client = new SMTPClient({
+    connection: {
+      hostname: cfg.smtp_host,
+      port: porta,
+      tls: tlsImplicito,
+      auth: cfg.smtp_user
+        ? { username: cfg.smtp_user, password: cfg.smtp_password }
+        : undefined,
+    },
+  });
+
+  await client.send({
+    from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
+    to: para,
+    replyTo: cfg.reply_to || undefined,
+    subject: `${codigo} é o seu código de recuperação · ELO`,
+    html: `
+      <div style="font-family:Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#111827">
+        <p style="letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 8px">
+          ELO Transporte e Turismo
+        </p>
+        <h1 style="font-size:22px;margin:0 0 16px">Código de recuperação de senha</h1>
+        <p style="font-size:14px;line-height:1.6;color:#374151;margin:0 0 20px">
+          Use o código abaixo na tela de recuperação para criar uma nova senha.
+          Ele expira em ${CODE_TTL_MIN} minutos.
+        </p>
+        <div style="font-size:32px;letter-spacing:12px;font-weight:700;text-align:center;padding:20px;background:#f3f4f6;border:1px solid #e5e7eb">
+          ${codigo}
+        </div>
+        <p style="font-size:12px;color:#9ca3af;margin-top:24px">
+          Se você não pediu a troca de senha, ignore este e-mail.
+        </p>
+      </div>
+    `,
+  });
+
+  await client.close();
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+
+  try {
+    const body = (await req.json()) as {
+      action?: string;
+      email?: string;
+      code?: string;
+      token?: string;
+      password?: string;
+    };
+
+    const db = admin();
+    const email = (body.email ?? "").trim().toLowerCase();
+    const acao = body.action;
+
+    if (acao === "request") {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ error: "Informe um e-mail válido." }, 400);
+      }
+
+      const { data: userId, error: findErr } = await db.rpc(
+        "find_user_id_by_email",
+        { _email: email },
+      );
+      if (findErr) return json({ error: findErr.message }, 400);
+
+      // Não revela se o e-mail existe.
+      if (!userId) return json({ ok: true });
+
+      const codigo = gerarCodigo();
+      const { error: insErr } = await db.from("password_reset_codes").insert({
+        user_id: userId,
+        email,
+        code_hash: await sha256(codigo),
+        expires_at: new Date(Date.now() + CODE_TTL_MIN * 60_000).toISOString(),
+      });
+      if (insErr) return json({ error: insErr.message }, 400);
+
+      await enviarEmail(db, email, codigo);
+      return json({ ok: true });
+    }
+
+    if (acao === "verify") {
+      const code = (body.code ?? "").trim();
+      if (!email || code.length !== 6) {
+        return json({ error: "Informe o e-mail e os 6 dígitos do código." }, 400);
+      }
+
+      const { data: registro, error: selErr } = await db
+        .from("password_reset_codes")
+        .select("*")
+        .eq("email", email)
+        .is("used_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (selErr) return json({ error: selErr.message }, 400);
+
+      if (!registro || new Date(registro.expires_at) < new Date()) {
+        return json({ error: "Código inválido ou expirado." }, 400);
+      }
+      if (registro.attempts >= MAX_ATTEMPTS) {
+        return json(
+          { error: "Muitas tentativas. Solicite um novo código." },
+          429,
+        );
+      }
+
+      if (registro.code_hash !== (await sha256(code))) {
+        await db
+          .from("password_reset_codes")
+          .update({ attempts: registro.attempts + 1 })
+          .eq("id", registro.id);
+        return json({ error: "Código inválido ou expirado." }, 400);
+      }
+
+      const token = crypto.randomUUID() + crypto.randomUUID().replaceAll("-", "");
+      const { error: updErr } = await db
+        .from("password_reset_codes")
+        .update({
+          verified_at: new Date().toISOString(),
+          reset_token: token,
+          expires_at: new Date(Date.now() + TOKEN_TTL_MIN * 60_000).toISOString(),
+        })
+        .eq("id", registro.id);
+      if (updErr) return json({ error: updErr.message }, 400);
+
+      return json({ ok: true, token });
+    }
+
+    if (acao === "reset") {
+      const token = (body.token ?? "").trim();
+      const password = body.password ?? "";
+      if (!token) return json({ error: "Sessão de recuperação inválida." }, 400);
+      if (password.length < 8) {
+        return json({ error: "A nova senha deve ter pelo menos 8 caracteres." }, 400);
+      }
+
+      const { data: registro, error: selErr } = await db
+        .from("password_reset_codes")
+        .select("*")
+        .eq("reset_token", token)
+        .is("used_at", null)
+        .maybeSingle();
+      if (selErr) return json({ error: selErr.message }, 400);
+
+      if (!registro || !registro.verified_at || new Date(registro.expires_at) < new Date()) {
+        return json(
+          { error: "Sessão de recuperação expirada. Solicite um novo código." },
+          400,
+        );
+      }
+
+      const { error: updUserErr } = await db.auth.admin.updateUserById(
+        registro.user_id,
+        { password },
+      );
+      if (updUserErr) return json({ error: updUserErr.message }, 400);
+
+      await db
+        .from("password_reset_codes")
+        .update({ used_at: new Date().toISOString(), reset_token: null })
+        .eq("id", registro.id);
+
+      return json({ ok: true });
+    }
+
+    return json({ error: "Ação inválida." }, 400);
+  } catch (err) {
+    return json({ error: err instanceof Error ? err.message : String(err) }, 500);
+  }
+});

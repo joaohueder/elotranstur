@@ -11,8 +11,12 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useFeedback } from "@/lib/feedback";
+import {
+  resetTokenStore,
+  solicitarCodigoSenha,
+  verificarCodigoSenha,
+} from "@/lib/password-reset";
 import { useSeo } from "@/lib/seo";
-import { supabase } from "@/lib/supabase";
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
@@ -68,50 +72,23 @@ export default function VerifyCodePage() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: "recovery",
-      });
+      const resultado = await verificarCodigoSenha(email, token);
 
-      if (error) {
-        const invalido =
-          error.status === 400 ||
-          error.status === 401 ||
-          /invalid|expired|token/i.test(error.message);
-
-        if (invalido) {
-          showNegative(
-            "Código inválido ou expirado",
-            "Confira o código recebido por e-mail ou solicite um novo envio.",
-          );
-          setCode("");
-        } else {
-          showError(
-            "Falha ao confirmar o código",
-            "Não conseguimos validar o código informado. Tente novamente em instantes e, se persistir, envie os detalhes abaixo ao administrador do sistema.",
-            error,
-          );
-        }
-        return;
-      }
-
-      if (!data.session) {
-        showNegative(
-          "Não foi possível confirmar",
-          "O código foi aceito, mas a sessão de recuperação não foi criada. Solicite um novo código.",
-        );
-        return;
-      }
-
+      resetTokenStore.set(resultado.token);
       verifiedRef.current = true;
       navigate("/reset-password", { replace: true });
     } catch (err) {
-      showError(
-        "Erro inesperado",
-        "Não conseguimos confirmar o código. Verifique sua conexão e tente novamente.",
-        err,
-      );
+      const mensagem = err instanceof Error ? err.message : String(err);
+      if (/inválido|invalido|expirad|tentativas/i.test(mensagem)) {
+        showNegative("Código inválido ou expirado", mensagem);
+        setCode("");
+      } else {
+        showError(
+          "Falha ao confirmar o código",
+          "Não conseguimos validar o código informado. Tente novamente em instantes e, se persistir, envie os detalhes abaixo ao administrador do sistema.",
+          err,
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -120,10 +97,8 @@ export default function VerifyCodePage() {
   const handleResend = async () => {
     if (cooldown > 0) return;
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      await solicitarCodigoSenha(email);
+
 
       setCode("");
       setCooldown(RESEND_SECONDS);

@@ -72,3 +72,13 @@ Retorno esperado: `{"ok":true}`.
   (Configurações → E-mail), e não variáveis de ambiente.
 - Se o container não tiver acesso à internet na porta SMTP, o envio falha com
   timeout de conexão — libere a saída para o host/porta do seu provedor.
+
+## Função password-reset (recuperação de senha)
+
+Publique também a função `password-reset` **sem verificação de JWT** (ela é chamada por quem não está logado):
+
+```bash
+supabase functions deploy password-reset --no-verify-jwt
+```
+
+Ela lê o SMTP salvo em Configurações > E-mail e envia o código de 6 dígitos.
