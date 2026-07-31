@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Loader2,
@@ -10,6 +10,7 @@ import {
   ChevronRight,
   MapPin,
   CalendarDays,
+  Clock,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
