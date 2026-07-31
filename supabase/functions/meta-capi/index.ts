@@ -142,35 +142,48 @@ Deno.serve(async (req) => {
       }
 
       // 2) O token consegue ENVIAR eventos? (evento de teste)
+      let url = (body.event_source_url ?? "").trim();
+      if (!/^https?:\/\//i.test(url)) url = "https://example.com/";
+      const ip =
+        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+      const payload: Record<string, unknown> = {
+        data: [
+          {
+            event_name: "PageView",
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: `validate-${crypto.randomUUID()}`,
+            action_source: "website",
+            event_source_url: url,
+            user_data: {
+              client_user_agent:
+                req.headers.get("user-agent") ?? "Mozilla/5.0 (elo-validation)",
+              client_ip_address: ip,
+              external_id: [await sha256(`elo-validate-${pixel}`)],
+            },
+          },
+        ],
+      };
+      if (cfg.test_event_code) payload.test_event_code = cfg.test_event_code;
+
       const teste = await fetch(
         `${GRAPH}/${pixel}/events?access_token=${encodeURIComponent(token)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            data: [
-              {
-                event_name: "PageView",
-                event_time: Math.floor(Date.now() / 1000),
-                event_id: `validate-${crypto.randomUUID()}`,
-                action_source: "website",
-                event_source_url: body.event_source_url ?? "",
-                user_data: { client_user_agent: "elo-validation" },
-              },
-            ],
-            ...(cfg.test_event_code || body.custom_data
-              ? { test_event_code: cfg.test_event_code || undefined }
-              : {}),
-          }),
+          body: JSON.stringify(payload),
         },
       );
       const testeBody = await teste.json().catch(() => ({}));
       if (!teste.ok) {
+        const e = (testeBody as any)?.error ?? {};
+        const detalhe = [e.message, e.error_user_title, e.error_user_msg]
+          .filter(Boolean)
+          .join(" · ");
         return json(
           {
             error:
-              testeBody?.error?.message ??
-              `O Pixel foi encontrado, mas o envio de eventos falhou (HTTP ${teste.status}).`,
+              detalhe ||
+              `O envio de eventos falhou (HTTP ${teste.status}).`,
             details: testeBody,
           },
           400,
@@ -193,10 +206,11 @@ Deno.serve(async (req) => {
 
       const nome = body.user_data?.nome ?? "";
       const partes = nome.trim().split(/\s+/);
+      const ipCli =
+        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
       const user_data: Record<string, unknown> = {
-        client_user_agent: req.headers.get("user-agent") ?? "",
-        client_ip_address:
-          req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined,
+        client_user_agent: req.headers.get("user-agent") ?? "Mozilla/5.0",
+        client_ip_address: ipCli,
       };
       if (body.user_data?.fbp) user_data.fbp = body.user_data.fbp;
       if (body.user_data?.fbc) user_data.fbc = body.user_data.fbc;
@@ -211,13 +225,19 @@ Deno.serve(async (req) => {
         const ln = await hashNome(partes.slice(1).join(" "));
         if (ln) user_data.ln = [ln];
       }
+      if (!ph && !body.user_data?.fbp && !body.user_data?.fbc) {
+        user_data.external_id = [await sha256(`${ipCli}|${user_data.client_user_agent}`)];
+      }
+
+      let srcUrl = (body.event_source_url ?? "").trim();
+      if (!/^https?:\/\//i.test(srcUrl)) srcUrl = "";
 
       const evento = {
         event_name: body.event_name || "PageView",
         event_time: Math.floor(Date.now() / 1000),
         event_id: body.event_id || crypto.randomUUID(),
         action_source: "website",
-        event_source_url: body.event_source_url ?? "",
+        ...(srcUrl ? { event_source_url: srcUrl } : {}),
         user_data,
         ...(body.custom_data ? { custom_data: body.custom_data } : {}),
       };
