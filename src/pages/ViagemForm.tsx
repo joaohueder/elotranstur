@@ -119,6 +119,7 @@ export default function ViagemForm() {
       const payload = {
         destino: destino.trim(),
         data_partida: dataPartida,
+        valor: parseValor(valor),
         itens_inclusos: itens,
         situacao,
       };
