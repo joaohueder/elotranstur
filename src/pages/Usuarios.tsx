@@ -325,7 +325,7 @@ export default function Usuarios() {
               title="Filtra a lista de usuários pelo nome ou e-mail digitado."
             />
           </div>
-          <div className="flex gap-1">
+          <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1">
             {(
               [
                 ["todos", "Todos"],
