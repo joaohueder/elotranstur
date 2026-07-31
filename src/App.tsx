@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConfirmProvider } from "@/lib/confirm";
 import { FeedbackProvider } from "@/lib/feedback";
 
+import { PublicShell } from "@/components/public-shell";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
+
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
 import LeadForm from "@/pages/LeadForm";
