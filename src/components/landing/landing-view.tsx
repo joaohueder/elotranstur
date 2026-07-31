@@ -420,8 +420,10 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
         <Foto
           key={img.url}
           url={img.url}
-          className="aspect-[4/3] w-full"
-          onClick={() => abrirFoto(img.url)}
+          className={`aspect-[4/3] w-full transition ${
+            capaAtiva === img.url ? "opacity-100 ring-2 ring-offset-2" : "opacity-80 hover:opacity-100"
+          }`}
+          onClick={() => setCapaSelecionada(img.url)}
         />
       ))}
     </div>
