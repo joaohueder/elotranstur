@@ -5,6 +5,7 @@ import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useDestinos, type Destino } from "@/lib/destinos";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
@@ -13,6 +14,7 @@ type DestinoDraft = Destino & { novo?: boolean };
 
 export function DestinosTab() {
   const feedback = useFeedback();
+  const { confirm } = useConfirm();
   const { can, isAdmin } = useAuthz();
   const { destinos, loading, reload } = useDestinos();
 
@@ -58,6 +60,13 @@ export function DestinosTab() {
       return;
     }
     if (!podeExcluir) return;
+    const ok = await confirm({
+      title: "Excluir destino",
+      message: `Tem certeza que deseja excluir o destino "${item.nome}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Sim, excluir",
+      variant: "destructive",
+    });
+    if (!ok) return;
     try {
       const { error: err } = await supabase.from("destinos").delete().eq("id", item.id);
       if (err) throw err;

@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
@@ -117,6 +118,7 @@ function LeadLifetime({ createdAt, oculto }: { createdAt: string; oculto?: boole
 export default function Crm() {
   const navigate = useNavigate();
   const feedback = useFeedback();
+  const { confirm } = useConfirm();
   const { can, isAdmin } = useAuthz();
   const { stages, leads, loading, error, reload } = useCrmData();
   const [busca, setBusca] = useState("");
@@ -178,6 +180,13 @@ export default function Crm() {
 
   async function excluirLead(lead: CrmLead) {
     if (!podeExcluir) return;
+    const ok = await confirm({
+      title: "Excluir lead",
+      message: `Tem certeza que deseja excluir o lead "${lead.nome}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Sim, excluir",
+      variant: "destructive",
+    });
+    if (!ok) return;
     try {
       const { error: err } = await supabase
         .from("crm_leads")

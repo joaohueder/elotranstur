@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDestinos, nomeDestino } from "@/lib/destinos";
+import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
 import { comprimirImagem } from "@/lib/image-compress";
 import { useImageCropper } from "@/components/image-crop-modal";
@@ -75,6 +76,7 @@ export default function ViagemForm() {
   const editando = Boolean(id);
   const navigate = useNavigate();
   const feedback = useFeedback();
+  const { confirm } = useConfirm();
   const { cropperUi, ajustarCorte } = useImageCropper();
 
   const [loading, setLoading] = useState(Boolean(id));
@@ -251,6 +253,14 @@ export default function ViagemForm() {
 
   async function removerImagem(indice: number) {
     const alvo = imagens[indice];
+    const ok = await confirm({
+      title: "Remover foto",
+      message:
+        "Tem certeza que deseja remover esta foto da galeria? Esta ação não poderá ser desfeita.",
+      confirmText: "Sim, remover",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setImagens((prev) => {
       const restante = prev.filter((_, i) => i !== indice);
       if (restante.length > 0 && !restante.some((i) => i.capa)) {
@@ -605,9 +615,18 @@ export default function ViagemForm() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() =>
-                          setItens((prev) => prev.filter((_, idx) => idx !== i))
-                        }
+                        onClick={() => {
+                          void (async () => {
+                            const ok = await confirm({
+                              title: "Remover item incluso",
+                              message: `Tem certeza que deseja remover "${item}" da lista de itens inclusos?`,
+                              confirmText: "Sim, remover",
+                              variant: "destructive",
+                            });
+                            if (!ok) return;
+                            setItens((prev) => prev.filter((_, idx) => idx !== i));
+                          })();
+                        }}
                         aria-label={`Remover ${item}`}
                       >
                         <X className="h-4 w-4" />
