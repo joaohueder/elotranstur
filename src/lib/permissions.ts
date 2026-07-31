@@ -1,5 +1,6 @@
 /** Módulos do sistema ELO com controle de permissão. */
 export const MODULES = [
+  { key: "crm", label: "CRM" },
   { key: "usuarios", label: "Usuários" },
   { key: "configuracoes", label: "Configurações" },
 ] as const;
