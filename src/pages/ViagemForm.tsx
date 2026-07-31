@@ -150,8 +150,11 @@ export default function ViagemForm() {
           );
           continue;
         }
+        // Abre o modal de corte antes do envio.
+        const recortado = await ajustarCorte(arquivo);
+        if (!recortado) continue;
         // Comprime antes de enviar: menor arquivo possível mantendo a qualidade.
-        const otimizado = await comprimirImagem(arquivo);
+        const otimizado = await comprimirImagem(recortado);
         const extensao = otimizado.name.split(".").pop() ?? "jpg";
         const caminho = `${id ?? "novas"}/${crypto.randomUUID()}.${extensao}`;
         const { error } = await supabase.storage
