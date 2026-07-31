@@ -625,16 +625,7 @@ export default function LeadForm() {
                   Nova anotação
                   <HelpTip texto="Registre contatos, observações ou qualquer informação importante sobre o lead. A data/hora ajuda a reconstruir o histórico." />
                 </h3>
-                <div className="grid gap-4 sm:grid-cols-[280px_1fr]">
-                  <div>
-                    <FieldLabel help="Momento em que a anotação foi feita. É preenchida automaticamente com a data/hora atual no momento do salvamento">
-                      Data e hora
-                    </FieldLabel>
-                    <div className="mt-1.5 flex h-9 items-center rounded-sm border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
-                      <CalendarDays className="mr-2 h-4 w-4" />
-                      Será registrado automaticamente no momento do salvamento
-                    </div>
-                  </div>
+                <div>
                   <div>
                     <FieldLabel help="Texto livre com o registro da conversa, observação ou próximo passo">
                       Descrição
@@ -647,6 +638,7 @@ export default function LeadForm() {
                     />
                   </div>
                 </div>
+
                 <div className="mt-4 flex justify-end">
                   <HintButton
                     type="button"
