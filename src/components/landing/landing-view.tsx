@@ -973,7 +973,9 @@ export function LandingView({
   /** Barra fixa de ação no celular. */
   const barraMobile = (
     <div
-      className="lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 lg:hidden"
+      className={`lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 transition-transform duration-300 ease-out will-change-transform lg:hidden ${
+        formularioVisivel ? "translate-y-full opacity-0" : "translate-y-0 opacity-100"
+      }`}
       style={{
         background: "var(--lp-surface)",
         borderColor: "var(--lp-border)",
