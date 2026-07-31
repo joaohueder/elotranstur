@@ -92,6 +92,8 @@ export default function UsuariosPage() {
   });
 
   const authz = useAuthz();
+  const canEdit = authz.can("usuarios", "edit");
+  const canDelete = authz.can("usuarios", "delete");
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -569,16 +571,18 @@ export default function UsuariosPage() {
             <RefreshCw className={loading ? "size-4 animate-spin" : "size-4"} />
             Atualizar
           </Button>
-          <Button
-            className="rounded-none"
-            onClick={() => {
-              setForm(EMPTY_FORM);
-              setCreateOpen(true);
-            }}
-          >
-            <Plus className="size-4" />
-            Novo usuário
-          </Button>
+          {canEdit && (
+            <Button
+              className="rounded-none"
+              onClick={() => {
+                setForm(EMPTY_FORM);
+                setCreateOpen(true);
+              }}
+            >
+              <Plus className="size-4" />
+              Novo usuário
+            </Button>
+          )}
         </div>
       </header>
 
@@ -740,7 +744,7 @@ export default function UsuariosPage() {
                     <Settings2 className="size-4" />
                     Gerenciar
                   </Button>
-                  {u.id !== authz.userId && (
+                  {canDelete && u.id !== authz.userId && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -900,7 +904,7 @@ export default function UsuariosPage() {
               </div>
 
               <DialogFooter className="gap-2">
-                {selected.id !== authz.userId && (
+                {canDelete && selected.id !== authz.userId && (
                   <Button
                     variant="outline"
                     className="mr-auto rounded-none text-destructive hover:text-destructive"
@@ -920,7 +924,7 @@ export default function UsuariosPage() {
                 </Button>
                 <Button
                   className="rounded-none"
-                  disabled={saving || !isDirty}
+                  disabled={saving || !isDirty || !canEdit}
                   onClick={() => void handleSave()}
                 >
                   {saving ? "Salvando…" : "Salvar alterações"}
