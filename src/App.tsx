@@ -45,6 +45,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={200}>
       <FeedbackProvider>
+        <ConfirmProvider>
         <LayoutSettingsProvider>
         <BrowserRouter>
 
