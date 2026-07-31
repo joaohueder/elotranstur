@@ -485,9 +485,15 @@ export default function Crm() {
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {lead.whatsapp}
               </p>
-              <span className="mt-2 inline-block rounded-sm bg-muted px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-                {lead.origem}
-              </span>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="inline-block rounded-sm bg-muted px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {lead.origem}
+                </span>
+                <LeadLifetime
+                  createdAt={lead.created_at}
+                  oculto={isStageFinal(stage)}
+                />
+              </div>
 
               <LeadViagens viagens={lead.viagens} compacto />
 
