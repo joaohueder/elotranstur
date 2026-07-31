@@ -55,18 +55,8 @@ export default function Viagens() {
   const landingUrl = (v: Viagem) =>
     v.landing_slug ? `${window.location.origin}/v/${v.landing_slug}` : null;
 
-  /**
-   * Link usado para COMPARTILHAR (WhatsApp, Facebook, Telegram).
-   * Passa pela função de servidor que entrega a foto de capa, o título e o
-   * subtítulo na miniatura; o visitante é redirecionado para a landing page.
-   */
-  const compartilharUrl = (v: Viagem) =>
-    v.landing_slug
-      ? `${SUPABASE_BASE_URL}/functions/v1/landing-og/${v.landing_slug}`
-      : null;
-
   async function copiarUrl(v: Viagem) {
-    const url = compartilharUrl(v);
+    const url = landingUrl(v);
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
@@ -80,6 +70,7 @@ export default function Viagens() {
       );
     }
   }
+
 
 
   const podeEditar = isAdmin || can("viagens", "edit");
