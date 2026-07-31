@@ -26,6 +26,7 @@ import { formatWhatsapp, useCrmOrigens, type CrmStage } from "@/lib/crm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { ViagemCountdown } from "@/components/viagem-countdown";
 import {
   capaDa,
   formatarData,
