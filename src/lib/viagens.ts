@@ -28,7 +28,10 @@ export type Viagem = {
   imagens: ViagemImagem[];
   situacao: ViagemSituacao;
   created_at: string;
+  landing_slug?: string | null;
+  landing_ativa?: boolean | null;
 };
+
 
 /** Retorna a URL da foto de capa da galeria (ou a primeira imagem). */
 export function capaDa(imagens: ViagemImagem[] | null | undefined): string | null {
