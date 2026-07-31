@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Plus, Save, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Plus,
+  Save,
+  X,
+} from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -15,7 +23,12 @@ import {
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
-import { VIAGEM_SITUACOES, type ViagemSituacao } from "@/lib/viagens";
+import {
+  VIAGEM_SITUACOES,
+  maskValor,
+  parseValor,
+  type ViagemSituacao,
+} from "@/lib/viagens";
 
 export default function ViagemForm() {
   const { id } = useParams();
@@ -28,6 +41,7 @@ export default function ViagemForm() {
   const [destino, setDestino] = useState("");
   const [dataPartida, setDataPartida] = useState("");
   const [situacao, setSituacao] = useState<ViagemSituacao>("rascunho");
+  const [valor, setValor] = useState("");
   const [itens, setItens] = useState<string[]>([]);
   const [novoItem, setNovoItem] = useState("");
 
@@ -39,13 +53,14 @@ export default function ViagemForm() {
       try {
         const { data, error } = await supabase
           .from("viagens")
-          .select("destino, data_partida, itens_inclusos, situacao")
+          .select("destino, data_partida, valor, itens_inclusos, situacao")
           .eq("id", id)
           .maybeSingle();
         if (error) throw error;
         if (!ativo || !data) return;
         setDestino(data.destino ?? "");
         setDataPartida(data.data_partida ?? "");
+        setValor(maskValor(String(Math.round(Number(data.valor ?? 0) * 100))));
         setItens((data.itens_inclusos ?? []) as string[]);
         setSituacao((data.situacao ?? "rascunho") as ViagemSituacao);
       } catch (err) {
