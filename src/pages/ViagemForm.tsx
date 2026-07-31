@@ -482,8 +482,8 @@ export default function ViagemForm() {
             </div>
 
             <div>
-              <FieldLabel htmlFor="vagas" help="Quantas pessoas cabem nesta viagem no total.">
-                Quantidade de vagas
+              <FieldLabel htmlFor="vagas" help="Quantas vagas ainda estão disponíveis para esta viagem.">
+                Vagas disponíveis
               </FieldLabel>
               <Input
                 id="vagas"
