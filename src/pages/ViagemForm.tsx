@@ -80,14 +80,25 @@ export default function ViagemForm() {
   }, [id]);
 
   function adicionarItem() {
-    const valor = novoItem.trim();
-    if (!valor) return;
-    if (itens.some((i) => i.toLowerCase() === valor.toLowerCase())) {
+    const texto = novoItem.trim();
+    if (!texto) return;
+    if (itens.some((i) => i.toLowerCase() === texto.toLowerCase())) {
       feedback.showNegative("Item duplicado", "Este item já foi adicionado.");
       return;
     }
-    setItens((prev) => [...prev, valor]);
+    setItens((prev) => [...prev, texto]);
     setNovoItem("");
+  }
+
+  /** Move um item incluso para cima ou para baixo na ordem. */
+  function moverItem(indice: number, direcao: -1 | 1) {
+    setItens((prev) => {
+      const destino = indice + direcao;
+      if (destino < 0 || destino >= prev.length) return prev;
+      const copia = [...prev];
+      [copia[indice], copia[destino]] = [copia[destino], copia[indice]];
+      return copia;
+    });
   }
 
   async function salvar() {
