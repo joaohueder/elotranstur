@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -30,10 +31,12 @@ function GroupHeader({
   icon,
   titulo,
   descricao,
+  help,
 }: {
   icon: React.ReactNode;
   titulo: string;
   descricao: string;
+  help: string;
 }) {
   return (
     <div className="flex items-start gap-3">
@@ -41,7 +44,10 @@ function GroupHeader({
         {icon}
       </span>
       <div>
-        <p className="text-sm font-medium text-foreground">{titulo}</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+          {titulo}
+          <HelpTip texto={help} />
+        </p>
         <p className="text-xs text-muted-foreground">{descricao}</p>
       </div>
     </div>
@@ -327,6 +333,7 @@ export function CrmTab() {
           icon={<KanbanSquare className="h-4 w-4" />}
           titulo="Etapas do funil"
           descricao="Colunas do kanban do CRM. Defina nome, cor, ordem e disponibilidade."
+          help="Etapas são as colunas do funil de vendas, por onde os leads passam até fechar."
         />
 
         <div className="rounded-sm border border-border">
@@ -385,14 +392,15 @@ export function CrmTab() {
                     Ativa
                   </label>
                   {(podeExcluir || s.novo) && (
-                    <Button
+                    <HintButton
+                      hint="Remove esta etapa do funil."
                       variant="outline"
                       size="icon"
                       className="rounded-sm text-destructive"
                       onClick={() => void removerStage(index)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </HintButton>
                   )}
                 </div>
               </li>
@@ -406,15 +414,17 @@ export function CrmTab() {
 
           {podeEditar && (
             <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:justify-between">
-              <Button
+              <HintButton
+                hint="Cria uma nova coluna/etapa no funil de vendas."
                 variant="outline"
                 className="rounded-sm"
                 onClick={adicionarStage}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Adicionar etapa
-              </Button>
-              <Button
+              </HintButton>
+              <HintButton
+                hint="Grava as alterações feitas nas etapas do funil."
                 className="rounded-sm sm:min-w-32"
                 disabled={salvandoStages}
                 onClick={() => void salvarStages()}
@@ -425,7 +435,7 @@ export function CrmTab() {
                   <Save className="mr-2 h-4 w-4" />
                 )}
                 Salvar etapas
-              </Button>
+              </HintButton>
             </div>
           )}
         </div>
@@ -437,6 +447,7 @@ export function CrmTab() {
           icon={<Tag className="h-4 w-4" />}
           titulo="Origens dos leads"
           descricao="Opções disponíveis no campo Origem do cadastro de leads."
+          help="Origens indicam de onde veio o lead, como indicação, site ou redes sociais."
         />
 
         <div className="rounded-sm border border-border">
@@ -485,14 +496,15 @@ export function CrmTab() {
                     Ativa
                   </label>
                   {(podeExcluir || o.novo) && (
-                    <Button
+                    <HintButton
+                      hint="Remove esta origem da lista."
                       variant="outline"
                       size="icon"
                       className="rounded-sm text-destructive"
                       onClick={() => void removerOrigem(index)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </HintButton>
                   )}
                 </div>
               </li>
@@ -506,15 +518,17 @@ export function CrmTab() {
 
           {podeEditar && (
             <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:justify-between">
-              <Button
+              <HintButton
+                hint="Cria uma nova origem para ser usada no cadastro de leads."
                 variant="outline"
                 className="rounded-sm"
                 onClick={adicionarOrigem}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Adicionar origem
-              </Button>
-              <Button
+              </HintButton>
+              <HintButton
+                hint="Grava as alterações feitas nas origens dos leads."
                 className="rounded-sm sm:min-w-32"
                 disabled={salvandoOrigens}
                 onClick={() => void salvarOrigens()}
@@ -525,7 +539,7 @@ export function CrmTab() {
                   <Save className="mr-2 h-4 w-4" />
                 )}
                 Salvar origens
-              </Button>
+              </HintButton>
             </div>
           )}
         </div>

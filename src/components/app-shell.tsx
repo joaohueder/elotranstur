@@ -71,22 +71,37 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {isAdmin ? "Administrador" : "Usuário"}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={handleRefresh}
-              title="Atualizar permissões"
-              className="grid h-9 w-9 place-items-center rounded-sm border border-border text-muted-foreground hover:bg-muted"
-            >
-              <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex h-9 items-center gap-2 rounded-sm bg-primary px-4 text-[11px] font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Sair
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  aria-label="Atualizar permissões"
+                  className="grid h-9 w-9 place-items-center rounded-sm border border-border text-muted-foreground hover:bg-muted"
+                >
+                  <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[240px] text-xs">
+                Recarrega o que você pode acessar, sem precisar sair e entrar de novo.
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex h-9 items-center gap-2 rounded-sm bg-primary px-4 text-[11px] font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sair
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[240px] text-xs">
+                Encerra sua sessão e volta para a tela de login.
+              </TooltipContent>
+            </Tooltip>
+
           </div>
         </div>
       </header>
