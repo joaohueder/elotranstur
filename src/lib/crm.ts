@@ -147,7 +147,10 @@ export type CrmOrigem = {
   nome: string;
   posicao: number;
   ativo: boolean;
+  /** Origem usada pelo próprio sistema (ex.: Landing Page). Não pode ser editada/excluída. */
+  sistema: boolean;
 };
+
 
 /** Carrega as origens de lead configuradas no sistema. */
 export function useCrmOrigens(somenteAtivas = false) {
@@ -161,7 +164,7 @@ export function useCrmOrigens(somenteAtivas = false) {
     try {
       let query = supabase
         .from("crm_origens")
-        .select("id, nome, posicao, ativo")
+        .select("id, nome, posicao, ativo, sistema")
         .order("posicao", { ascending: true });
       if (somenteAtivas) query = query.eq("ativo", true);
       const { data, error: err } = await query;
