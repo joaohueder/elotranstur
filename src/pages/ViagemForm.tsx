@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Eye,
+  Laptop,
+  Smartphone,
+  Tablet,
   GripVertical,
   ImagePlus,
   Loader2,
@@ -43,6 +46,13 @@ import {
   slugify,
 } from "@/lib/landing-models";
 import { LandingView } from "@/components/landing/landing-view";
+import { DevicePreviewFrame } from "@/components/device-preview-frame";
+
+const PREVIEW_DEVICES = {
+  mobile: { nome: "Celular", largura: 390, altura: 720, icone: Smartphone },
+  tablet: { nome: "Tablet", largura: 820, altura: 760, icone: Tablet },
+  desktop: { nome: "Computador", largura: 1280, altura: 760, icone: Laptop },
+} as const;
 import { Switch } from "@/components/ui/switch";
 import {
   VIAGEM_SITUACOES,
