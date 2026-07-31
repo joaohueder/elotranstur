@@ -19,9 +19,15 @@ function visitorId(): string {
   }
 }
 
+/** Rotas públicas contabilizadas no Dashboard (login fica de fora). */
+const ROTAS_PUBLICAS = ["/v/", "/verificar-codigo", "/reset-password"];
+
 /** Páginas públicas cujas visitas são contabilizadas no Dashboard. */
 function ehPaginaPublica(pathname: string): boolean {
-  return pathname.startsWith("/v/");
+  if (pathname === "/login" || pathname.startsWith("/login/")) return false;
+  return ROTAS_PUBLICAS.some(
+    (p) => pathname === p.replace(/\/$/, "") || pathname.startsWith(p),
+  );
 }
 
 /**
