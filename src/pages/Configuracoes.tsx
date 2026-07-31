@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Loader2, Monitor, Save } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { EmailTab } from "@/components/configuracoes/email-tab";
+
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
