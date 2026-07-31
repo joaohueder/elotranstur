@@ -1,5 +1,15 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import { CalendarDays, Check, Clock, MapPin, Send, Users } from "lucide-react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  MapPin,
+  Send,
+  Users,
+  X,
+} from "lucide-react";
 
 import { getLandingModel, type LandingModel } from "@/lib/landing-models";
 import {
@@ -52,7 +62,15 @@ function themeVars(m: LandingModel): CSSProperties {
   };
 }
 
-function Foto({ url, className }: { url: string | null; className?: string }) {
+function Foto({
+  url,
+  className,
+  onClick,
+}: {
+  url: string | null;
+  className?: string;
+  onClick?: () => void;
+}) {
   if (!url) {
     return (
       <div
@@ -67,9 +85,84 @@ function Foto({ url, className }: { url: string | null; className?: string }) {
       src={url}
       alt=""
       loading="lazy"
-      className={className}
+      onClick={onClick}
+      className={`${className ?? ""}${onClick ? " cursor-zoom-in" : ""}`}
       style={{ objectFit: "cover" }}
     />
+  );
+}
+
+/** Galeria em tela cheia com navegação entre as fotos. */
+function Lightbox({
+  urls,
+  indice,
+  onFechar,
+  onIr,
+}: {
+  urls: string[];
+  indice: number;
+  onFechar: () => void;
+  onIr: (i: number) => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onFechar();
+      if (e.key === "ArrowRight") onIr((indice + 1) % urls.length);
+      if (e.key === "ArrowLeft") onIr((indice - 1 + urls.length) % urls.length);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [indice, urls.length, onFechar, onIr]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-4"
+      onClick={onFechar}
+    >
+      <button
+        type="button"
+        aria-label="Fechar galeria"
+        onClick={onFechar}
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+      >
+        <X className="h-5 w-5" />
+      </button>
+      {urls.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Foto anterior"
+            onClick={(e) => {
+              e.stopPropagation();
+              onIr((indice - 1 + urls.length) % urls.length);
+            }}
+            className="absolute left-3 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            aria-label="Próxima foto"
+            onClick={(e) => {
+              e.stopPropagation();
+              onIr((indice + 1) % urls.length);
+            }}
+            className="absolute right-3 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      )}
+      <img
+        src={urls[indice]}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[85vh] max-w-full object-contain"
+      />
+      <span className="absolute bottom-5 text-xs uppercase tracking-[0.2em] text-white/80">
+        {indice + 1} / {urls.length}
+      </span>
+    </div>
   );
 }
 
@@ -236,6 +329,15 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
   const imagens = viagem.imagens ?? [];
   const capa = capaDa(imagens);
   const galeria = imagens.filter((i) => i.url !== capa).slice(0, 6);
+  const todasFotos = [capa, ...galeria.map((i) => i.url)].filter(
+    (u): u is string => !!u,
+  );
+  const [fotoAberta, setFotoAberta] = useState<number | null>(null);
+  const abrirFoto = (url: string | null) => {
+    if (!url) return;
+    const i = todasFotos.indexOf(url);
+    if (i >= 0) setFotoAberta(i);
+  };
   const itens = viagem.itens_inclusos ?? [];
   const titulo = viagem.titulo?.trim() || viagem.destino;
   const fonte = m.fonte === "serif" ? "font-serif" : "font-sans";
@@ -317,6 +419,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           key={img.url}
           url={img.url}
           className="aspect-[4/3] w-full"
+          onClick={() => abrirFoto(img.url)}
         />
       ))}
     </div>
@@ -360,6 +463,14 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
       style={{ ...themeVars(m), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
     >
       {children}
+      {fotoAberta !== null && (
+        <Lightbox
+          urls={todasFotos}
+          indice={fotoAberta}
+          onFechar={() => setFotoAberta(null)}
+          onIr={(i) => setFotoAberta(i)}
+        />
+      )}
     </div>
   );
 
@@ -369,6 +480,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.1fr_1fr] lg:py-16">
         <div className="space-y-8">
           <Foto
+            onClick={() => abrirFoto(capa)}
             url={capa}
             className="aspect-[4/3] w-full"
           />
@@ -391,7 +503,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     return wrapper(
       <div>
         <div className="relative h-[62vh] min-h-[380px] w-full overflow-hidden">
-          <Foto url={capa} className="absolute inset-0 h-full w-full" />
+          <Foto onClick={() => abrirFoto(capa)} url={capa} className="absolute inset-0 h-full w-full" />
           <div
             className="absolute inset-0"
             style={{
@@ -427,7 +539,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     return wrapper(
       <div className="mx-auto max-w-4xl space-y-10 px-5 py-12">
         <div className="text-center">{cabecalho}</div>
-        <Foto url={capa} className="aspect-[16/9] w-full" />
+        <Foto onClick={() => abrirFoto(capa)} url={capa} className="aspect-[16/9] w-full" />
         <div className="mx-auto max-w-2xl space-y-8 text-center">
           <div className="flex justify-center">{preco}</div>
           {descricao}
@@ -465,7 +577,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           {preco}
         </div>
 
-        <Foto url={capa} className="mb-8 aspect-[21/9] w-full" />
+        <Foto onClick={() => abrirFoto(capa)} url={capa} className="mb-8 aspect-[21/9] w-full" />
 
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-8">
@@ -500,7 +612,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           </span>
           {preco}
         </div>
-        <Foto url={capa} className="mt-8 aspect-[16/7] w-full" />
+        <Foto onClick={() => abrirFoto(capa)} url={capa} className="mt-8 aspect-[16/7] w-full" />
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1fr]">
           <div className="space-y-8">
             {descricao}
@@ -534,7 +646,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
             </p>
           )}
         </div>
-        <Foto url={capa} className="my-10 aspect-[3/2] w-full" />
+        <Foto onClick={() => abrirFoto(capa)} url={capa} className="my-10 aspect-[3/2] w-full" />
         <div className="space-y-10">
           {preco}
           {descricao}
@@ -560,7 +672,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           boxShadow: "0 30px 60px -30px rgba(0,0,0,0.45)",
         }}
       >
-        <Foto url={capa} className="aspect-[16/8] w-full" />
+        <Foto onClick={() => abrirFoto(capa)} url={capa} className="aspect-[16/8] w-full" />
         <div className="space-y-8 p-6 sm:p-10">
           {cabecalho}
           {preco}

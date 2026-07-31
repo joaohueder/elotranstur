@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Eye,
+  Laptop,
+  Smartphone,
+  Tablet,
   GripVertical,
   ImagePlus,
   Loader2,
@@ -43,6 +46,13 @@ import {
   slugify,
 } from "@/lib/landing-models";
 import { LandingView } from "@/components/landing/landing-view";
+import { DevicePreviewFrame } from "@/components/device-preview-frame";
+
+const PREVIEW_DEVICES = {
+  mobile: { nome: "Celular", largura: 390, altura: 720, icone: Smartphone },
+  tablet: { nome: "Tablet", largura: 820, altura: 760, icone: Tablet },
+  desktop: { nome: "Computador", largura: 1280, altura: 760, icone: Laptop },
+} as const;
 import { Switch } from "@/components/ui/switch";
 import {
   VIAGEM_SITUACOES,
@@ -84,6 +94,8 @@ export default function ViagemForm() {
   const [landingSlug, setLandingSlug] = useState("");
   const [landingAtiva, setLandingAtiva] = useState(true);
   const [previewModelo, setPreviewModelo] = useState<string | null>(null);
+  const [previewDevice, setPreviewDevice] =
+    useState<"mobile" | "tablet" | "desktop">("desktop");
   const inputArquivo = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -816,8 +828,37 @@ export default function ViagemForm() {
                   <DialogDescription>
                     Veja como a página ficará para o cliente com os dados atuais.
                   </DialogDescription>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {(
+                      Object.keys(PREVIEW_DEVICES) as Array<
+                        keyof typeof PREVIEW_DEVICES
+                      >
+                    ).map((chave) => {
+                      const d = PREVIEW_DEVICES[chave];
+                      const Icone = d.icone;
+                      return (
+                        <HintButton
+                          key={chave}
+                          type="button"
+                          size="sm"
+                          variant={previewDevice === chave ? "default" : "outline"}
+                          hint={`Simula a página em ${d.nome} (${d.largura}px de largura).`}
+                          onClick={() => setPreviewDevice(chave)}
+                          className="h-8 text-xs"
+                        >
+                          <Icone className="mr-2 h-3.5 w-3.5" />
+                          {d.nome}
+                        </HintButton>
+                      );
+                    })}
+                  </div>
                 </DialogHeader>
-                <div className="max-h-[calc(90vh-8rem)] overflow-auto">
+                <div className="max-h-[calc(90vh-10rem)] overflow-auto bg-muted/40 p-4">
+                  <DevicePreviewFrame
+                    key={`${previewModelo}-${previewDevice}`}
+                    width={PREVIEW_DEVICES[previewDevice].largura}
+                    height={PREVIEW_DEVICES[previewDevice].altura}
+                  >
                   <LandingView
                     preview
                     modelo={previewModelo ?? landingModelo}
@@ -835,6 +876,7 @@ export default function ViagemForm() {
                       imagens,
                     }}
                   />
+                  </DevicePreviewFrame>
                 </div>
               </DialogContent>
             </Dialog>
