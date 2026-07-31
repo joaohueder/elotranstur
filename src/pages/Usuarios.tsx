@@ -279,7 +279,7 @@ export default function Usuarios() {
             <HintButton
               hint="Cria um novo usuário com acesso ao sistema."
               onClick={abrirNovo}
-              className="rounded-sm"
+              className="w-full rounded-sm sm:w-auto"
             >
               <Plus className="mr-2 h-4 w-4" />
               Novo usuário
