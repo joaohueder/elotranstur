@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Plus,
-  MessageCircle,
   Pencil,
   Trash2,
   ChevronLeft,
@@ -29,7 +28,6 @@ import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
 import {
   useCrmData,
-  whatsappLink,
   tempoDeVida,
   isStageFinal,
   type CrmLead,
@@ -343,15 +341,6 @@ export default function Crm() {
                                 />
                               </div>
                             </div>
-                            <a
-                              href={whatsappLink(lead.whatsapp)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-border text-muted-foreground"
-                              aria-label={`Abrir WhatsApp de ${lead.nome}`}
-                            >
-                              <MessageCircle className="h-4 w-4" />
-                            </a>
                           </div>
 
                           <LeadViagens viagens={lead.viagens} />
@@ -527,15 +516,6 @@ export default function Crm() {
                   )}
                 </div>
                 <div className="flex gap-1">
-                  <a
-                    href={whatsappLink(lead.whatsapp)}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Abrir WhatsApp"
-                    className="grid h-7 w-7 place-items-center rounded-sm text-muted-foreground hover:bg-muted"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                  </a>
                   {podeEditar && (
                     <button
                       type="button"
