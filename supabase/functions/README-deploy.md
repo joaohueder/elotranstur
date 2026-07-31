@@ -82,3 +82,22 @@ supabase functions deploy password-reset --no-verify-jwt
 ```
 
 Ela lê o SMTP salvo em Configurações > E-mail e envia o código de 6 dígitos.
+
+## Função landing-og (miniatura do WhatsApp)
+
+O WhatsApp não executa JavaScript, então ele nunca lê as metatags geradas pela
+SPA. A função `landing-og` devolve um HTML pronto com a foto de capa, o título
+e o subtítulo da viagem, e redireciona o visitante para `/v/<slug>`.
+
+```bash
+supabase functions deploy landing-og --no-verify-jwt
+```
+
+Opcional: defina `SITE_URL` (padrão `https://elotranstur.com.br`) para o
+domínio público onde a SPA está publicada.
+
+Teste:
+
+```bash
+curl -s "https://supabase.vps10409.panel.icontainer.cloud/functions/v1/landing-og/brotas-c396ea" | head -20
+```
