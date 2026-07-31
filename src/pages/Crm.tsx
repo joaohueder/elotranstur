@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Loader2,
@@ -10,6 +10,7 @@ import {
   ChevronRight,
   MapPin,
   CalendarDays,
+  Clock,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -29,6 +30,8 @@ import { cn } from "@/lib/utils";
 import {
   useCrmData,
   whatsappLink,
+  tempoDeVida,
+  isStageFinal,
   type CrmLead,
   type CrmStage,
   type CrmLeadViagem,
@@ -88,6 +91,28 @@ function LeadViagens({
         )}
       </div>
     </div>
+  );
+}
+
+/** Marcador de tempo de vida do lead, atualizado a cada minuto. */
+function LeadLifetime({ createdAt, oculto }: { createdAt: string; oculto?: boolean }) {
+  const [texto, setTexto] = useState(() => tempoDeVida(createdAt));
+
+  useEffect(() => {
+    setTexto(tempoDeVida(createdAt));
+    const id = setInterval(() => setTexto(tempoDeVida(createdAt)), 60_000);
+    return () => clearInterval(id);
+  }, [createdAt]);
+
+  if (oculto) return null;
+  return (
+    <span
+      title={`Tempo de vida no sistema: ${texto}`}
+      className="inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+    >
+      <Clock className="h-3 w-3" />
+      {texto}
+    </span>
   );
 }
 
@@ -311,6 +336,12 @@ export default function Crm() {
                               <p className="mt-0.5 text-xs text-muted-foreground">
                                 {lead.whatsapp} · {lead.origem}
                               </p>
+                              <div className="mt-2">
+                                <LeadLifetime
+                                  createdAt={lead.created_at}
+                                  oculto={isStageFinal(stage)}
+                                />
+                              </div>
                             </div>
                             <a
                               href={whatsappLink(lead.whatsapp)}
@@ -460,9 +491,15 @@ export default function Crm() {
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {lead.whatsapp}
               </p>
-              <span className="mt-2 inline-block rounded-sm bg-muted px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-                {lead.origem}
-              </span>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="inline-block rounded-sm bg-muted px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {lead.origem}
+                </span>
+                <LeadLifetime
+                  createdAt={lead.created_at}
+                  oculto={isStageFinal(stage)}
+                />
+              </div>
 
               <LeadViagens viagens={lead.viagens} compacto />
 
