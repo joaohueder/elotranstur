@@ -37,6 +37,7 @@ import {
   type LandingModel,
 } from "@/lib/landing-models";
 import { getLandingPalette, type LandingPalette } from "@/lib/landing-palettes";
+import { formatWhatsapp } from "@/lib/crm";
 import {
   capaDa,
   formatarData,
@@ -495,12 +496,20 @@ function Formulario({
       onSubmit={async (e) => {
         e.preventDefault();
         setErro(null);
+        if (nome.trim().length < 2) {
+          setErro("Informe seu nome.");
+          return;
+        }
+        if (whatsapp.replace(/\D/g, "").length < 10) {
+          setErro("Informe um WhatsApp válido com DDD.");
+          return;
+        }
         if (preview || !onSubmit) {
           setOk(true);
           return;
         }
         setEnviando(true);
-        const msg = await onSubmit({ nome, whatsapp });
+        const msg = await onSubmit({ nome: nome.trim(), whatsapp });
         setEnviando(false);
         if (msg) setErro(msg);
         else setOk(true);
@@ -530,10 +539,11 @@ function Formulario({
       <input
         required
         value={whatsapp}
-        onChange={(e) => setWhatsapp(e.target.value)}
-        placeholder="Seu WhatsApp (com DDD)"
+        onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
+        placeholder="(11) 90000-0000"
         aria-label="Seu WhatsApp"
         inputMode="tel"
+        maxLength={15}
         className="h-11 w-full px-3 text-sm outline-none"
         style={inputStyle}
       />
