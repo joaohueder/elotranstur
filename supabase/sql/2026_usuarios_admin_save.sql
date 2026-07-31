@@ -62,7 +62,7 @@ set search_path = public
 as $$
 declare
   p jsonb;
-  allowed_modules text[] := array['viagens','leads','crm','landing_pages','configuracoes','usuarios'];
+  allowed_modules text[] := array['usuarios','configuracoes'];
   result jsonb;
 begin
   if not public.is_admin() then
@@ -147,6 +147,9 @@ $$;
 
 revoke all on function public.admin_save_user(uuid, text, boolean, public.app_role, jsonb) from public, anon;
 grant execute on function public.admin_save_user(uuid, text, boolean, public.app_role, jsonb) to authenticated;
+
+-- 4) Limpa permissões de módulos que não existem mais
+delete from public.user_permissions where modulo <> all (array['usuarios','configuracoes']);
 
 commit;
 
