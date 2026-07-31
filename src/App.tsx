@@ -72,14 +72,7 @@ export default function App() {
               }
             />
 
-            <Route
-              path="/login"
-              element={
-                <PublicShell>
-                  <Login />
-                </PublicShell>
-              }
-            />
+            <Route path="/login" element={<Login />} />
             <Route
               path="/verificar-codigo"
               element={
