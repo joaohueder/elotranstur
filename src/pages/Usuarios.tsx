@@ -34,7 +34,7 @@ import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permiss
 import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
-import { cn } from "@/lib/utils";
+import { cn, formatarTempoRestante } from "@/lib/utils";
 
 
 type UsuarioRow = {
@@ -48,6 +48,8 @@ type UsuarioRow = {
   permissoes: PermissionMap;
   online: boolean;
   sessao_iniciada_em: string | null;
+  sessao_atualizada_em: string | null;
+  sessao_expira_em: string | null;
   sessao_ip: string | null;
 };
 
@@ -124,6 +126,8 @@ export default function Usuarios() {
         permissoes: normalizePermissions(u.permissoes),
         online: Boolean(u.online),
         sessao_iniciada_em: (u.sessao_iniciada_em as string) ?? null,
+        sessao_atualizada_em: (u.sessao_atualizada_em as string) ?? null,
+        sessao_expira_em: (u.sessao_expira_em as string) ?? null,
         sessao_ip: (u.sessao_ip as string) ?? null,
       })),
     );
