@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
 import { comprimirImagem } from "@/lib/image-compress";
+import { useImageCropper } from "@/components/image-crop-modal";
 import { supabase } from "@/lib/supabase";
 import {
   VIAGEM_SITUACOES,
