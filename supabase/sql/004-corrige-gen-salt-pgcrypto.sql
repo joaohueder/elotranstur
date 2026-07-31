@@ -9,11 +9,19 @@ begin;
 
 create schema if not exists extensions;
 
--- Garante o pgcrypto (se já existir em outro schema, o create abaixo é ignorado)
+-- Garante o pgcrypto e o move para o schema "extensions" (padrão Supabase)
 do $$
+declare
+  v_schema text;
 begin
-  if not exists (select 1 from pg_extension where extname = 'pgcrypto') then
+  select n.nspname into v_schema
+    from pg_extension e join pg_namespace n on n.oid = e.extnamespace
+   where e.extname = 'pgcrypto';
+
+  if v_schema is null then
     create extension pgcrypto with schema extensions;
+  elsif v_schema <> 'extensions' then
+    execute 'alter extension pgcrypto set schema extensions';
   end if;
 end $$;
 
