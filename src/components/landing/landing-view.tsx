@@ -49,6 +49,7 @@ export type LandingViagem = {
   subtitulo: string | null;
   descricao: string | null;
   destino: string;
+  uf: string | null;
   data_partida: string;
   hora_partida: string | null;
   valor: number;
