@@ -249,6 +249,7 @@ export default function Usuarios() {
               sessao_iniciada_em: null,
               sessao_atualizada_em: null,
               sessao_expira_em: null,
+              sessao_remember: null,
               sessao_ip: null,
             }
           : r,
