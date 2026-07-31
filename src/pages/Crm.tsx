@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Plus,
-  MessageCircle,
   Pencil,
   Trash2,
   ChevronLeft,
