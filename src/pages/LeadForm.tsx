@@ -81,16 +81,8 @@ export default function LeadForm() {
   const [viagemSelecionada, setViagemSelecionada] = useState<string>("");
 
   const [notas, setNotas] = useState<CrmLeadNota[]>([]);
-  const [novaNotaDataHora, setNovaNotaDataHora] = useState<string>("");
   const [novaNotaDescricao, setNovaNotaDescricao] = useState("");
   const [salvandoNota, setSalvandoNota] = useState(false);
-
-  useEffect(() => {
-    if (abaAtiva === "notas" && !novaNotaDataHora) {
-      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abaAtiva]);
 
   useEffect(() => {
     let ativo = true;
