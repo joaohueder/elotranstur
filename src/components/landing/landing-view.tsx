@@ -823,9 +823,6 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
   const formulario = (
     <Formulario m={m} onSubmit={onSubmit} preview={preview} />
   );
-  const formularioCompacto = (
-    <Formulario m={m} onSubmit={onSubmit} preview={preview} compacto />
-  );
 
   const botaoAncora = (
     <a
@@ -928,7 +925,7 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
                   <p className="max-w-xl text-base opacity-90">{viagem.subtitulo}</p>
                 )}
               </div>
-              <div className="hidden lg:block">{formularioCompacto}</div>
+             <div className="hidden lg:block">{formulario}</div>
             </div>
           </div>
         </div>
@@ -1301,7 +1298,7 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
               {contagem}
             </div>
           </div>
-          <div>{formularioCompacto}</div>
+          <div>{formulario}</div>
         </div>
 
         <div className="mx-auto max-w-6xl space-y-10 px-5 pb-12">
