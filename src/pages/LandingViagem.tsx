@@ -56,8 +56,8 @@ export default function LandingViagem() {
     const numero = digitos.length <= 11 ? `55${digitos}` : digitos;
     const destino = viagem.titulo || viagem.destino;
     const texto =
-      `Olá! Meu nome é ${dados.nome} e tenho interesse na viagem para ${destino}. ` +
-      `Meu WhatsApp é ${dados.whatsapp}.`;
+      `Olá! Meu nome é ${dados.nome} e tenho interesse em viajar para ${destino}.` +
+      `Gostaria de receber mais informações sobre  formas de pagamento e tudo o que está incluso no pacote. Pode me ajudar?`;
     return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
   }
 
