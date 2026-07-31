@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Pencil,
@@ -13,7 +14,6 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,19 +23,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useFeedback } from "@/lib/feedback";
-import {
-  EMPTY_PERMISSION,
-  MODULES,
-  normalizePermissions,
-  type ModulePermission,
-  type PermissionMap,
-} from "@/lib/permissions";
+import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permissions";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
+
 
 type UsuarioRow = {
   id: string;
