@@ -26,7 +26,20 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { useCrmData, whatsappLink, type CrmLead } from "@/lib/crm";
-import { formatarData } from "@/lib/viagens";
+
+/** Formata um timestamp ISO completo em data e hora no padrão brasileiro. */
+function formatarDataHora(iso: string): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 /** Módulo Leads — listagem completa dos contatos cadastrados no CRM. */
 export default function Leads() {
@@ -223,7 +236,7 @@ export default function Leads() {
                     <span>{lead.whatsapp}</span>
                     <span className="inline-flex items-center gap-1">
                       <CalendarDays className="h-3 w-3" />
-                      Cadastrado em {formatarData(lead.created_at)}
+                      Cadastrado em {formatarDataHora(lead.created_at)}
                     </span>
                     {lead.viagens.length > 0 && (
                       <span
