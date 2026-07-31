@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
+import type { Viagem, ViagemImagem, ViagemSituacao } from "@/lib/viagens";
 
 export type CrmStage = {
   id: string;
@@ -10,6 +11,21 @@ export type CrmStage = {
   ativo: boolean;
 };
 
+export type CrmLeadViagem = Pick<
+  Viagem,
+  | "id"
+  | "titulo"
+  | "subtitulo"
+  | "destino"
+  | "data_partida"
+  | "hora_partida"
+  | "valor"
+  | "vagas"
+  | "itens_inclusos"
+  | "imagens"
+  | "situacao"
+>;
+
 export type CrmLead = {
   id: string;
   nome: string;
@@ -18,6 +34,7 @@ export type CrmLead = {
   stage_id: string | null;
   posicao: number;
   created_at: string;
+  viagens: CrmLeadViagem[];
 };
 
 export const ORIGENS = [
@@ -43,7 +60,7 @@ export function whatsappLink(value: string): string {
   return `https://wa.me/55${d}`;
 }
 
-/** Carrega etapas e leads do CRM. */
+/** Carrega etapas e leads do CRM, incluindo as viagens de interesse. */
 export function useCrmData() {
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [leads, setLeads] = useState<CrmLead[]>([]);
@@ -54,7 +71,7 @@ export function useCrmData() {
     setLoading(true);
     setError(null);
     try {
-      const [s, l] = await Promise.all([
+      const [s, l, v] = await Promise.all([
         supabase
           .from("crm_stages")
           .select("id, nome, cor, posicao, ativo")
@@ -64,11 +81,38 @@ export function useCrmData() {
           .select("id, nome, whatsapp, origem, stage_id, posicao, created_at")
           .order("posicao", { ascending: true })
           .order("created_at", { ascending: false }),
+        supabase
+          .from("crm_lead_viagens")
+          .select(
+            "lead_id, viagem_id, viagens(id, titulo, subtitulo, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao)",
+          )
+          .order("created_at", { ascending: true }),
       ]);
       if (s.error) throw s.error;
       if (l.error) throw l.error;
+      if (v.error) throw v.error;
+
+      const viagensPorLead = new Map<string, CrmLeadViagem[]>();
+      for (const row of (v.data ?? []) as unknown[]) {
+        const r = row as {
+          lead_id: string;
+          viagens: CrmLeadViagem | CrmLeadViagem[] | null;
+        };
+        if (!r.viagens) continue;
+        const vg = Array.isArray(r.viagens) ? r.viagens[0] : r.viagens;
+        if (!vg) continue;
+        const lista = viagensPorLead.get(r.lead_id) ?? [];
+        lista.push(vg);
+        viagensPorLead.set(r.lead_id, lista);
+      }
+
       setStages((s.data ?? []) as CrmStage[]);
-      setLeads((l.data ?? []) as CrmLead[]);
+      setLeads(
+        (l.data ?? []).map((lead) => ({
+          ...lead,
+          viagens: viagensPorLead.get(lead.id) ?? [],
+        })) as CrmLead[],
+      );
     } catch (err) {
       setError(err);
     } finally {
