@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import type { Viagem } from "@/lib/viagens";
 
