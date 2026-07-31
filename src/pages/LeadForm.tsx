@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Plus, Save, X } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Loader2,
+  MapPin,
+  Plus,
+  Save,
+  Users,
+  Wallet,
+  X,
+} from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Input } from "@/components/ui/input";
@@ -15,19 +25,31 @@ import {
 import { formatWhatsapp, useCrmOrigens, type CrmStage } from "@/lib/crm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
+import {
+  capaDa,
+  formatarData,
+  formatarHora,
+  formatarValor,
+  situacaoClasses,
+  situacaoLabel,
+  type Viagem,
+} from "@/lib/viagens";
 
-type ViagemOpcao = {
-  id: string;
-  destino: string;
-  data_partida: string;
-  situacao: string;
-};
-
-function formatarData(iso: string) {
-  if (!iso) return "";
-  const [a, m, d] = iso.split("-");
-  return `${d}/${m}/${a}`;
-}
+type ViagemOpcao = Pick<
+  Viagem,
+  | "id"
+  | "titulo"
+  | "subtitulo"
+  | "destino"
+  | "data_partida"
+  | "hora_partida"
+  | "valor"
+  | "vagas"
+  | "itens_inclusos"
+  | "imagens"
+  | "situacao"
+>;
 
 export default function LeadForm() {
   const { id } = useParams();
@@ -64,7 +86,9 @@ export default function LeadForm() {
 
         const { data: vData, error: vErr } = await supabase
           .from("viagens")
-          .select("id, destino, data_partida, situacao")
+          .select(
+            "id, titulo, subtitulo, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao",
+          )
           .order("data_partida", { ascending: true });
         if (vErr) throw vErr;
         if (!ativo) return;
@@ -296,7 +320,8 @@ export default function LeadForm() {
                       .filter((v) => !viagensInteresse.includes(v.id))
                       .map((v) => (
                         <SelectItem key={v.id} value={v.id}>
-                          {v.destino} · {formatarData(v.data_partida)}
+                          {v.destino} · {formatarData(v.data_partida)} ·{" "}
+                          {situacaoLabel(v.situacao)}
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -330,35 +355,134 @@ export default function LeadForm() {
                 <ul className="mt-3 space-y-2">
                   {viagensInteresse.map((vid) => {
                     const v = viagens.find((x) => x.id === vid);
+                    if (!v) {
+                      return (
+                        <li
+                          key={vid}
+                          className="flex items-center justify-between gap-3 rounded-sm border border-border bg-muted/30 px-3 py-2"
+                        >
+                          <p className="text-sm text-muted-foreground">
+                            Viagem removida do sistema
+                          </p>
+                          <HintButton
+                            type="button"
+                            hint="Remove esta viagem da lista de interesses do lead"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              setViagensInteresse((atual) =>
+                                atual.filter((x) => x !== vid),
+                              )
+                            }
+                          >
+                            <X className="h-4 w-4" />
+                          </HintButton>
+                        </li>
+                      );
+                    }
+
+                    const capa = capaDa(v.imagens);
+                    const itens = v.itens_inclusos ?? [];
+
                     return (
                       <li
                         key={vid}
-                        className="flex items-center justify-between gap-3 rounded-sm border border-border bg-muted/30 px-3 py-2"
+                        className="flex gap-3 rounded-sm border border-border bg-muted/20 p-3"
                       >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm text-foreground">
-                            {v?.destino ?? "Viagem removida"}
-                          </p>
-                          {v ? (
-                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Partida em {formatarData(v.data_partida)} ·{" "}
-                              {v.situacao}
-                            </p>
+                        <div className="hidden h-20 w-28 shrink-0 overflow-hidden rounded-sm border border-border bg-muted sm:block">
+                          {capa ? (
+                            <img
+                              src={capa}
+                              alt={`Foto de capa da viagem para ${v.destino}`}
+                              loading="lazy"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                              <MapPin className="h-5 w-5" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {v.titulo?.trim() || v.destino}
+                              </p>
+                              {v.titulo?.trim() ? (
+                                <p className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                                  <MapPin className="mr-1 inline h-3 w-3" />
+                                  {v.destino}
+                                </p>
+                              ) : null}
+                              {v.subtitulo?.trim() ? (
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {v.subtitulo}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span
+                                className={cn(
+                                  "rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                                  situacaoClasses(v.situacao),
+                                )}
+                              >
+                                {situacaoLabel(v.situacao)}
+                              </span>
+                              <HintButton
+                                type="button"
+                                hint="Remove esta viagem da lista de interesses do lead"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  setViagensInteresse((atual) =>
+                                    atual.filter((x) => x !== vid),
+                                  )
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </HintButton>
+                            </div>
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                            <span className="inline-flex items-center gap-1">
+                              <CalendarDays className="h-3 w-3" />
+                              {formatarData(v.data_partida)}
+                              {v.hora_partida
+                                ? ` às ${formatarHora(v.hora_partida)}`
+                                : ""}
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <Wallet className="h-3 w-3" />
+                              {formatarValor(v.valor ?? 0)} por pessoa
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {v.vagas ?? 0} vagas
+                            </span>
+                          </div>
+
+                          {itens.length > 0 ? (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {itens.slice(0, 4).map((item, i) => (
+                                <span
+                                  key={`${vid}-${i}`}
+                                  className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                >
+                                  {item}
+                                </span>
+                              ))}
+                              {itens.length > 4 ? (
+                                <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                                  +{itens.length - 4} itens
+                                </span>
+                              ) : null}
+                            </div>
                           ) : null}
                         </div>
-                        <HintButton
-                          type="button"
-                          hint="Remove esta viagem da lista de interesses do lead"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            setViagensInteresse((atual) =>
-                              atual.filter((x) => x !== vid),
-                            )
-                          }
-                        >
-                          <X className="h-4 w-4" />
-                        </HintButton>
                       </li>
                     );
                   })}
