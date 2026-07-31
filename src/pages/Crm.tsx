@@ -141,14 +141,6 @@ export default function Crm() {
         </div>
         <div className="flex flex-wrap gap-2">
           {podeEditar && (
-            <Button variant="outline" asChild>
-              <Link to="/crm/etapas">
-                <Layers className="mr-2 h-4 w-4" />
-                Etapas
-              </Link>
-            </Button>
-          )}
-          {podeEditar && (
             <Button onClick={() => navigate("/crm/leads/novo")}>
               <Plus className="mr-2 h-4 w-4" />
               Novo lead
@@ -187,13 +179,9 @@ export default function Crm() {
       ) : etapasAtivas.length === 0 ? (
         <div className="rounded-sm border border-dashed border-border bg-background p-10 text-center">
           <p className="text-sm text-muted-foreground">
-            Nenhuma etapa cadastrada. Crie as etapas do funil para começar.
+            Nenhuma etapa cadastrada. Configure as etapas do funil em
+            Configurações · CRM para começar.
           </p>
-          {podeEditar && (
-            <Button className="mt-4" asChild>
-              <Link to="/crm/etapas">Cadastrar etapas</Link>
-            </Button>
-          )}
         </div>
       ) : (
         <>
