@@ -85,6 +85,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
             )}
             <Button
+              variant="ghost"
+              className="rounded-none text-xs font-semibold uppercase tracking-widest"
+              onClick={handleRefreshPermissions}
+              disabled={refreshing}
+              title="Revalida papel e permissões direto no banco"
+            >
+              <RefreshCw
+                className={`mr-2 size-3.5 ${refreshing ? "animate-spin" : ""}`}
+              />
+              {refreshing ? "Atualizando" : "Atualizar permissões"}
+            </Button>
+            <Button
+
               variant="outline"
               className="rounded-none text-xs font-semibold uppercase tracking-widest"
               onClick={handleSignOut}
