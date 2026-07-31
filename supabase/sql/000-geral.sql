@@ -426,8 +426,12 @@ declare
   v_email text := lower(trim(_email));
   v_item  record;
 begin
-  if not public.is_admin() then
-    raise exception 'Somente administradores podem criar usuários' using errcode = '42501';
+  if not (public.is_admin() or public.can('usuarios', 'edit')) then
+    raise exception 'Você não tem permissão para criar usuários' using errcode = '42501';
+  end if;
+
+  if coalesce(_is_admin, false) and not public.is_admin() then
+    raise exception 'Somente administradores podem criar outros administradores' using errcode = '42501';
   end if;
 
   if v_email is null or v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
@@ -508,12 +512,25 @@ set search_path = public
 as $$
 declare
   v_item record;
+  v_sou_admin boolean := public.is_admin();
+  v_alvo_admin boolean;
 begin
-  if not public.is_admin() then
-    raise exception 'Somente administradores podem alterar usuários' using errcode = '42501';
+  if not (v_sou_admin or public.can('usuarios', 'edit')) then
+    raise exception 'Você não tem permissão para alterar usuários' using errcode = '42501';
   end if;
   if not exists (select 1 from public.profiles where id = _user_id) then
     raise exception 'Usuário não encontrado' using errcode = 'P0002';
+  end if;
+
+  v_alvo_admin := public.has_role(_user_id, 'admin');
+
+  if not v_sou_admin then
+    if v_alvo_admin then
+      raise exception 'Somente administradores podem alterar contas de administrador' using errcode = '42501';
+    end if;
+    if _is_admin is not null and _is_admin then
+      raise exception 'Somente administradores podem conceder acesso de administrador' using errcode = '42501';
+    end if;
   end if;
 
   if _nome is not null then
@@ -587,11 +604,14 @@ security definer
 set search_path = public
 as $$
 begin
-  if not public.is_admin() then
-    raise exception 'Somente administradores podem excluir usuários' using errcode = '42501';
+  if not (public.is_admin() or public.can('usuarios', 'delete')) then
+    raise exception 'Você não tem permissão para excluir usuários' using errcode = '42501';
   end if;
   if _user_id = auth.uid() then
     raise exception 'Você não pode excluir a própria conta' using errcode = '42501';
+  end if;
+  if public.has_role(_user_id, 'admin') and not public.is_admin() then
+    raise exception 'Somente administradores podem excluir contas de administrador' using errcode = '42501';
   end if;
 
   delete from auth.users where id = _user_id;
