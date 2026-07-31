@@ -60,8 +60,8 @@ function LeadViagens({
       </p>
       <div className="flex flex-wrap gap-1.5">
         {visiveis.map((v) => {
-          const nome = v.titulo?.trim() || v.destino;
-          const detalhes = `${v.destino} · ${formatarData(v.data_partida)}${
+          const nome = v.destino;
+          const detalhes = `${formatarData(v.data_partida)}${
             v.hora_partida ? ` · ${formatarHora(v.hora_partida)}` : ""
           } · ${formatarValor(v.valor ?? 0)} por pessoa · ${v.vagas ?? 0} vagas`;
           return (
