@@ -79,6 +79,9 @@ export default function Configuracoes() {
               <TabsTrigger value="crm" className="rounded-sm">
                 CRM
               </TabsTrigger>
+              <TabsTrigger value="destinos" className="rounded-sm">
+                Destinos
+              </TabsTrigger>
               <TabsTrigger value="email" className="rounded-sm">
                 E-mail
               </TabsTrigger>
@@ -88,6 +91,11 @@ export default function Configuracoes() {
           <TabsContent value="crm" className="m-0 p-4 sm:p-6">
             <CrmTab />
           </TabsContent>
+
+          <TabsContent value="destinos" className="m-0 p-4 sm:p-6">
+            <DestinosTab />
+          </TabsContent>
+
 
           <TabsContent value="email" className="m-0 p-4 sm:p-6">
             <EmailTab />
