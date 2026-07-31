@@ -1,5 +1,14 @@
-import { useEffect, useState } from "react";
-import { Loader2, Monitor, Save, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Image as ImageIcon,
+  Loader2,
+  Monitor,
+  Save,
+  Search,
+  Trash2,
+  Upload,
+} from "lucide-react";
+
 
 import { AppShell } from "@/components/app-shell";
 import { CrmTab } from "@/components/configuracoes/crm-tab";
