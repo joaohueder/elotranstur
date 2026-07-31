@@ -8,15 +8,40 @@ export const VIAGEM_SITUACOES = [
 
 export type ViagemSituacao = (typeof VIAGEM_SITUACOES)[number]["key"];
 
+export type ViagemImagem = {
+  url: string;
+  path: string;
+  capa?: boolean;
+};
+
 export type Viagem = {
   id: string;
+  titulo: string | null;
+  subtitulo: string | null;
+  descricao: string | null;
   destino: string;
   data_partida: string;
+  hora_partida: string | null;
   valor: number;
+  vagas: number;
   itens_inclusos: string[];
+  imagens: ViagemImagem[];
   situacao: ViagemSituacao;
   created_at: string;
 };
+
+/** Retorna a URL da foto de capa da galeria (ou a primeira imagem). */
+export function capaDa(imagens: ViagemImagem[] | null | undefined): string | null {
+  const lista = imagens ?? [];
+  return (lista.find((i) => i.capa) ?? lista[0])?.url ?? null;
+}
+
+/** Formata "HH:MM:SS" como "HH:MM". */
+export function formatarHora(hora: string | null | undefined): string {
+  if (!hora) return "—";
+  return hora.slice(0, 5);
+}
+
 
 /** Formata um número como moeda brasileira. */
 export function formatarValor(valor: number): string {
