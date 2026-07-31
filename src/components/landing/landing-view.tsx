@@ -415,17 +415,27 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
   );
 
   const miniGaleria = galeria.length > 0 && (
-    <div className="grid grid-cols-3 gap-2">
-      {galeria.map((img) => (
-        <Foto
-          key={img.url}
-          url={img.url}
-          className={`aspect-[4/3] w-full transition ${
-            capaAtiva === img.url ? "opacity-100 ring-2 ring-offset-2" : "opacity-80 hover:opacity-100"
-          }`}
-          onClick={() => setCapaSelecionada(img.url)}
-        />
-      ))}
+    <div className="space-y-3">
+      <p
+        className="text-[10px] uppercase tracking-[0.22em]"
+        style={{ color: "var(--lp-muted)" }}
+      >
+        Galeria
+      </p>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+        {galeria.map((img) => (
+          <Foto
+            key={img.url}
+            url={img.url}
+            className={`aspect-[4/3] w-full transition ${
+              capaAtiva === img.url
+                ? "opacity-100 ring-2 ring-offset-2"
+                : "opacity-80 hover:opacity-100"
+            }`}
+            onClick={() => setCapaSelecionada(img.url)}
+          />
+        ))}
+      </div>
     </div>
   );
 
@@ -524,13 +534,15 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
             )}
           </div>
         </div>
+        {miniGaleria && (
+          <div className="mx-auto max-w-5xl px-5 pt-10">{miniGaleria}</div>
+        )}
         <div className="mx-auto grid max-w-5xl gap-10 px-5 py-12 lg:grid-cols-[1.2fr_1fr]">
           <div className="space-y-8">
             {preco}
             {descricao}
             {infos}
             {inclusos}
-            {miniGaleria}
           </div>
           <div className="lg:sticky lg:top-10 lg:self-start">{formulario}</div>
           <div className="lg:col-span-2">{rodape}</div>
@@ -582,12 +594,12 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
         </div>
 
         <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mb-8 aspect-[21/9] w-full" />
+        {miniGaleria && <div className="mb-10">{miniGaleria}</div>}
 
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-8">
             {descricao}
             {inclusos}
-            {miniGaleria}
           </div>
           <div className="space-y-6">
             {infos}
@@ -617,6 +629,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           {preco}
         </div>
         <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mt-8 aspect-[16/7] w-full" />
+        {miniGaleria && <div className="mt-8">{miniGaleria}</div>}
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1fr]">
           <div className="space-y-8">
             {descricao}
@@ -627,7 +640,6 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
             {formulario}
           </div>
         </div>
-        {miniGaleria && <div className="mt-10">{miniGaleria}</div>}
         {rodape}
       </div>,
     );
