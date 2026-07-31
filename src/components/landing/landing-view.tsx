@@ -590,11 +590,22 @@ function Formulario({
         const dados = { nome: nome.trim(), whatsapp };
         const url = whatsappUrl?.(dados) ?? null;
         setLinkWhats(url);
-        // A janela é aberta ainda dentro do clique para não ser bloqueada.
-        const janela = url ? window.open("", "_blank", "noopener") : null;
+
+        // Android (Chrome/WebViews) bloqueia abas abertas em branco e não
+        // consegue navegar depois para o esquema do WhatsApp. Nele usamos a
+        // navegação da própria aba, que abre o app corretamente.
+        const android = /android/i.test(navigator.userAgent);
+        const abrir = (destino: string) => {
+          if (janela && !janela.closed) janela.location.href = destino;
+          else window.location.href = destino;
+        };
+        // Fora do Android a janela é aberta ainda dentro do clique
+        // para não ser bloqueada pelo navegador.
+        const janela =
+          url && !android ? window.open("", "_blank", "noopener") : null;
 
         if (preview || !onSubmit) {
-          if (janela && url) janela.location.href = url;
+          if (url) abrir(url);
           setOk(true);
           return;
         }
@@ -606,11 +617,9 @@ function Formulario({
           setErro(msg);
           return;
         }
-        if (url) {
-          if (janela) janela.location.href = url;
-          else window.location.href = url;
-        }
         setOk(true);
+        if (url) abrir(url);
+
       }}
     >
       <div className="space-y-1">
