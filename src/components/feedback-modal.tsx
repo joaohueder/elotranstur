@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -24,9 +23,18 @@ const ICONS = {
 } as const;
 
 const TONES = {
-  success: "text-emerald-600",
-  negative: "text-destructive",
-  error: "text-destructive",
+  success: {
+    badge: "bg-emerald-600/10 text-emerald-600",
+    bar: "bg-emerald-600",
+  },
+  negative: {
+    badge: "bg-destructive/10 text-destructive",
+    bar: "bg-destructive",
+  },
+  error: {
+    badge: "bg-destructive/10 text-destructive",
+    bar: "bg-destructive",
+  },
 } as const;
 
 export function FeedbackModal({ state, onClose }: Props) {
@@ -36,6 +44,8 @@ export function FeedbackModal({ state, onClose }: Props) {
   const open = state !== null;
   const kind = state?.kind ?? "success";
   const Icon = ICONS[kind];
+  const tone = TONES[kind];
+  const isError = kind === "error";
 
   const handleCopy = async () => {
     if (!state?.originalError) return;
@@ -68,61 +78,78 @@ export function FeedbackModal({ state, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-lg rounded-none">
-        <DialogHeader>
-          <div className={`mb-2 flex items-center gap-3 ${TONES[kind]}`}>
-            <Icon className="h-8 w-8" aria-hidden />
-            <DialogTitle className="font-serif text-2xl">
-              {state?.title}
-            </DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden rounded-none border-border p-0 sm:max-w-[34rem]">
+        <div className={`h-1 w-full ${tone.bar}`} aria-hidden />
+
+        <DialogHeader className="space-y-0 px-6 pb-4 pt-6 text-left">
+          <div className="flex items-start gap-4 pr-8">
+            <span
+              className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${tone.badge}`}
+              aria-hidden
+            >
+              <Icon className="h-6 w-6" />
+            </span>
+            <div className="min-w-0 space-y-1.5">
+              <DialogTitle className="font-serif text-xl leading-snug tracking-tight text-foreground">
+                {state?.title}
+              </DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                {state?.message}
+              </DialogDescription>
+            </div>
           </div>
-          <DialogDescription className="text-base text-foreground/80">
-            {state?.message}
-          </DialogDescription>
         </DialogHeader>
 
-        {kind === "error" && state?.originalError && (
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {isError && state?.originalError && (
+          <div className="border-t border-border bg-muted/40 px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Erro original
             </p>
-            <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words border border-border bg-muted p-3 text-xs text-muted-foreground">
+            <pre className="max-h-36 overflow-auto whitespace-pre-wrap break-all border border-border bg-background p-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
               {state.originalError}
             </pre>
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:justify-between">
-          {kind === "error" ? (
-            <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col-reverse gap-3 border-t border-border bg-background px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          {isError ? (
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-none"
+                size="sm"
+                className="h-9 justify-center rounded-none text-xs font-medium"
                 onClick={handleScreenshot}
                 disabled={capturing}
               >
-                <Camera className="mr-2 h-4 w-4" />
+                <Camera className="mr-2 h-3.5 w-3.5" />
                 {capturing ? "Capturando..." : "Print screen"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-none"
+                size="sm"
+                className="h-9 justify-center rounded-none text-xs font-medium"
                 onClick={handleCopy}
                 disabled={!state?.originalError}
               >
-                <Copy className="mr-2 h-4 w-4" />
+                <Copy className="mr-2 h-3.5 w-3.5" />
                 {copied ? "Copiado!" : "Copiar erro original"}
               </Button>
             </div>
           ) : (
-            <span />
+            <span className="hidden sm:block" />
           )}
-          <Button type="button" className="rounded-none" onClick={onClose}>
+
+          <Button
+            type="button"
+            size="sm"
+            className="h-9 rounded-none px-8 text-xs font-semibold uppercase tracking-widest"
+            onClick={onClose}
+          >
             Fechar
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
