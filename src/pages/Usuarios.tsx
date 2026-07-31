@@ -50,6 +50,7 @@ type UsuarioRow = {
   sessao_iniciada_em: string | null;
   sessao_atualizada_em: string | null;
   sessao_expira_em: string | null;
+  sessao_remember: boolean | null;
   sessao_ip: string | null;
 };
 
