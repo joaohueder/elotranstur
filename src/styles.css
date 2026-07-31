@@ -313,7 +313,14 @@
   animation: lp-rise-in 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Rolagem horizontal sem barra visível */
+/* Nenhuma rolagem horizontal nas landing pages */
+.lp-root {
+  overflow-x: clip;
+  max-width: 100%;
+}
+.lp-root * {
+  min-width: 0;
+}
 .lp-scroll-x {
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -321,6 +328,7 @@
 .lp-scroll-x::-webkit-scrollbar {
   display: none;
 }
+
 
 /* Formulário flutuante lateral (desktop) */
 .lp-flutuante {
