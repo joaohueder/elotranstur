@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDestinos, nomeDestino } from "@/lib/destinos";
 import { useFeedback } from "@/lib/feedback";
 import { comprimirImagem } from "@/lib/image-compress";
 import { useImageCropper } from "@/components/image-crop-modal";
