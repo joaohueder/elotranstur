@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSeo } from "@/lib/seo";
-import { supabase, setRememberMe } from "@/lib/supabase";
+import { supabase, setRememberMe as persistRememberMe } from "@/lib/supabase";
 
 import loginHero from "../assets/login-hero.jpg";
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
     try {
       // Define a persistência ANTES do login: com "Manter conectado" a
       // sessão é salva por 30 dias; sem, expira ao fechar a aba.
-      setRememberMe(rememberMe);
+      persistRememberMe(rememberMe);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
