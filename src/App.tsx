@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
+import UsuarioForm from "@/pages/UsuarioForm";
 import Usuarios from "@/pages/Usuarios";
 import VerifyCode from "@/pages/VerifyCode";
 
