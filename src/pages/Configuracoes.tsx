@@ -294,9 +294,6 @@ export default function Configuracoes() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {cropperUi}
     </AppShell>
-
   );
 }
