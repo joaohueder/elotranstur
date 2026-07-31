@@ -472,7 +472,7 @@ export default function Usuarios() {
                   </div>
                 </div>
 
-                <div className="mt-auto flex items-center gap-2 border-t border-border px-6 py-4">
+                <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border px-6 py-4">
                   <HintButton
                     hint="Abre a tela para editar os dados e permissões deste usuário."
                     variant="outline"
