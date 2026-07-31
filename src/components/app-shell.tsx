@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
+  Menu,
   LogOut,
   RefreshCw,
   Users,
@@ -26,6 +27,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { MODULES } from "@/lib/permissions";
 
 import { supabase, clearRememberMe } from "@/lib/supabase";
@@ -67,6 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { can, nome, email, isAdmin, refresh } = useAuthz();
   const [refreshing, setRefreshing] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
 
   const items = MODULES.filter((m) => can(m.key, "view"));
 
@@ -90,14 +98,92 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* HEADER FIXO */}
       <header className="fixed inset-x-0 top-0 z-40 h-14 border-b border-border bg-background sm:h-16">
         <div className="app-container flex h-full items-center justify-between px-3 sm:px-6">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
+            {/* MENU MOBILE (gaveta lateral) */}
+            <Sheet open={menuAberto} onOpenChange={setMenuAberto}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Abrir o menu do sistema"
+                  title="Abre o menu com os módulos do sistema."
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-sm border border-border text-foreground hover:bg-muted sm:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[86vw] max-w-xs p-0">
+                <SheetTitle className="sr-only">Menu do sistema</SheetTitle>
+
+                <div className="flex items-center gap-3 border-b border-border px-4 py-4">
+                  <span className="grid h-9 w-14 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
+                    ELO
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    Transporte e Turismo
+                  </span>
+                </div>
+
+                <nav className="flex flex-col gap-1 p-3">
+                  {items.map((m) => {
+                    const Icon = ICONS[m.key] ?? Users;
+                    const path = PATHS[m.key] ?? `/${m.key}`;
+                    const active = pathname.startsWith(path);
+                    return (
+                      <Link
+                        key={m.key}
+                        to={path}
+                        onClick={() => setMenuAberto(false)}
+                        className={cn(
+                          "flex items-start gap-3 rounded-sm border px-3 py-3 transition-colors",
+                          active
+                            ? "border-brand-accent bg-muted"
+                            : "border-transparent hover:bg-muted",
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "mt-0.5 h-5 w-5 shrink-0",
+                            active ? "text-foreground" : "text-muted-foreground",
+                          )}
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-foreground">
+                            {m.label}
+                          </span>
+                          <span className="block text-[11px] leading-snug text-muted-foreground">
+                            {MENU_HINTS[m.key] ?? `Abrir o módulo ${m.label}.`}
+                          </span>
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                <div className="mt-auto border-t border-border p-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuAberto(false);
+                      void handleLogout();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-sm px-3 py-3 text-left text-sm font-semibold text-destructive hover:bg-muted"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Sair do sistema
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            <Link to="/" className="flex items-center gap-2 sm:gap-3">
             <span className="grid h-8 w-12 place-items-center rounded-sm bg-brand-accent font-serif text-base font-bold italic text-primary-foreground sm:h-9 sm:w-14 sm:text-lg">
               ELO
             </span>
             <span className="hidden text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground sm:block">
               Transporte e Turismo
             </span>
-          </Link>
+            </Link>
+          </div>
 
           <div className="flex items-center gap-3">
             <DropdownMenu>
@@ -194,7 +280,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       {/* BARRA DE MENU FIXA */}
-      <nav className="fixed inset-x-0 top-14 z-30 h-12 border-b border-border bg-background/95 backdrop-blur sm:top-16">
+      <nav className="fixed inset-x-0 top-14 z-30 hidden h-12 border-b border-border bg-background/95 backdrop-blur sm:top-16 sm:block">
         <div className="app-container no-scrollbar flex h-full items-center gap-1 overflow-x-auto px-2 sm:px-6">
           {items.map((m) => {
             const Icon = ICONS[m.key] ?? Users;
@@ -228,7 +314,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
 
       {/* MAIN */}
-      <main className="app-container w-full flex-1 px-3 pb-10 pt-[7rem] sm:px-6 sm:pt-[7.5rem]">
+      <main className="app-container w-full flex-1 px-3 pb-10 pt-[4.75rem] sm:px-6 sm:pt-[7.5rem]">
         {children}
       </main>
 
