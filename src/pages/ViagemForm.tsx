@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { FieldLabel, HintButton, SectionTitle } from "@/components/help";
+import { FieldLabel, HelpTip, HintButton, SectionTitle } from "@/components/help";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
