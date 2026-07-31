@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, RefreshCw, Users, Settings, KanbanSquare } from "lucide-react";
+import { LogOut, RefreshCw, Users, Settings, KanbanSquare, Bus } from "lucide-react";
 import { useState } from "react";
 
 import { MODULES } from "@/lib/permissions";
@@ -9,12 +9,14 @@ import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, typeof Users> = {
+  viagens: Bus,
   crm: KanbanSquare,
   usuarios: Users,
   configuracoes: Settings,
 };
 
 const PATHS: Record<string, string> = {
+  viagens: "/viagens",
   crm: "/crm",
   usuarios: "/usuarios",
   configuracoes: "/configuracoes",

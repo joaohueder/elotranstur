@@ -15,6 +15,8 @@ import ResetPassword from "@/pages/ResetPassword";
 import UsuarioForm from "@/pages/UsuarioForm";
 import Usuarios from "@/pages/Usuarios";
 import VerifyCode from "@/pages/VerifyCode";
+import Viagens from "@/pages/Viagens";
+import ViagemForm from "@/pages/ViagemForm";
 
 const queryClient = new QueryClient();
 
