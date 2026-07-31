@@ -96,7 +96,7 @@ export function DestinosTab() {
       return;
     }
     if (!podeExcluir) return;
-    const quantidade = usos(item.nome);
+    const quantidade = usos(item);
     if (quantidade > 0) {
       feedback.showNegative(
         "Destino em uso",
@@ -259,10 +259,10 @@ export function DestinosTab() {
               />
 
               <div className="flex items-center justify-between gap-3 sm:justify-end">
-                {!d.novo && usos(d.nome) > 0 && (
+                {!d.novo && usos(d) > 0 && (
                   <span className="flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     <Lock className="h-3 w-3" />
-                    Em uso ({usos(d.nome)})
+                    Em uso ({usos(d)})
                   </span>
                 )}
                 <label className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -277,17 +277,17 @@ export function DestinosTab() {
                 {(podeExcluir || d.novo) && (
                   <HintButton
                     hint={
-                      !d.novo && usos(d.nome) > 0
-                        ? `Este destino está sendo usado em ${usos(d.nome)} viagem(ns) e não pode ser excluído. Remova ou altere essas viagens primeiro.`
+                      !d.novo && usos(d) > 0
+                        ? `Este destino está sendo usado em ${usos(d)} viagem(ns) e não pode ser excluído. Remova ou altere essas viagens primeiro.`
                         : "Remove este destino da lista."
                     }
                     variant="outline"
                     size="icon"
                     className="rounded-sm text-destructive disabled:cursor-not-allowed disabled:opacity-40"
-                    disabled={!d.novo && usos(d.nome) > 0}
+                    disabled={!d.novo && usos(d) > 0}
                     onClick={() => void remover(index)}
                   >
-                    {!d.novo && usos(d.nome) > 0 ? (
+                    {!d.novo && usos(d) > 0 ? (
                       <Lock className="h-4 w-4" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
