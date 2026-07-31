@@ -102,6 +102,16 @@ function wire() {
   window.addEventListener("focus", () => {
     void refreshAuthz();
   });
+  // Tempo real: papéis e permissões mudam sem precisar sair e entrar.
+  const canal = supabase.channel("rt:authz");
+  for (const table of ["user_roles", "user_permissions", "profiles"]) {
+    (canal as unknown as {
+      on: (t: string, f: Record<string, string>, cb: () => void) => void;
+    }).on("postgres_changes", { event: "*", schema: "public", table }, () => {
+      void refreshAuthz();
+    });
+  }
+  canal.subscribe();
 }
 
 export function useAuthz() {
