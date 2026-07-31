@@ -5,8 +5,8 @@ import { ArrowLeft, GripVertical, Loader2, Plus, Save, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { FieldLabel, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -151,13 +151,14 @@ export default function ViagemForm() {
   return (
     <AppShell>
       <div className="mb-8 flex items-center gap-4">
-        <Button
+        <HintButton
+          hint="Volta para a lista de viagens sem salvar alterações."
           variant="outline"
           size="icon"
           onClick={() => navigate("/viagens")}
         >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </HintButton>
         <div>
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · Viagens
@@ -176,7 +177,9 @@ export default function ViagemForm() {
         <div className="w-full rounded-sm border border-border bg-background p-6">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Label htmlFor="destino">Destino</Label>
+              <FieldLabel htmlFor="destino" help="Cidade ou local para onde a viagem vai acontecer.">
+                Destino
+              </FieldLabel>
               <Input
                 id="destino"
                 value={destino}
@@ -187,7 +190,9 @@ export default function ViagemForm() {
             </div>
 
             <div>
-              <Label htmlFor="data">Data de partida</Label>
+              <FieldLabel htmlFor="data" help="Data em que os passageiros vão embarcar para a viagem.">
+                Data de partida
+              </FieldLabel>
               <Input
                 id="data"
                 type="date"
@@ -198,7 +203,9 @@ export default function ViagemForm() {
             </div>
 
             <div>
-              <Label htmlFor="valor">Valor</Label>
+              <FieldLabel htmlFor="valor" help="Preço cobrado por pessoa nesta viagem.">
+                Valor
+              </FieldLabel>
               <div className="relative mt-1.5">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                   R$
@@ -215,7 +222,9 @@ export default function ViagemForm() {
             </div>
 
             <div>
-              <Label>Situação</Label>
+              <FieldLabel help="Indica em que etapa a viagem está: rascunho, confirmada, etc.">
+                Situação
+              </FieldLabel>
               <Select
                 value={situacao}
                 onValueChange={(v) => setSituacao(v as ViagemSituacao)}
@@ -234,7 +243,9 @@ export default function ViagemForm() {
             </div>
 
             <div className="sm:col-span-2">
-              <Label htmlFor="item">Itens inclusos</Label>
+              <FieldLabel htmlFor="item" help="Coisas que já estão incluídas no preço, como refeições e passeios.">
+                Itens inclusos
+              </FieldLabel>
               <div className="mt-1.5 flex gap-2">
                 <Input
                   id="item"
@@ -248,9 +259,14 @@ export default function ViagemForm() {
                   }}
                   placeholder="Ex.: Café da manhã"
                 />
-                <Button type="button" variant="outline" onClick={adicionarItem}>
+                <HintButton
+                  hint="Adiciona este item à lista de itens inclusos na viagem."
+                  type="button"
+                  variant="outline"
+                  onClick={adicionarItem}
+                >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </HintButton>
               </div>
 
               {itens.length > 0 ? (
@@ -283,7 +299,8 @@ export default function ViagemForm() {
                       <span className="flex-1 text-sm text-foreground">
                         {item}
                       </span>
-                      <Button
+                      <HintButton
+                        hint="Remove este item da lista de itens inclusos."
                         type="button"
                         variant="ghost"
                         size="icon"
@@ -294,7 +311,7 @@ export default function ViagemForm() {
                         aria-label={`Remover ${item}`}
                       >
                         <X className="h-4 w-4" />
-                      </Button>
+                      </HintButton>
                     </li>
                   ))}
                 </ul>
@@ -308,17 +325,25 @@ export default function ViagemForm() {
           </div>
 
           <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
-            <Button variant="outline" onClick={() => navigate("/viagens")}>
+            <HintButton
+              hint="Descarta as alterações e volta para a lista de viagens."
+              variant="outline"
+              onClick={() => navigate("/viagens")}
+            >
               Cancelar
-            </Button>
-            <Button onClick={salvar} disabled={salvando}>
+            </HintButton>
+            <HintButton
+              hint="Grava os dados desta viagem no sistema."
+              onClick={salvar}
+              disabled={salvando}
+            >
               {salvando ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
               Salvar
-            </Button>
+            </HintButton>
           </div>
         </div>
       )}

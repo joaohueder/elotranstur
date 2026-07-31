@@ -4,6 +4,7 @@ import { Loader2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -107,36 +108,48 @@ export default function Viagens() {
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · Viagens
           </p>
-          <h1 className="mt-1 font-serif text-3xl text-foreground">Viagens</h1>
+          <div className="mt-1 flex items-center gap-2">
+            <h1 className="font-serif text-3xl text-foreground">Viagens</h1>
+            <HelpTip texto="Aqui você vê e gerencia todos os pacotes de viagem cadastrados." />
+          </div>
         </div>
         {podeEditar && (
-          <Button onClick={() => navigate("/viagens/nova")}>
+          <HintButton
+            hint="Cria um novo cadastro de viagem para vender aos clientes."
+            onClick={() => navigate("/viagens/nova")}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nova viagem
-          </Button>
+          </HintButton>
         )}
       </div>
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-        <Input
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar por destino ou item incluso"
-          className="sm:max-w-sm"
-        />
-        <Select value={filtro} onValueChange={setFiltro}>
-          <SelectTrigger className="sm:w-56">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todas">Todas as situações</SelectItem>
-            {VIAGEM_SITUACOES.map((s) => (
-              <SelectItem key={s.key} value={s.key}>
-                {s.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-1.5 sm:max-w-sm sm:flex-1">
+          <Input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por destino ou item incluso"
+            className="w-full"
+          />
+          <HelpTip texto="Digite parte do destino ou de um item incluso para filtrar a lista." />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Select value={filtro} onValueChange={setFiltro}>
+            <SelectTrigger className="sm:w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as situações</SelectItem>
+              {VIAGEM_SITUACOES.map((s) => (
+                <SelectItem key={s.key} value={s.key}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <HelpTip texto="Mostra apenas as viagens que estão na situação escolhida." />
+        </div>
       </div>
 
       {loading ? (
@@ -193,16 +206,18 @@ export default function Viagens() {
 
               <div className="flex shrink-0 gap-2">
                 {podeEditar && (
-                  <Button
+                  <HintButton
+                    hint="Edita os dados desta viagem."
                     variant="outline"
                     size="icon"
                     onClick={() => navigate(`/viagens/${v.id}`)}
                   >
                     <Pencil className="h-4 w-4" />
-                  </Button>
+                  </HintButton>
                 )}
                 {podeExcluir && (
-                  <Button
+                  <HintButton
+                    hint="Exclui esta viagem definitivamente."
                     variant="outline"
                     size="icon"
                     disabled={excluindo === v.id}
@@ -213,7 +228,7 @@ export default function Viagens() {
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}
-                  </Button>
+                  </HintButton>
                 )}
               </div>
             </div>
