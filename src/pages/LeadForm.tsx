@@ -137,9 +137,6 @@ export default function LeadForm() {
           await carregarNotas(id);
         } else {
           setStageId(lista[0]?.id ?? "");
-          setNovaNotaDataHora(
-            dataHoraUTCParaLocal(new Date().toISOString()),
-          );
         }
       } catch (err) {
         feedback.showError(
