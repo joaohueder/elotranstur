@@ -194,6 +194,23 @@ export default function ViagemForm() {
             </div>
 
             <div>
+              <Label htmlFor="valor">Valor</Label>
+              <div className="relative mt-1.5">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                  R$
+                </span>
+                <Input
+                  id="valor"
+                  value={valor}
+                  onChange={(e) => setValor(maskValor(e.target.value))}
+                  placeholder="0,00"
+                  inputMode="numeric"
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div>
               <Label>Situação</Label>
               <Select
                 value={situacao}
