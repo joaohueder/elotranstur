@@ -105,7 +105,7 @@ export function ViagemCountdown({ data, hora, className }: Props) {
           {partes.slice(0, 3).join(", ")}
         </span>
       </div>
-      <HelpTip text="Tempo restante até a data e hora de partida desta viagem. Atualiza sozinho." />
+      <HelpTip texto="Tempo restante até a data e hora de partida desta viagem. Atualiza sozinho." />
     </div>
   );
 }
