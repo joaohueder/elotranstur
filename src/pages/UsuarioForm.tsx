@@ -76,6 +76,7 @@ export default function UsuarioForm() {
       nome: (u.nome as string) ?? "",
       email: String(u.email ?? ""),
       senha: "",
+      confirmarSenha: "",
       isAdmin: Boolean(u.is_admin),
       ativo: Boolean(u.ativo),
       permissoes: normalizePermissions(u.permissoes),
@@ -126,6 +127,12 @@ export default function UsuarioForm() {
       }
     } else if (form.senha && form.senha.length < 8) {
       showNegative("Senha inválida", "A nova senha deve ter no mínimo 8 caracteres.");
+      setAba("dados");
+      return;
+    }
+
+    if (form.senha && form.senha !== form.confirmarSenha) {
+      showNegative("Senhas diferentes", "A confirmação de senha não confere com a senha informada.");
       setAba("dados");
       return;
     }
