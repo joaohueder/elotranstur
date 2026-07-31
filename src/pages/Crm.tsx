@@ -497,6 +497,8 @@ export default function Crm() {
                 {lead.origem}
               </span>
 
+              <LeadViagens viagens={lead.viagens} compacto />
+
               <div className="mt-3 flex items-center justify-between gap-1 border-t border-border pt-2">
                 <div className="flex gap-1">
                   {podeEditar && (
