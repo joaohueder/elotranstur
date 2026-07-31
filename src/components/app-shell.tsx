@@ -214,8 +214,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     )}
                   >
                     <Icon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="hidden xs:inline">{m.label}</span>
-                    <span className="xs:hidden">{m.label}</span>
+                    <span className="whitespace-nowrap">{m.label}</span>
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[240px] text-xs">
