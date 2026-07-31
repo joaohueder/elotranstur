@@ -125,12 +125,12 @@ export default function LandingViagem() {
   }
 
   return (
-    <div className="min-h-screen">
+    <PublicShell>
       <LandingView
         viagem={viagem}
         onSubmit={enviarLead}
         whatsappUrl={montarWhatsapp}
       />
-    </div>
+    </PublicShell>
   );
 }
