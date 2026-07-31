@@ -3,10 +3,14 @@ import { useEffect } from "react";
 type Seo = {
   title: string;
   description: string;
+  /** URL absoluta da imagem de preview (og:image / twitter:image). */
+  image?: string | null;
+  /** URL canônica da página; por padrão usa a URL atual. */
+  url?: string | null;
 };
 
 /** Define título e metatags da página (equivalente SPA ao head() das rotas). */
-export function useSeo({ title, description }: Seo) {
+export function useSeo({ title, description, image, url }: Seo) {
   useEffect(() => {
     document.title = title;
 
@@ -22,10 +26,51 @@ export function useSeo({ title, description }: Seo) {
       el.setAttribute("content", content);
     };
 
+    const remove = (attr: "name" | "property", key: string) => {
+      document.head
+        .querySelectorAll(`meta[${attr}="${key}"]`)
+        .forEach((el) => el.remove());
+    };
+
+    const pageUrl =
+      url ?? (typeof window !== "undefined" ? window.location.href : "");
+    const absImage =
+      image && typeof window !== "undefined"
+        ? new URL(image, window.location.origin).href
+        : image || "";
+
     set("name", "description", description);
     set("property", "og:title", title);
     set("property", "og:description", description);
     set("property", "og:type", "website");
-    set("name", "twitter:card", "summary_large_image");
-  }, [title, description]);
+    if (pageUrl) set("property", "og:url", pageUrl);
+    set("name", "twitter:title", title);
+    set("name", "twitter:description", description);
+
+    if (absImage) {
+      set("property", "og:image", absImage);
+      set("property", "og:image:width", "1200");
+      set("property", "og:image:height", "630");
+      set("name", "twitter:image", absImage);
+      set("name", "twitter:card", "summary_large_image");
+    } else {
+      remove("property", "og:image");
+      remove("property", "og:image:width");
+      remove("property", "og:image:height");
+      remove("name", "twitter:image");
+      set("name", "twitter:card", "summary_large_image");
+    }
+
+    let link = document.head.querySelector<HTMLLinkElement>(
+      'link[rel="canonical"]',
+    );
+    if (pageUrl) {
+      if (!link) {
+        link = document.createElement("link");
+        link.setAttribute("rel", "canonical");
+        document.head.appendChild(link);
+      }
+      link.setAttribute("href", pageUrl);
+    }
+  }, [title, description, image, url]);
 }
