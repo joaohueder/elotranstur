@@ -446,16 +446,13 @@ function Formulario({
   m,
   onSubmit,
   preview,
-  compacto,
 }: {
   m: LandingModel;
   onSubmit?: Props["onSubmit"];
   preview?: boolean;
-  compacto?: boolean;
 }) {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [mensagem, setMensagem] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
@@ -503,7 +500,7 @@ function Formulario({
           return;
         }
         setEnviando(true);
-        const msg = await onSubmit({ nome, whatsapp, mensagem });
+        const msg = await onSubmit({ nome, whatsapp });
         setEnviando(false);
         if (msg) setErro(msg);
         else setOk(true);
@@ -514,10 +511,10 @@ function Formulario({
           className="text-lg font-semibold"
           style={{ fontFamily: "var(--lp-title)" }}
         >
-          Receba todos os detalhes
+          Fale com a agência
         </p>
         <p className="text-sm" style={{ color: "var(--lp-muted)" }}>
-          Preencha e um consultor fala com você hoje mesmo.
+          Preencha e um consultor entra em contato pelo WhatsApp.
         </p>
       </div>
 
@@ -540,17 +537,6 @@ function Formulario({
         className="h-11 w-full px-3 text-sm outline-none"
         style={inputStyle}
       />
-      {!compacto && (
-        <textarea
-          value={mensagem}
-          onChange={(e) => setMensagem(e.target.value)}
-          placeholder="Mensagem (opcional)"
-          aria-label="Mensagem"
-          rows={3}
-          className="w-full resize-none px-3 py-2 text-sm outline-none"
-          style={inputStyle}
-        />
-      )}
 
       {erro && (
         <p className="text-sm" style={{ color: "#dc2626" }}>
