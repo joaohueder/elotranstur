@@ -210,7 +210,7 @@ export function EmailTab() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-start gap-3">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-border text-muted-foreground">
           <Mail className="h-4 w-4" />

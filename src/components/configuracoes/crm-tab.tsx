@@ -320,7 +320,7 @@ export function CrmTab() {
   }
 
   return (
-    <div className="max-w-3xl space-y-10">
+    <div className="w-full space-y-10">
       {/* Grupo: Etapas do funil */}
       <section className="space-y-4">
         <GroupHeader
