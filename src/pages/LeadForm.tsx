@@ -67,6 +67,7 @@ export default function LeadForm() {
   const feedback = useFeedback();
 
   const { origens } = useCrmOrigens(true);
+  const { confirm } = useConfirm();
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
