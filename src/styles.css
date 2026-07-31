@@ -149,7 +149,7 @@
 
 /* Largura máxima do sistema, ajustável em Configurações > Layout. */
 :root {
-  --app-max-width: 1440px;
+  --app-max-width: 1280px;
 }
 
 @utility app-container {
