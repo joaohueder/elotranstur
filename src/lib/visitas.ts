@@ -41,18 +41,24 @@ export function VisitTracker() {
     if (!ehPaginaPublica(pathname)) return;
     const id = visitorId();
 
-    const registrar = () => {
+    const registrar = async () => {
       if (document.visibilityState !== "visible") return;
-      void supabase.rpc("registrar_visita", {
+      const { error } = await supabase.rpc("registrar_visita", {
         _visitor: id,
         _path: pathname,
         _referrer: document.referrer || null,
       });
+      if (error) console.warn("registrar_visita", error.message);
     };
 
-    registrar();
-    const timer = setInterval(registrar, 60_000);
-    return () => clearInterval(timer);
+    void registrar();
+    const timer = setInterval(() => void registrar(), 60_000);
+    const aoVoltar = () => void registrar();
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", aoVoltar);
+    };
   }, [pathname]);
 
   return null;
