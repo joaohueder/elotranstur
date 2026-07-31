@@ -914,9 +914,8 @@ export function LandingView({
           {selo}
           {preco}
         </div>
-        {contagem()}
+        <div className="sm:text-right">{botaoAncora()}</div>
       </div>
-      <div className="p-5 sm:p-6">{botaoAncora(true)}</div>
     </div>
   );
 
