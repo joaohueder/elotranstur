@@ -1,0 +1,324 @@
+import { useEffect, useState } from "react";
+import { Loader2, Mail, Save } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useFeedback } from "@/lib/feedback";
+import { supabase } from "@/lib/supabase";
+import { useAuthz } from "@/lib/use-authz";
+
+type EmailForm = {
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password: string;
+  smtp_secure: boolean;
+  from_name: string;
+  from_email: string;
+  reply_to: string;
+  ativo: boolean;
+};
+
+const VAZIO: EmailForm = {
+  smtp_host: "",
+  smtp_port: 587,
+  smtp_user: "",
+  smtp_password: "",
+  smtp_secure: true,
+  from_name: "ELO Transporte e Turismo",
+  from_email: "",
+  reply_to: "",
+  ativo: false,
+};
+
+/** Aba E-mail: configuração do servidor SMTP do sistema (somente admin). */
+export function EmailTab() {
+  const { isAdmin } = useAuthz();
+  const feedback = useFeedback();
+
+  const [form, setForm] = useState<EmailForm>(VAZIO);
+  const [senhaDefinida, setSenhaDefinida] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    let cancelado = false;
+
+    async function carregar() {
+      if (!isAdmin) {
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase.rpc("get_email_settings");
+      if (cancelado) return;
+
+      if (error) {
+        feedback.showError(
+          "Não foi possível carregar",
+          "Erro ao buscar as configurações de e-mail do sistema.",
+          error,
+        );
+      } else if (data && typeof data === "object") {
+        const d = data as Record<string, unknown>;
+        setSenhaDefinida(Boolean(d.smtp_password_set));
+        setForm({
+          smtp_host: String(d.smtp_host ?? ""),
+          smtp_port: Number(d.smtp_port ?? 587),
+          smtp_user: String(d.smtp_user ?? ""),
+          smtp_password: "",
+          smtp_secure: Boolean(d.smtp_secure),
+          from_name: String(d.from_name ?? ""),
+          from_email: String(d.from_email ?? ""),
+          reply_to: String(d.reply_to ?? ""),
+          ativo: Boolean(d.ativo),
+        });
+      }
+      setLoading(false);
+    }
+
+    void carregar();
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
+
+  function set<K extends keyof EmailForm>(campo: K, valor: EmailForm[K]) {
+    setForm((p) => ({ ...p, [campo]: valor }));
+  }
+
+  async function salvar() {
+    if (!form.smtp_host.trim()) {
+      feedback.showNegative(
+        "Campo obrigatório",
+        "Informe o servidor SMTP (host) para salvar a configuração.",
+      );
+      return;
+    }
+    if (!form.from_email.trim()) {
+      feedback.showNegative(
+        "Campo obrigatório",
+        "Informe o e-mail remetente do sistema.",
+      );
+      return;
+    }
+    if (!senhaDefinida && !form.smtp_password) {
+      feedback.showNegative(
+        "Campo obrigatório",
+        "Informe a senha do usuário SMTP.",
+      );
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      const { error } = await supabase.rpc("save_email_settings", {
+        _smtp_host: form.smtp_host.trim(),
+        _smtp_port: form.smtp_port,
+        _smtp_user: form.smtp_user.trim(),
+        _smtp_password: form.smtp_password ? form.smtp_password : null,
+        _smtp_secure: form.smtp_secure,
+        _from_name: form.from_name.trim(),
+        _from_email: form.from_email.trim(),
+        _reply_to: form.reply_to.trim(),
+        _ativo: form.ativo,
+      });
+      if (error) throw error;
+
+      setForm((p) => ({ ...p, smtp_password: "" }));
+      setSenhaDefinida(true);
+      feedback.showSuccess(
+        "Configurações salvas",
+        "As configurações de SMTP do sistema foram atualizadas.",
+      );
+    } catch (err) {
+      feedback.showError(
+        "Não foi possível salvar",
+        "Ocorreu um erro ao gravar as configurações de e-mail. Verifique os dados e tente novamente.",
+        err,
+      );
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  if (!isAdmin) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Somente administradores podem visualizar e alterar as configurações de
+        e-mail do sistema.
+      </p>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="grid place-items-center py-16 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div className="flex items-start gap-3">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-border text-muted-foreground">
+          <Mail className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            Servidor de e-mail (SMTP)
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Usado para envios transacionais do sistema, como recuperação de
+            senha e notificações.
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-sm border border-border p-4 sm:p-5">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Servidor SMTP
+            </Label>
+            <Input
+              className="rounded-sm"
+              placeholder="smtp.seudominio.com"
+              value={form.smtp_host}
+              onChange={(e) => set("smtp_host", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Porta
+            </Label>
+            <Input
+              className="rounded-sm"
+              type="number"
+              min={1}
+              max={65535}
+              value={form.smtp_port}
+              onChange={(e) => set("smtp_port", Number(e.target.value))}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-sm border border-border px-4 py-3 sm:mt-6">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Conexão segura
+              </p>
+              <p className="text-xs text-muted-foreground">SSL / TLS</p>
+            </div>
+            <Switch
+              checked={form.smtp_secure}
+              onCheckedChange={(v) => set("smtp_secure", v)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Usuário
+            </Label>
+            <Input
+              className="rounded-sm"
+              autoComplete="off"
+              placeholder="usuario@seudominio.com"
+              value={form.smtp_user}
+              onChange={(e) => set("smtp_user", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Senha
+            </Label>
+            <Input
+              className="rounded-sm"
+              type="password"
+              autoComplete="new-password"
+              placeholder={senhaDefinida ? "•••••••• (mantida)" : "Informe a senha"}
+              value={form.smtp_password}
+              onChange={(e) => set("smtp_password", e.target.value)}
+            />
+            {senhaDefinida && (
+              <p className="text-[11px] text-muted-foreground">
+                Deixe em branco para manter a senha atual.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Nome do remetente
+            </Label>
+            <Input
+              className="rounded-sm"
+              value={form.from_name}
+              onChange={(e) => set("from_name", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              E-mail do remetente
+            </Label>
+            <Input
+              className="rounded-sm"
+              type="email"
+              placeholder="nao-responda@seudominio.com"
+              value={form.from_email}
+              onChange={(e) => set("from_email", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Responder para (opcional)
+            </Label>
+            <Input
+              className="rounded-sm"
+              type="email"
+              placeholder="contato@seudominio.com"
+              value={form.reply_to}
+              onChange={(e) => set("reply_to", e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-sm border border-border px-4 py-3 sm:col-span-2">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Envio de e-mails ativo
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Se desativado, o sistema não utilizará este servidor SMTP.
+              </p>
+            </div>
+            <Switch
+              checked={form.ativo}
+              onCheckedChange={(v) => set("ativo", v)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+        <Button
+          className="w-full rounded-sm sm:w-auto sm:min-w-32"
+          disabled={salvando}
+          onClick={() => void salvar()}
+        >
+          {salvando ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
+          Salvar
+        </Button>
+      </div>
+    </div>
+  );
+}
