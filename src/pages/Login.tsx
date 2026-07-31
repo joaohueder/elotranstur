@@ -204,7 +204,7 @@ export default function LoginPage() {
                 </Label>
                 <button
                   type="button"
-                  onClick={handleResetPassword}
+                  onClick={() => setForgotOpen(true)}
                   className="text-xs font-medium text-brand-accent hover:underline"
                 >
                   Esqueceu a senha?
