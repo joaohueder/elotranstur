@@ -24,6 +24,7 @@ type FormState = {
   nome: string;
   email: string;
   senha: string;
+  confirmarSenha: string;
   isAdmin: boolean;
   ativo: boolean;
   permissoes: PermissionMap;
@@ -33,6 +34,7 @@ const EMPTY_FORM: FormState = {
   nome: "",
   email: "",
   senha: "",
+  confirmarSenha: "",
   isAdmin: false,
   ativo: true,
   permissoes: {},
