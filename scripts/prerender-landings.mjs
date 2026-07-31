@@ -49,14 +49,46 @@ function capaDa(imagens) {
   return (lista.find((i) => i?.capa) ?? lista[0])?.url ?? null;
 }
 
+/**
+ * Gera uma cópia JPEG 1200x630 da capa dentro de dist/og/<slug>.jpg.
+ * O WhatsApp costuma ignorar imagens WebP na prévia — o JPEG resolve.
+ * Retorna a URL pública do JPEG ou null se não for possível converter.
+ */
+async function gerarCapaJpeg(dist, slug, urlImagem) {
+  if (!urlImagem) return null;
+  try {
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const path = await import("node:path");
+    const { default: sharp } = await import("sharp");
+
+    const resposta = await fetch(urlImagem);
+    if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+    const original = Buffer.from(await resposta.arrayBuffer());
+
+    const jpeg = await sharp(original)
+      .resize(1200, 630, { fit: "cover", position: "attention" })
+      .jpeg({ quality: 82, progressive: true })
+      .toBuffer();
+
+    await mkdir(path.join(dist, "og"), { recursive: true });
+    await writeFile(path.join(dist, "og", `${slug}.jpg`), jpeg);
+    return `${SITE_URL}/og/${slug}.jpg`;
+  } catch (err) {
+    console.warn(`[landing] capa JPEG de ${slug} não gerada: ${err.message}`);
+    return null;
+  }
+}
+
+
 /** Troca/insere as metatags sociais do HTML da SPA. */
-function montarHtml(base, viagem) {
+function montarHtml(base, viagem, imagemPrevia) {
   const titulo = viagem.titulo || viagem.destino || "Viagem";
   const descricao =
     [titulo, viagem.subtitulo].filter(Boolean).join(" — ") ||
     String(viagem.descricao ?? "").slice(0, 155);
-  const imagem = capaDa(viagem.imagens);
+  const imagem = imagemPrevia ?? capaDa(viagem.imagens);
   const url = `${SITE_URL}/v/${viagem.slug}`;
+
 
   const tags = [
     `<title>${escapar(titulo)}</title>`,
@@ -124,11 +156,14 @@ export function prerenderLandings() {
         try {
           const viagem = await rpc("landing_viagem", { _slug: slug });
           if (!viagem) continue;
+          const capaJpeg = await gerarCapaJpeg(dist, slug, capaDa(viagem.imagens));
+          const html = montarHtml(base, viagem, capaJpeg);
           const destino = path.join(dist, "v", slug);
           await mkdir(destino, { recursive: true });
-          await writeFile(path.join(destino, "index.html"), montarHtml(base, viagem));
+          await writeFile(path.join(destino, "index.html"), html);
           // Cópia sem barra final, para servidores que não resolvem diretórios.
-          await writeFile(path.join(dist, "v", `${slug}.html`), montarHtml(base, viagem));
+          await writeFile(path.join(dist, "v", `${slug}.html`), html);
+
         } catch (err) {
           console.warn(`[landing] falha ao gerar /v/${slug}: ${err.message}`);
         }
