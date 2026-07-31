@@ -3,128 +3,146 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { AppRole, PermissionRow } from "@/lib/permissions";
 
-export type Authz = {
+export type AuthzState = {
   loading: boolean;
   userId: string | null;
   role: AppRole | null;
-  isAdmin: boolean;
   permissions: Record<string, PermissionRow>;
-  can: (modulo: string, acao: "view" | "edit" | "delete") => boolean;
 };
+
+export type Authz = AuthzState & {
+  isAdmin: boolean;
+  can: (modulo: string, acao: "view" | "edit" | "delete") => boolean;
+  refresh: () => Promise<void>;
+};
+
+// ---------------------------------------------------------------------------
+// Store compartilhado: uma única fonte de verdade para papel + permissões.
+// Qualquer componente que use useAuthz() re-renderiza quando o store muda,
+// então o menu reflete imediatamente o que foi gravado no banco.
+// ---------------------------------------------------------------------------
+let state: AuthzState = {
+  loading: true,
+  userId: null,
+  role: null,
+  permissions: {},
+};
+
+const listeners = new Set<(s: AuthzState) => void>();
+let inFlight: Promise<void> | null = null;
+
+function setState(next: Partial<AuthzState>) {
+  state = { ...state, ...next };
+  listeners.forEach((l) => l(state));
+}
+
+async function fetchAuthz(): Promise<void> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const id = sessionData.session?.user?.id ?? null;
+
+  if (!id) {
+    setState({ loading: false, userId: null, role: null, permissions: {} });
+    return;
+  }
+
+  const [rolesRes, permsRes] = await Promise.all([
+    supabase.from("user_roles").select("role").eq("user_id", id),
+    supabase
+      .from("user_permissions")
+      .select("user_id, modulo, can_view, can_edit, can_delete")
+      .eq("user_id", id),
+  ]);
+
+  let isAdmin = (rolesRes.data ?? []).some(
+    (r: { role: string }) => String(r.role).trim() === "admin",
+  );
+
+  // Fallback quando a leitura direta é bloqueada por RLS.
+  if (!isAdmin && (rolesRes.error || (rolesRes.data ?? []).length === 0)) {
+    const rpc = await supabase.rpc("is_admin");
+    if (rpc.data === true) isAdmin = true;
+  }
+
+  const map: Record<string, PermissionRow> = {};
+  for (const p of (permsRes.data ?? []) as PermissionRow[]) map[p.modulo] = p;
+
+  setState({
+    loading: false,
+    userId: id,
+    role: isAdmin ? "admin" : "usuario",
+    permissions: map,
+  });
+}
+
+/** Recarrega papel/permissões do banco e propaga para toda a aplicação. */
+export function refreshAuthz(): Promise<void> {
+  if (inFlight) return inFlight;
+  inFlight = fetchAuthz().finally(() => {
+    inFlight = null;
+  });
+  return inFlight;
+}
+
+let wired = false;
+
+/** Assina eventos globais uma única vez (auth, foco, realtime, polling). */
+function wireGlobalRefresh() {
+  if (wired || typeof window === "undefined") return;
+  wired = true;
+
+  supabase.auth.onAuthStateChange(() => {
+    void refreshAuthz();
+  });
+
+  // Volta o foco para a aba → revalida permissões.
+  window.addEventListener("focus", () => void refreshAuthz());
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") void refreshAuthz();
+  });
+
+  // Permissões alteradas por um admin em outra sessão.
+  supabase
+    .channel("authz-changes")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "user_permissions" },
+      () => void refreshAuthz(),
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "user_roles" },
+      () => void refreshAuthz(),
+    )
+    .subscribe();
+
+  // Rede de segurança caso o realtime não esteja habilitado na instância.
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") void refreshAuthz();
+  }, 60_000);
+}
 
 /** Papel e permissões do usuário logado (validados também por RLS no banco). */
 export function useAuthz(): Authz {
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
-  const [permissions, setPermissions] = useState<Record<string, PermissionRow>>(
-    {},
-  );
+  const [snapshot, setSnapshot] = useState<AuthzState>(state);
 
   useEffect(() => {
-    let active = true;
-
-    async function load() {
-      setLoading(true);
-
-      // Sessão local (não depende de rede) — evita ficar sem papel se o
-      // endpoint /auth/v1/user falhar na instância auto-hospedada.
-      const { data: sessionData } = await supabase.auth.getSession();
-      const id = sessionData.session?.user?.id ?? null;
-      if (!active) return;
-      setUserId(id);
-
-      if (!id) {
-        setRole(null);
-        setPermissions({});
-        setLoading(false);
-        return;
-      }
-
-      const [rolesRes, permsRes] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", id),
-        supabase
-          .from("user_permissions")
-          .select("user_id, modulo, can_view, can_edit, can_delete")
-          .eq("user_id", id),
-      ]);
-      if (!active) return;
-
-      if (rolesRes.error) {
-        console.error("[authz] falha ao ler user_roles:", rolesRes.error);
-      }
-      if (permsRes.error) {
-        console.error(
-          "[authz] falha ao ler user_permissions:",
-          permsRes.error,
-        );
-      }
-
-      let isAdmin = (rolesRes.data ?? []).some(
-        (r: { role: string }) => String(r.role).trim() === "admin",
-      );
-
-      // Fallback: se a leitura direta vier vazia/bloqueada por RLS, pergunta
-      // ao banco via função SECURITY DEFINER.
-      if (!isAdmin && (rolesRes.error || (rolesRes.data ?? []).length === 0)) {
-        const rpc = await supabase.rpc("is_admin");
-        if (rpc.error) {
-          console.error("[authz] fallback is_admin() falhou:", rpc.error);
-        } else if (rpc.data === true) {
-          isAdmin = true;
-        }
-      }
-
-      if (!active) return;
-      console.info(
-        "[authz] userId:",
-        id,
-        "papéis:",
-        rolesRes.data,
-        "admin:",
-        isAdmin,
-      );
-      setRole(isAdmin ? "admin" : "usuario");
-
-
-
-      const map: Record<string, PermissionRow> = {};
-      for (const p of (permsRes.data ?? []) as PermissionRow[])
-        map[p.modulo] = p;
-      setPermissions(map);
-      setLoading(false);
-    }
-
-    load();
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (
-        event === "SIGNED_IN" ||
-        event === "SIGNED_OUT" ||
-        event === "INITIAL_SESSION" ||
-        event === "TOKEN_REFRESHED" ||
-        event === "USER_UPDATED"
-      ) {
-        load();
-      }
-    });
-
+    listeners.add(setSnapshot);
+    wireGlobalRefresh();
+    void refreshAuthz();
     return () => {
-      active = false;
-      sub.subscription.unsubscribe();
+      listeners.delete(setSnapshot);
     };
   }, []);
 
-  const isAdmin = role === "admin";
+  const isAdmin = snapshot.role === "admin";
 
   return {
-    loading,
-    userId,
-    role,
+    ...snapshot,
     isAdmin,
-    permissions,
+    refresh: refreshAuthz,
     can: (modulo, acao) => {
       if (isAdmin) return true;
-      const p = permissions[modulo];
+      const p = snapshot.permissions[modulo];
       if (!p) return false;
       if (acao === "view") return p.can_view;
       if (acao === "edit") return p.can_edit;
