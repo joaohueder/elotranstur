@@ -360,7 +360,7 @@ export default function Crm() {
                                 value={lead.stage_id ?? ""}
                                 onValueChange={(v) => void aplicarEtapa(lead, v)}
                               >
-                                <SelectTrigger className="h-8 flex-1 text-xs">
+                                <SelectTrigger className="h-9 min-w-[130px] flex-1 text-xs sm:h-8">
                                   <SelectValue placeholder="Etapa" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -377,7 +377,7 @@ export default function Crm() {
                                 hint="Move este lead para outra etapa do funil"
                                 size="sm"
                                 variant="outline"
-                                className="h-8"
+                                className="h-9 w-9 sm:h-8 sm:w-8"
                                 onClick={() => navigate(`/crm/leads/${lead.id}`)}
                               >
                                 <Pencil className="h-3.5 w-3.5" />
@@ -388,7 +388,7 @@ export default function Crm() {
                                 hint="Exclui este lead do CRM permanentemente"
                                 size="sm"
                                 variant="outline"
-                                className="h-8 text-destructive"
+                                className="h-9 w-9 text-destructive sm:h-8 sm:w-8"
                                 onClick={() => void excluirLead(lead)}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
