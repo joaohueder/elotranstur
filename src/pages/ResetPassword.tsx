@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFeedback } from "@/lib/feedback";
+import { redefinirSenhaComToken, resetTokenStore } from "@/lib/password-reset";
 import { useSeo } from "@/lib/seo";
-import { supabase } from "@/lib/supabase";
 
 export default function ResetPasswordPage() {
   useSeo({
