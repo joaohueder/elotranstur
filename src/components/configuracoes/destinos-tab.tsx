@@ -82,6 +82,15 @@ export function DestinosTab() {
       return;
     }
     if (!podeExcluir) return;
+    const quantidade = usos(item.nome);
+    if (quantidade > 0) {
+      feedback.showNegative(
+        "Destino em uso",
+        `O destino "${item.nome}" está sendo usado em ${quantidade} viagem(ns) e por isso não pode ser excluído. Altere ou exclua essas viagens antes.`,
+      );
+      return;
+    }
+
     const ok = await confirm({
       title: "Excluir destino",
       message: `Tem certeza que deseja excluir o destino "${item.nome}"? Esta ação não poderá ser desfeita.`,
