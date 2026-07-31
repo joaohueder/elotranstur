@@ -339,26 +339,17 @@ export default function Configuracoes() {
                         </div>
 
                         <div className="flex-1 space-y-2">
-                          <Input
-                            className="rounded-sm"
-                            placeholder="https://..."
-                            value={formSeo.imageUrl}
-                            disabled={!podeEditar}
-                            onChange={(e) =>
-                              setFormSeo((f) => ({ ...f, imageUrl: e.target.value }))
-                            }
+                          <input
+                            ref={inputImagemRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              void enviarImagemSeo(e.target.files?.[0] ?? null);
+                              e.target.value = "";
+                            }}
                           />
                           <div className="flex flex-wrap gap-2">
-                            <input
-                              ref={inputImagemRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                void enviarImagemSeo(e.target.files?.[0] ?? null);
-                                e.target.value = "";
-                              }}
-                            />
                             <HintButton
                               hint="Escolha uma imagem do computador, ajuste o corte e envie."
                               type="button"
