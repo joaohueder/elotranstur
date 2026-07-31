@@ -8,6 +8,10 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  CalendarDays,
+  Wallet,
+  Users,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -29,7 +33,15 @@ import {
   whatsappLink,
   type CrmLead,
   type CrmStage,
+  type CrmLeadViagem,
 } from "@/lib/crm";
+import { ViagemCountdown } from "@/components/viagem-countdown";
+import {
+  capaDa,
+  formatarData,
+  formatarHora,
+  formatarValor,
+} from "@/lib/viagens";
 
 export default function Crm() {
   const navigate = useNavigate();
