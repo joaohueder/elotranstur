@@ -49,6 +49,30 @@ export default function App() {
             <Route path="/verificar-codigo" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route
+              path="/viagens"
+              element={
+                <RequireModule modulo="viagens">
+                  <Viagens />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/viagens/nova"
+              element={
+                <RequireModule modulo="viagens">
+                  <ViagemForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/viagens/:id"
+              element={
+                <RequireModule modulo="viagens">
+                  <ViagemForm />
+                </RequireModule>
+              }
+            />
+            <Route
               path="/crm"
               element={
                 <RequireModule modulo="crm">
