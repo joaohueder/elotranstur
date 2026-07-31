@@ -536,8 +536,9 @@ export default function ViagemForm() {
               )}
             </div>
           </div>
+          </TabsContent>
 
-          <div className="mt-8 border-t border-border pt-6">
+          <TabsContent value="galeria" className="m-0 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <SectionTitle
                 titulo="Galeria de imagens"
