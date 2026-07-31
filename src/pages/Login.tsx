@@ -21,12 +21,14 @@ export default function LoginPage() {
   });
 
   const navigate = useNavigate();
-  const { showSuccess, showNegative, showError } = useFeedback();
+  const { showNegative, showError } = useFeedback();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+
 
   // 1) Listener registrado ANTES de qualquer checagem de sessão.
   // 2) getUser() revalida o token no servidor de auth (não confia no storage).
