@@ -1130,7 +1130,7 @@ export function LandingView({
           {ofertaCard}
           {infos}
           {corpoComum}
-          <div className="mx-auto max-w-lg lg:hidden">{formulario}</div>
+          <div className="mx-auto max-w-lg">{formulario}</div>
           {rodape}
         </main>
       </>,
