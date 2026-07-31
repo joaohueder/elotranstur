@@ -156,11 +156,14 @@ export function prerenderLandings() {
         try {
           const viagem = await rpc("landing_viagem", { _slug: slug });
           if (!viagem) continue;
+          const capaJpeg = await gerarCapaJpeg(dist, slug, capaDa(viagem.imagens));
+          const html = montarHtml(base, viagem, capaJpeg);
           const destino = path.join(dist, "v", slug);
           await mkdir(destino, { recursive: true });
-          await writeFile(path.join(destino, "index.html"), montarHtml(base, viagem));
+          await writeFile(path.join(destino, "index.html"), html);
           // Cópia sem barra final, para servidores que não resolvem diretórios.
-          await writeFile(path.join(dist, "v", `${slug}.html`), montarHtml(base, viagem));
+          await writeFile(path.join(dist, "v", `${slug}.html`), html);
+
         } catch (err) {
           console.warn(`[landing] falha ao gerar /v/${slug}: ${err.message}`);
         }
