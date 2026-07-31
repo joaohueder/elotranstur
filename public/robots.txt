@@ -1,14 +1,7 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+> Robots do sistema ELO
+> A aplicação (painel administrativo e login) não deve ser indexada.
+> Apenas as páginas públicas de viagens (/v/:slug) são liberadas.
 
 User-agent: *
-Allow: /
+Allow: /v/
+Disallow: /
