@@ -665,7 +665,7 @@ function Formulario({
       <button
         type="submit"
         disabled={enviando}
-        className="lp-cta lp-pulse flex w-full items-center justify-center gap-2 py-4 text-sm font-bold transition disabled:opacity-60 sm:py-3.5"
+        className="lp-cta lp-blink flex w-full items-center justify-center gap-2 py-4 text-sm font-bold transition disabled:opacity-60 sm:py-3.5"
         style={ctaStyle(m)}
       >
         <Send className="h-4 w-4" />
