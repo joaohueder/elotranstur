@@ -1035,6 +1035,7 @@ WHERE NOT EXISTS (
 -- =====================================================================
 alter table public.viagens
   add column if not exists landing_modelo text    not null default 'aurora',
+  add column if not exists landing_paleta text    not null default 'areia-dourada',
   add column if not exists landing_slug   text,
   add column if not exists landing_ativa  boolean not null default true;
 
