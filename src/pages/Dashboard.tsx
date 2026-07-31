@@ -27,9 +27,11 @@ import {
 } from "recharts";
 
 import { AppShell } from "@/components/app-shell";
+import { UltimasVisitas } from "@/components/dashboard/ultimas-visitas";
 import { HelpTip } from "@/components/help";
 import { useCrmData, isStageFinal } from "@/lib/crm";
 import { useVisitas } from "@/lib/visitas";
+
 
 const CORES = [
   "#6366f1",
