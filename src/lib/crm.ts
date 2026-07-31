@@ -134,6 +134,10 @@ export function useCrmData() {
     void load();
   }, [load]);
 
+  useRealtime(["crm_stages", "crm_leads", "crm_lead_viagens", "viagens"], () =>
+    void load(true),
+  );
+
   return { stages, leads, loading, error, reload: load, setLeads };
 }
 
