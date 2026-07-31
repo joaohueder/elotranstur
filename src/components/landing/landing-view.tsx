@@ -333,6 +333,8 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     (u): u is string => !!u,
   );
   const [fotoAberta, setFotoAberta] = useState<number | null>(null);
+  const [capaSelecionada, setCapaSelecionada] = useState<string | null>(null);
+  const capaAtiva = capaSelecionada ?? capa;
   const abrirFoto = (url: string | null) => {
     if (!url) return;
     const i = todasFotos.indexOf(url);
