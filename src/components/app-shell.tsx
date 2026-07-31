@@ -30,7 +30,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const { can } = useAuthz();
+
+  async function handleRefreshPermissions() {
+    setRefreshing(true);
+    try {
+      await refreshAuthz();
+      toast.success("Permissões atualizadas.");
+    } catch {
+      toast.error("Não foi possível atualizar as permissões.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
 
   useEffect(() => {
     let active = true;
