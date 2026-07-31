@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Pencil,
@@ -13,7 +14,6 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,19 +23,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useFeedback } from "@/lib/feedback";
-import {
-  EMPTY_PERMISSION,
-  MODULES,
-  normalizePermissions,
-  type ModulePermission,
-  type PermissionMap,
-} from "@/lib/permissions";
+import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permissions";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
+
 
 type UsuarioRow = {
   id: string;
@@ -48,25 +41,8 @@ type UsuarioRow = {
   permissoes: PermissionMap;
 };
 
-type FormState = {
-  id: string | null;
-  nome: string;
-  email: string;
-  senha: string;
-  isAdmin: boolean;
-  ativo: boolean;
-  permissoes: PermissionMap;
-};
 
-const EMPTY_FORM: FormState = {
-  id: null,
-  nome: "",
-  email: "",
-  senha: "",
-  isAdmin: false,
-  ativo: true,
-  permissoes: {},
-};
+
 
 function iniciais(nome: string | null, email: string) {
   const base = (nome || email).trim();
@@ -89,7 +65,8 @@ function formatarData(value: string | null) {
 }
 
 export default function Usuarios() {
-  const { can, userId, isAdmin, refresh } = useAuthz();
+  const navigate = useNavigate();
+  const { can, userId, isAdmin } = useAuthz();
   const { showSuccess, showNegative, showError } = useFeedback();
 
   const [rows, setRows] = useState<UsuarioRow[]>([]);
@@ -97,10 +74,8 @@ export default function Usuarios() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "inativos" | "admins">("todos");
 
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [formOpen, setFormOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState<UsuarioRow | null>(null);
+
 
   const podeEditar = can("usuarios", "edit");
   const podeExcluir = can("usuarios", "delete");
@@ -161,95 +136,13 @@ export default function Usuarios() {
   );
 
   function abrirNovo() {
-    setForm(EMPTY_FORM);
-    setFormOpen(true);
+    navigate("/usuarios/novo");
   }
 
   function abrirEdicao(u: UsuarioRow) {
-    setForm({
-      id: u.id,
-      nome: u.nome ?? "",
-      email: u.email,
-      senha: "",
-      isAdmin: u.is_admin,
-      ativo: u.ativo,
-      permissoes: u.permissoes,
-    });
-    setFormOpen(true);
+    navigate(`/usuarios/${u.id}`);
   }
 
-  function permissaoDe(modulo: string): ModulePermission {
-    return form.permissoes[modulo] ?? EMPTY_PERMISSION;
-  }
-
-  function togglePermissao(modulo: string, acao: keyof ModulePermission, value: boolean) {
-    setForm((prev) => {
-      const atual = prev.permissoes[modulo] ?? EMPTY_PERMISSION;
-      const next: ModulePermission = { ...atual, [acao]: value };
-      if (acao !== "view" && value) next.view = true;
-      if (acao === "view" && !value) {
-        next.edit = false;
-        next.delete = false;
-      }
-      return { ...prev, permissoes: { ...prev.permissoes, [modulo]: next } };
-    });
-  }
-
-  async function salvar() {
-    if (!form.nome.trim()) {
-      showNegative("Dados incompletos", "Informe o nome do usuário.");
-      return;
-    }
-    if (!form.id) {
-      if (!form.email.trim()) {
-        showNegative("Dados incompletos", "Informe o e-mail do usuário.");
-        return;
-      }
-      if (form.senha.length < 8) {
-        showNegative("Senha inválida", "A senha deve ter no mínimo 8 caracteres.");
-        return;
-      }
-    } else if (form.senha && form.senha.length < 8) {
-      showNegative("Senha inválida", "A nova senha deve ter no mínimo 8 caracteres.");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      if (form.id) {
-        const { error } = await supabase.rpc("admin_save_user", {
-          _user_id: form.id,
-          _nome: form.nome.trim(),
-          _is_admin: form.isAdmin,
-          _ativo: form.ativo,
-          _permissoes: form.permissoes,
-          _nova_senha: form.senha || null,
-        });
-        if (error) throw error;
-        showSuccess("Usuário atualizado", `As alterações de ${form.nome} foram salvas.`);
-      } else {
-        const { error } = await supabase.rpc("admin_create_user", {
-          _email: form.email.trim(),
-          _senha: form.senha,
-          _nome: form.nome.trim(),
-          _is_admin: form.isAdmin,
-          _ativo: form.ativo,
-          _permissoes: form.permissoes,
-        });
-        if (error) throw error;
-        showSuccess("Usuário criado", `${form.nome} já pode acessar o sistema.`);
-      }
-      setFormOpen(false);
-      await carregar();
-      await refresh();
-    } catch (err) {
-      const message =
-        (err as { message?: string })?.message ?? "Erro desconhecido ao salvar.";
-      showError("Falha ao salvar usuário", message, err);
-    } finally {
-      setSaving(false);
-    }
-  }
 
   async function alternarAtivo(u: UsuarioRow) {
     if (u.id === userId) {
@@ -510,154 +403,8 @@ export default function Usuarios() {
         )}
       </div>
 
-      {/* Modal criar/editar */}
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-2xl">
-              {form.id ? "Editar usuário" : "Novo usuário"}
-            </DialogTitle>
-            <DialogDescription>
-              Defina os dados de acesso, o papel e as permissões por módulo.
-            </DialogDescription>
-          </DialogHeader>
+      {/* Cadastro/edição em tela dedicada: /usuarios/novo e /usuarios/:id */}
 
-          <div className="space-y-5 py-2">
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase tracking-widest">Nome</Label>
-              <Input
-                value={form.nome}
-                onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))}
-                className="rounded-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase tracking-widest">E-mail</Label>
-              <Input
-                type="email"
-                value={form.email}
-                disabled={Boolean(form.id)}
-                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                className="rounded-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase tracking-widest">
-                {form.id ? "Nova senha (opcional)" : "Senha"}
-              </Label>
-              <Input
-                type="password"
-                value={form.senha}
-                onChange={(e) => setForm((p) => ({ ...p, senha: e.target.value }))}
-                placeholder="Mínimo de 8 caracteres"
-                className="rounded-sm"
-              />
-            </div>
-
-            <div className="flex items-center justify-between border border-border p-4">
-              <div>
-                <p className="text-sm font-medium text-foreground">Administrador</p>
-                <p className="text-xs text-muted-foreground">
-                  Acesso total a todos os módulos.
-                </p>
-              </div>
-              <Switch
-                checked={form.isAdmin}
-                onCheckedChange={(v) => setForm((p) => ({ ...p, isAdmin: v }))}
-              />
-            </div>
-
-            <div className="flex items-center justify-between border border-border p-4">
-              <div>
-                <p className="text-sm font-medium text-foreground">Usuário ativo</p>
-                <p className="text-xs text-muted-foreground">
-                  Se desativado, o acesso é bloqueado imediatamente.
-                </p>
-              </div>
-              <Switch
-                checked={form.ativo}
-                onCheckedChange={(v) => setForm((p) => ({ ...p, ativo: v }))}
-              />
-            </div>
-
-            {!form.isAdmin && (
-              <div className="overflow-hidden rounded-sm border border-border">
-                <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/60 px-4 py-2.5">
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                    Permissões por módulo
-                  </span>
-                  <div className="grid grid-cols-3 gap-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <span className="w-14">Ver</span>
-                    <span className="w-14">Editar</span>
-                    <span className="w-14">Excluir</span>
-                  </div>
-                </div>
-
-                {MODULES.map((m) => {
-                  const p = permissaoDe(m.key);
-                  return (
-                    <div
-                      key={m.key}
-                      className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/40"
-                    >
-                      <span className="truncate text-sm text-foreground">{m.label}</span>
-                      <div className="grid grid-cols-3 gap-1">
-                        <div className="flex w-14 justify-center">
-                          <Checkbox
-                            aria-label={`Ver ${m.label}`}
-                            checked={p.view}
-                            onCheckedChange={(v) =>
-                              togglePermissao(m.key, "view", Boolean(v))
-                            }
-                          />
-                        </div>
-                        <div className="flex w-14 justify-center">
-                          <Checkbox
-                            aria-label={`Editar ${m.label}`}
-                            checked={p.edit}
-                            onCheckedChange={(v) =>
-                              togglePermissao(m.key, "edit", Boolean(v))
-                            }
-                          />
-                        </div>
-                        <div className="flex w-14 justify-center">
-                          <Checkbox
-                            aria-label={`Excluir ${m.label}`}
-                            checked={p.delete}
-                            onCheckedChange={(v) =>
-                              togglePermissao(m.key, "delete", Boolean(v))
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="mt-2 flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              className="w-full rounded-sm sm:w-auto"
-              onClick={() => setFormOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              className="w-full rounded-sm sm:w-auto sm:min-w-32"
-              disabled={saving}
-              onClick={() => void salvar()}
-            >
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal excluir */}
       <Dialog open={Boolean(toDelete)} onOpenChange={(o) => !o && setToDelete(null)}>

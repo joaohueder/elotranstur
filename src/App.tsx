@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
+import UsuarioForm from "@/pages/UsuarioForm";
 import Usuarios from "@/pages/Usuarios";
 import VerifyCode from "@/pages/VerifyCode";
 
@@ -48,6 +49,23 @@ export default function App() {
                 </RequireModule>
               }
             />
+            <Route
+              path="/usuarios/novo"
+              element={
+                <RequireModule modulo="usuarios">
+                  <UsuarioForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/usuarios/:id"
+              element={
+                <RequireModule modulo="usuarios">
+                  <UsuarioForm />
+                </RequireModule>
+              }
+            />
+
 
             <Route path="*" element={<NotFound />} />
           </Routes>
