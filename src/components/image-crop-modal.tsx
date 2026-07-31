@@ -44,9 +44,14 @@ type Pendente = {
  * Modal de ajuste de corte da imagem.
  * Uso: const { cropperUi, ajustarCorte } = useImageCropper();
  */
-export function useImageCropper() {
+export function useImageCropper(opcoes?: CropperOpcoes) {
+  const listaProporcoes: ProporcaoOpcao[] =
+    opcoes?.proporcoes ?? PROPORCOES.map((p) => ({ ...p }));
   const [pendente, setPendente] = useState<Pendente | null>(null);
-  const [proporcao, setProporcao] = useState<number>(16 / 9);
+  const [proporcao, setProporcao] = useState<number>(
+    opcoes?.proporcaoPadrao ?? listaProporcoes[0].valor,
+  );
+
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [processando, setProcessando] = useState(false);
