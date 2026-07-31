@@ -1439,9 +1439,21 @@ language plpgsql
 security definer
 set search_path = public, extensions
 as $$
+declare
+  v_qtd integer;
 begin
-  if exists (select 1 from public.viagens v where lower(v.destino) = lower(old.nome)) then
-    raise exception 'O destino "%" está sendo usado em viagens e não pode ser excluído.', old.nome
+  select count(*) into v_qtd
+    from public.viagens v
+   where lower(btrim(v.destino)) in (
+     lower(btrim(old.nome)),
+     lower(btrim(old.nome)) || ' - ' || lower(btrim(coalesce(old.uf, ''))),
+     lower(btrim(old.nome)) || '/' || lower(btrim(coalesce(old.uf, ''))),
+     lower(btrim(old.nome)) || ' ' || lower(btrim(coalesce(old.uf, '')))
+   );
+  if v_qtd > 0 then
+    raise exception
+      'O destino "%" está sendo usado em % viagem(ns) e não pode ser excluído.',
+      old.nome, v_qtd
       using errcode = 'P0001';
   end if;
   return old;
