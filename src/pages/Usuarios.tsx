@@ -539,7 +539,7 @@ export default function Usuarios() {
                   </HintButton>
                 </div>
               </article>
-            ))}
+            )))}
           </div>
         )}
       </div>
