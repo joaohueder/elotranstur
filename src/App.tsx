@@ -59,6 +59,8 @@ export default function App() {
         <BrowserRouter>
           <RobotsPolicy />
           <MetaPixelTracker />
+          <SessionCloseGuard />
+
 
 
           <Routes>
