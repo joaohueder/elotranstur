@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Save, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,19 @@ import { formatWhatsapp, useCrmOrigens, type CrmStage } from "@/lib/crm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 
+type ViagemOpcao = {
+  id: string;
+  destino: string;
+  data_partida: string;
+  situacao: string;
+};
+
+function formatarData(iso: string) {
+  if (!iso) return "";
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+}
+
 export default function LeadForm() {
   const { id } = useParams();
   const editando = Boolean(id);
@@ -30,6 +43,9 @@ export default function LeadForm() {
   const [whatsapp, setWhatsapp] = useState("");
   const [origem, setOrigem] = useState<string>("WhatsApp");
   const [stageId, setStageId] = useState<string>("");
+  const [viagens, setViagens] = useState<ViagemOpcao[]>([]);
+  const [viagensInteresse, setViagensInteresse] = useState<string[]>([]);
+  const [viagemSelecionada, setViagemSelecionada] = useState<string>("");
 
   useEffect(() => {
     let ativo = true;
@@ -46,6 +62,14 @@ export default function LeadForm() {
         const lista = (sData ?? []) as CrmStage[];
         setStages(lista);
 
+        const { data: vData, error: vErr } = await supabase
+          .from("viagens")
+          .select("id, destino, data_partida, situacao")
+          .order("data_partida", { ascending: true });
+        if (vErr) throw vErr;
+        if (!ativo) return;
+        setViagens((vData ?? []) as ViagemOpcao[]);
+
         if (id) {
           const { data, error: err } = await supabase
             .from("crm_leads")
@@ -60,6 +84,14 @@ export default function LeadForm() {
             setOrigem(data.origem ?? "Outros");
             setStageId(data.stage_id ?? lista[0]?.id ?? "");
           }
+
+          const { data: lvData, error: lvErr } = await supabase
+            .from("crm_lead_viagens")
+            .select("viagem_id")
+            .eq("lead_id", id);
+          if (lvErr) throw lvErr;
+          if (!ativo) return;
+          setViagensInteresse((lvData ?? []).map((r: { viagem_id: string }) => r.viagem_id));
         } else {
           setStageId(lista[0]?.id ?? "");
         }
@@ -104,10 +136,40 @@ export default function LeadForm() {
         origem,
         stage_id: stageId,
       };
-      const { error: err } = editando
-        ? await supabase.from("crm_leads").update(payload).eq("id", id!)
-        : await supabase.from("crm_leads").insert(payload);
-      if (err) throw err;
+      let leadId = id ?? "";
+      if (editando) {
+        const { error: err } = await supabase
+          .from("crm_leads")
+          .update(payload)
+          .eq("id", id!);
+        if (err) throw err;
+      } else {
+        const { data: novo, error: err } = await supabase
+          .from("crm_leads")
+          .insert(payload)
+          .select("id")
+          .single();
+        if (err) throw err;
+        leadId = novo!.id as string;
+      }
+
+      const { error: delErr } = await supabase
+        .from("crm_lead_viagens")
+        .delete()
+        .eq("lead_id", leadId);
+      if (delErr) throw delErr;
+
+      if (viagensInteresse.length > 0) {
+        const { error: insErr } = await supabase
+          .from("crm_lead_viagens")
+          .insert(
+            viagensInteresse.map((viagemId) => ({
+              lead_id: leadId,
+              viagem_id: viagemId,
+            })),
+          );
+        if (insErr) throw insErr;
+      }
 
       feedback.showSuccess(
         editando ? "Lead atualizado" : "Lead cadastrado",
@@ -215,6 +277,93 @@ export default function LeadForm() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <FieldLabel help="Viagens que interessam a esse lead. Você pode adicionar quantas quiser">
+                Viagens de interesse
+              </FieldLabel>
+              <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
+                <Select
+                  value={viagemSelecionada}
+                  onValueChange={setViagemSelecionada}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Selecione uma viagem" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {viagens
+                      .filter((v) => !viagensInteresse.includes(v.id))
+                      .map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.destino} · {formatarData(v.data_partida)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <HintButton
+                  type="button"
+                  hint="Adiciona a viagem selecionada à lista de interesses do lead"
+                  variant="outline"
+                  disabled={!viagemSelecionada}
+                  onClick={() => {
+                    if (!viagemSelecionada) return;
+                    setViagensInteresse((atual) =>
+                      atual.includes(viagemSelecionada)
+                        ? atual
+                        : [...atual, viagemSelecionada],
+                    );
+                    setViagemSelecionada("");
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar
+                </HintButton>
+              </div>
+
+              {viagensInteresse.length === 0 ? (
+                <p className="mt-3 rounded-sm border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+                  Nenhuma viagem adicionada. Selecione acima as viagens que o
+                  lead quer conhecer.
+                </p>
+              ) : (
+                <ul className="mt-3 space-y-2">
+                  {viagensInteresse.map((vid) => {
+                    const v = viagens.find((x) => x.id === vid);
+                    return (
+                      <li
+                        key={vid}
+                        className="flex items-center justify-between gap-3 rounded-sm border border-border bg-muted/30 px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm text-foreground">
+                            {v?.destino ?? "Viagem removida"}
+                          </p>
+                          {v ? (
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                              Partida em {formatarData(v.data_partida)} ·{" "}
+                              {v.situacao}
+                            </p>
+                          ) : null}
+                        </div>
+                        <HintButton
+                          type="button"
+                          hint="Remove esta viagem da lista de interesses do lead"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            setViagensInteresse((atual) =>
+                              atual.filter((x) => x !== vid),
+                            )
+                          }
+                        >
+                          <X className="h-4 w-4" />
+                        </HintButton>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           </div>
 
