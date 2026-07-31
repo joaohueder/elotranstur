@@ -1,6 +1,6 @@
--- ELO — Listagem de usuários à prova de falhas (admin)
--- Execute no SQL Editor da sua instância AUTO-HOSPEDADA.
--- Lê direto de auth.users, então nunca depende de profiles estar populado.
+-- ELO — Listagem de usuários por permissão de módulo (não só admin)
+-- Quem tem permissão de VISUALIZAR o módulo "usuarios" pode listar.
+-- Escrita (criar/salvar/excluir) continua restrita a admin nas outras funções.
 
 create or replace function public.admin_list_users()
 returns table (
@@ -8,7 +8,8 @@ returns table (
   email text,
   nome text,
   ativo boolean,
-  role public.app_role
+  role public.app_role,
+  permissions jsonb
 )
 language plpgsql
 stable
@@ -16,8 +17,8 @@ security definer
 set search_path = public
 as $$
 begin
-  if not public.is_admin() then
-    raise exception 'Apenas administradores podem listar usuários.'
+  if not public.can('usuarios', 'view') then
+    raise exception 'Sem permissão para visualizar usuários.'
       using errcode = '42501';
   end if;
 
@@ -32,7 +33,18 @@ begin
          from public.user_roles r
         where r.user_id = u.id and r.role = 'admin' limit 1),
       'usuario'::public.app_role
-    ) as role
+    ) as role,
+    coalesce(
+      (select jsonb_agg(jsonb_build_object(
+                'user_id', up.user_id,
+                'modulo', up.modulo,
+                'can_view', up.can_view,
+                'can_edit', up.can_edit,
+                'can_delete', up.can_delete))
+         from public.user_permissions up
+        where up.user_id = u.id),
+      '[]'::jsonb
+    ) as permissions
   from auth.users u
   left join public.profiles p on p.id = u.id
   order by u.email;
