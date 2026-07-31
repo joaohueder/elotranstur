@@ -10,8 +10,6 @@ import {
   ChevronRight,
   MapPin,
   CalendarDays,
-  Wallet,
-  Users,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -35,9 +33,7 @@ import {
   type CrmStage,
   type CrmLeadViagem,
 } from "@/lib/crm";
-import { ViagemCountdown } from "@/components/viagem-countdown";
 import {
-  capaDa,
   formatarData,
   formatarHora,
   formatarValor,
