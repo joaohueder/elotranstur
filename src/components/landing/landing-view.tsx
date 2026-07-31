@@ -1160,13 +1160,14 @@ export function LandingView({
   /* ---------------- 3. Vitrine — cartão flutuante ---------------- */
   return wrapper(
     <>
-      <div
-        className="relative pb-24 pt-8 sm:pb-28 sm:pt-12"
-        style={{
-          background: "linear-gradient(150deg, var(--lp-accent), var(--lp-accent2))",
-        }}
-      >
-        <div className={`${secao} lp-rise space-y-3.5 text-center`}>
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+        <div
+          className="relative overflow-hidden rounded-b-[2rem] pb-24 pt-8 sm:pb-28 sm:pt-12"
+          style={{
+            background: "linear-gradient(150deg, var(--lp-accent), var(--lp-accent2))",
+          }}
+        >
+          <div className="lp-rise space-y-3.5 px-4 text-center sm:px-6">
           <div className="flex flex-wrap items-center justify-center gap-2">
             {dataPill(true)}
           </div>
