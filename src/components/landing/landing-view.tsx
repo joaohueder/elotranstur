@@ -973,34 +973,40 @@ export function LandingView({
   /** Barra fixa de ação — visível em todos os tamanhos de tela. */
   const barraMobile = (
     <div
-      className={`lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 transition-transform duration-300 ease-out will-change-transform ${
+      className={`fixed inset-x-0 bottom-0 z-[90] transition-transform duration-300 ease-out will-change-transform ${
         formularioVisivel ? "translate-y-full opacity-0" : "translate-y-0 opacity-100"
       }`}
-      style={{
-        background: "var(--lp-surface)",
-        borderColor: "var(--lp-border)",
-        boxShadow: "0 -10px 30px -18px rgba(0,0,0,.45)",
-        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
-      }}
     >
-      <div className="min-w-0 leading-tight">
-        <span className="block text-[10px] uppercase tracking-[0.14em]" style={{ color: "var(--lp-muted)" }}>
-          a partir de
-        </span>
-        <span className="block text-lg font-bold" style={{ color: "var(--lp-accent)" }}>
-          {formatarValor(viagem.valor)}
-        </span>
-      </div>
-      <a
-        href="#reservar"
-        className="lp-cta ml-auto flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-bold"
-        style={ctaStyle(m)}
+      <div
+        className="lp-barra mx-auto flex w-full items-center gap-3 border-t px-4 py-3 sm:gap-5 sm:px-6 lg:rounded-t-2xl lg:border-x lg:px-8"
+        style={{
+          maxWidth: "min(100%, var(--app-max-width, 100%))",
+          background: "var(--lp-surface)",
+          borderColor: "var(--lp-border)",
+          boxShadow: "0 -10px 30px -18px rgba(0,0,0,.45)",
+          paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+        }}
       >
-        <MessageCircle className="h-4 w-4" />
-        Quero minha vaga
-      </a>
+        <div className="min-w-0 leading-tight">
+          <span className="block text-[10px] uppercase tracking-[0.14em]" style={{ color: "var(--lp-muted)" }}>
+            a partir de
+          </span>
+          <span className="block text-lg font-bold sm:text-xl" style={{ color: "var(--lp-accent)" }}>
+            {formatarValor(viagem.valor)}
+          </span>
+        </div>
+        <a
+          href="#reservar"
+          className="lp-cta ml-auto flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-bold sm:max-w-xs sm:flex-none sm:px-8"
+          style={ctaStyle(m)}
+        >
+          <MessageCircle className="h-4 w-4" />
+          Quero minha vaga
+        </a>
+      </div>
     </div>
   );
+
 
   /** Conteúdo comum abaixo do topo. */
   const corpoComum = (
