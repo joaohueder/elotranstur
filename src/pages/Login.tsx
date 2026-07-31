@@ -113,33 +113,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleResetPassword = async () => {
-    if (!email.trim()) {
-      showNegative(
-        "E-mail obrigatório",
-        "Informe seu e-mail no campo acima para receber o link de redefinição de senha.",
-      );
-      return;
-    }
 
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
 
-      showSuccess(
-        "Link enviado",
-        "Enviamos um link de redefinição de senha para o seu e-mail. Verifique também a caixa de spam.",
-      );
-    } catch (err) {
-      showError(
-        "Falha ao enviar o link",
-        "Não conseguimos enviar o e-mail de redefinição de senha. Tente novamente em instantes.",
-        err,
-      );
-    }
-  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans lg:flex-row">
