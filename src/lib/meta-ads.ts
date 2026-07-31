@@ -17,20 +17,24 @@ declare global {
   }
 }
 
+type ConfigMeta = { pixel_id: string; ativo: boolean };
+
 let pixelCarregado = "";
-let cfgPromise: Promise<{ pixel_id: string; ativo: boolean }> | null = null;
+let cfgPromise: Promise<ConfigMeta> | null = null;
+
+async function buscarConfigMeta(): Promise<ConfigMeta> {
+  try {
+    const { data } = await supabase.rpc("meta_ads_public");
+    const d = (data ?? {}) as { pixel_id?: string; ativo?: boolean };
+    return { pixel_id: String(d.pixel_id ?? ""), ativo: Boolean(d.ativo) };
+  } catch {
+    return { pixel_id: "", ativo: false };
+  }
+}
 
 /** Lê (uma única vez por sessão) o ID do Pixel público. */
-export function carregarConfigMeta() {
-  if (!cfgPromise) {
-    cfgPromise = supabase
-      .rpc("meta_ads_public")
-      .then(({ data }) => {
-        const d = (data ?? {}) as { pixel_id?: string; ativo?: boolean };
-        return { pixel_id: String(d.pixel_id ?? ""), ativo: Boolean(d.ativo) };
-      })
-      .catch(() => ({ pixel_id: "", ativo: false }));
-  }
+export function carregarConfigMeta(): Promise<ConfigMeta> {
+  if (!cfgPromise) cfgPromise = buscarConfigMeta();
   return cfgPromise;
 }
 
