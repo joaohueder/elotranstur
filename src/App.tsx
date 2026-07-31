@@ -11,9 +11,11 @@ import { PublicShell } from "@/components/public-shell";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { MetaPixelTracker } from "@/lib/meta-ads";
 import { SessionCloseGuard } from "@/lib/session-close";
+import { VisitTracker } from "@/lib/visitas";
 
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
+import Dashboard from "@/pages/Dashboard";
 import LeadForm from "@/pages/LeadForm";
 import Leads from "@/pages/Leads";
 import Configuracoes from "@/pages/Configuracoes";
@@ -60,6 +62,7 @@ export default function App() {
           <RobotsPolicy />
           <MetaPixelTracker />
           <SessionCloseGuard />
+          <VisitTracker />
 
 
 
@@ -93,6 +96,14 @@ export default function App() {
               }
             />
 
+            <Route
+              path="/dashboard"
+              element={
+                <RequireModule modulo="dashboard">
+                  <Dashboard />
+                </RequireModule>
+              }
+            />
             <Route
               path="/viagens"
               element={
