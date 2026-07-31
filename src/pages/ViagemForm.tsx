@@ -37,6 +37,8 @@ export default function ViagemForm() {
   const [valor, setValor] = useState("");
   const [itens, setItens] = useState<string[]>([]);
   const [novoItem, setNovoItem] = useState("");
+  const [arrastando, setArrastando] = useState<number | null>(null);
+
 
   useEffect(() => {
     if (!id) return;
