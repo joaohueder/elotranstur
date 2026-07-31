@@ -93,6 +93,28 @@ function LeadViagens({
   );
 }
 
+/** Marcador de tempo de vida do lead, atualizado a cada minuto. */
+function LeadLifetime({ createdAt, oculto }: { createdAt: string; oculto?: boolean }) {
+  const [texto, setTexto] = useState(() => tempoDeVida(createdAt));
+
+  useEffect(() => {
+    setTexto(tempoDeVida(createdAt));
+    const id = setInterval(() => setTexto(tempoDeVida(createdAt)), 60_000);
+    return () => clearInterval(id);
+  }, [createdAt]);
+
+  if (oculto) return null;
+  return (
+    <span
+      title={`Tempo de vida no sistema: ${texto}`}
+      className="inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+    >
+      <Clock className="h-3 w-3" />
+      {texto}
+    </span>
+  );
+}
+
 export default function Crm() {
   const navigate = useNavigate();
   const feedback = useFeedback();
