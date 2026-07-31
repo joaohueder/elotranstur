@@ -336,6 +336,12 @@ export default function Crm() {
                               <p className="mt-0.5 text-xs text-muted-foreground">
                                 {lead.whatsapp} · {lead.origem}
                               </p>
+                              <div className="mt-2">
+                                <LeadLifetime
+                                  createdAt={lead.created_at}
+                                  oculto={isStageFinal(stage)}
+                                />
+                              </div>
                             </div>
                             <a
                               href={whatsappLink(lead.whatsapp)}
