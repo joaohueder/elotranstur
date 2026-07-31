@@ -6,7 +6,6 @@ import { FeedbackProvider } from "@/lib/feedback";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
-import CrmEtapas from "@/pages/CrmEtapas";
 import LeadForm from "@/pages/LeadForm";
 import Configuracoes from "@/pages/Configuracoes";
 import Home from "@/pages/Home";
@@ -52,14 +51,6 @@ export default function App() {
               element={
                 <RequireModule modulo="crm">
                   <Crm />
-                </RequireModule>
-              }
-            />
-            <Route
-              path="/crm/etapas"
-              element={
-                <RequireModule modulo="crm">
-                  <CrmEtapas />
                 </RequireModule>
               }
             />
