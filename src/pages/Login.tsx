@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ForgotPasswordModal } from "@/components/forgot-password-modal";
@@ -32,15 +32,23 @@ export default function LoginPage() {
 
   // 1) Listener registrado ANTES de qualquer checagem de sessão.
   // 2) getUser() revalida o token no servidor de auth (não confia no storage).
+  const redirected = useRef(false);
+
   useEffect(() => {
     let active = true;
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active && session) navigate("/", { replace: true });
+    const go = () => {
+      if (!active || redirected.current) return;
+      redirected.current = true;
+      navigate("/", { replace: true });
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && event !== "SIGNED_OUT") go();
     });
 
-    supabase.auth.getUser().then(({ data }) => {
-      if (active && data.user) navigate("/", { replace: true });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) go();
     });
 
     return () => {
@@ -100,7 +108,10 @@ export default function LoginPage() {
       }
 
 
-      navigate("/", { replace: true });
+      if (!redirected.current) {
+        redirected.current = true;
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       persistRememberMe(false);
       showError(
