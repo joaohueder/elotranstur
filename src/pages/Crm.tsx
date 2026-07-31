@@ -231,10 +231,11 @@ export default function Crm() {
             <HelpTip texto="Total de leads (contatos) espalhados pelas etapas do funil de vendas" />
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           {podeEditar && (
             <HintButton
               hint="Cadastra um novo lead (cliente em potencial) no funil"
+              className="w-full sm:w-auto"
               onClick={() => navigate("/crm/leads/novo")}
             >
               <Plus className="mr-2 h-4 w-4" />

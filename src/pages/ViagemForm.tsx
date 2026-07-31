@@ -977,7 +977,7 @@ export default function ViagemForm() {
             </Dialog>
           </TabsContent>
 
-          <div className="flex justify-end gap-3 border-t border-border p-6">
+          <div className="flex flex-col-reverse gap-2 border-t border-border p-4 sm:flex-row sm:justify-end sm:gap-3 sm:p-6 [&>button]:w-full sm:[&>button]:w-auto">
             <HintButton
               hint="Descarta as alterações e volta para a lista de viagens."
               variant="outline"

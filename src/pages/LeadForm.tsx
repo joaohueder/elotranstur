@@ -717,7 +717,7 @@ export default function LeadForm() {
             </TabsContent>
           </Tabs>
 
-          <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
+          <div className="mt-8 flex flex-col-reverse gap-2 border-t border-border pt-6 sm:flex-row sm:justify-end sm:gap-3 [&>button]:w-full sm:[&>button]:w-auto">
             <HintButton
               hint="Descarta as alterações e volta para a lista de leads"
               variant="outline"
