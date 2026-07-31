@@ -178,5 +178,7 @@ export function useCrmOrigens(somenteAtivas = false) {
     void load();
   }, [load]);
 
+  useRealtime(["crm_origens"], () => void load(true));
+
   return { origens, loading, error, reload: load };
 }
