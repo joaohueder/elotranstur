@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFeedback } from "@/lib/feedback";
 import { useSeo } from "@/lib/seo";
 import { supabase, setRememberMe as persistRememberMe } from "@/lib/supabase";
 
@@ -19,58 +19,111 @@ export default function LoginPage() {
   });
 
   const navigate = useNavigate();
+  const { showSuccess, showNegative, showError } = useFeedback();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
 
+  // 1) Listener registrado ANTES de qualquer checagem de sessão.
+  // 2) getUser() revalida o token no servidor de auth (não confia no storage).
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/", { replace: true });
+    let active = true;
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active && session) navigate("/", { replace: true });
     });
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (active && data.user) navigate("/", { replace: true });
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
 
-    if (!email || !password) {
-      toast.error("Informe e-mail e senha.");
+    if (!email.trim() || !password) {
+      showNegative("Dados incompletos", "Informe seu e-mail e sua senha para continuar.");
       return;
     }
 
     setLoading(true);
-    setAuthError(null);
     try {
       // Define a persistência ANTES do login: com "Manter conectado" a
       // sessão é salva por 30 dias; sem, expira ao fechar a aba.
       persistRememberMe(rememberMe);
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
-      if (error) throw error;
+
+      if (error) {
+        persistRememberMe(false);
+        const invalidCredentials =
+          error.status === 400 || /invalid login credentials/i.test(error.message);
+
+        if (invalidCredentials) {
+          showNegative(
+            "Não foi possível entrar",
+            "E-mail ou senha inválidos. Verifique os dados e tente novamente. Se o seu acesso estiver bloqueado, procure o administrador do sistema.",
+          );
+        } else {
+          showError(
+            "Falha na autenticação",
+            "Ocorreu um erro ao validar o seu acesso. Tente novamente em instantes e, se o problema persistir, envie os detalhes abaixo ao administrador do sistema.",
+            error,
+          );
+        }
+        return;
+      }
+
       navigate("/", { replace: true });
-    } catch {
-      const message = "E-mail ou senha inválidos.";
-      setAuthError(message);
-      toast.error(message);
+    } catch (err) {
+      persistRememberMe(false);
+      showError(
+        "Erro inesperado",
+        "Não conseguimos concluir o login. Verifique sua conexão e tente novamente.",
+        err,
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
-    if (!email) {
-      toast.error("Informe seu e-mail para redefinir a senha.");
+    if (!email.trim()) {
+      showNegative(
+        "E-mail obrigatório",
+        "Informe seu e-mail no campo acima para receber o link de redefinição de senha.",
+      );
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
-    });
-    if (error) toast.error(error.message);
-    else toast.success("Enviamos um link de redefinição para seu e-mail.");
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+
+      showSuccess(
+        "Link enviado",
+        "Enviamos um link de redefinição de senha para o seu e-mail. Verifique também a caixa de spam.",
+      );
+    } catch (err) {
+      showError(
+        "Falha ao enviar o link",
+        "Não conseguimos enviar o e-mail de redefinição de senha. Tente novamente em instantes.",
+        err,
+      );
+    }
   };
 
   return (
@@ -132,15 +185,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {authError && (
-            <div
-              role="alert"
-              className="mb-6 border-l-2 border-destructive bg-destructive/10 px-4 py-3 text-sm text-destructive"
-            >
-              {authError}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label
@@ -152,6 +196,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="nome@empresa.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -178,6 +223,7 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
