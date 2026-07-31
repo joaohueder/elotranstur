@@ -496,12 +496,20 @@ function Formulario({
       onSubmit={async (e) => {
         e.preventDefault();
         setErro(null);
+        if (nome.trim().length < 2) {
+          setErro("Informe seu nome.");
+          return;
+        }
+        if (whatsapp.replace(/\D/g, "").length < 10) {
+          setErro("Informe um WhatsApp válido com DDD.");
+          return;
+        }
         if (preview || !onSubmit) {
           setOk(true);
           return;
         }
         setEnviando(true);
-        const msg = await onSubmit({ nome, whatsapp });
+        const msg = await onSubmit({ nome: nome.trim(), whatsapp });
         setEnviando(false);
         if (msg) setErro(msg);
         else setOk(true);
