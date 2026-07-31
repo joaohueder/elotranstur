@@ -355,12 +355,13 @@ export default function ViagemForm() {
             </div>
           </div>
 
-          <div className="mt-8 border-t border-border pt-6">
+          </TabsContent>
+
+          <TabsContent value="dados" className="m-0 p-6">
             <SectionTitle
               titulo="Dados da viagem"
               help="Informações operacionais: para onde vai, quando parte, preço e vagas."
             />
-          </div>
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <FieldLabel htmlFor="destino" help="Cidade ou local para onde a viagem vai acontecer.">
