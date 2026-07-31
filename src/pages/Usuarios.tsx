@@ -238,7 +238,14 @@ export default function Usuarios() {
     setRows((prev) =>
       prev.map((r) =>
         r.id === u.id
-          ? { ...r, online: false, sessao_iniciada_em: null, sessao_ip: null }
+          ? {
+              ...r,
+              online: false,
+              sessao_iniciada_em: null,
+              sessao_atualizada_em: null,
+              sessao_expira_em: null,
+              sessao_ip: null,
+            }
           : r,
       ),
     );
@@ -445,10 +452,33 @@ export default function Usuarios() {
                   </div>
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
+                      Expira em
+                      <HelpTip texto="Tempo restante até a sessão deste usuário expirar e ele precisar fazer login novamente." />
+                    </p>
+                    <p className="mt-0.5 text-foreground">
+                      {u.online && u.sessao_expira_em
+                        ? formatarTempoRestante(u.sessao_expira_em, agora)
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
                       IP
                       <HelpTip texto="Endereço de internet (IP) usado no acesso atual." />
                     </p>
                     <p className="mt-0.5 text-foreground">{u.sessao_ip ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
+                      Último acesso
+                      <HelpTip texto="Data do último login realizado no sistema." />
+                    </p>
+                    <p className="mt-0.5 text-foreground">
+                      {formatarData(u.last_sign_in_at)}
+                    </p>
                   </div>
                 </div>
 
