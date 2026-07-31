@@ -415,19 +415,6 @@ export default function Usuarios() {
 
                 <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
                   <div>
-                    <p className="uppercase tracking-widest">Criado em</p>
-                    <p className="mt-0.5 text-foreground">{formatarData(u.created_at)}</p>
-                  </div>
-                  <div>
-                    <p className="uppercase tracking-widest">Último acesso</p>
-                    <p className="mt-0.5 text-foreground">
-                      {formatarData(u.last_sign_in_at)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
-                  <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
                       Sessão
                       <HelpTip texto="Mostra há quanto tempo a pessoa está logada. Se estiver fora do sistema, aparece 'Não logado'." />
