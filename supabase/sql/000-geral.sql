@@ -556,7 +556,8 @@ begin
   end if;
 
   if _is_admin is not null then
-    if _user_id = auth.uid() and _is_admin = false then
+    -- só bloqueia quando o próprio usuário É admin e está tentando se rebaixar
+    if _user_id = auth.uid() and _is_admin = false and v_alvo_admin then
       raise exception 'Você não pode remover o próprio acesso de administrador' using errcode = '42501';
     end if;
     delete from public.user_roles where user_id = _user_id;
