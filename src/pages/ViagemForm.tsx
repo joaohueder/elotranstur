@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
+import { comprimirImagem } from "@/lib/image-compress";
 import { supabase } from "@/lib/supabase";
 import {
   VIAGEM_SITUACOES,
@@ -149,11 +150,17 @@ export default function ViagemForm() {
           );
           continue;
         }
-        const extensao = arquivo.name.split(".").pop() ?? "jpg";
+        // Comprime antes de enviar: menor arquivo possível mantendo a qualidade.
+        const otimizado = await comprimirImagem(arquivo);
+        const extensao = otimizado.name.split(".").pop() ?? "jpg";
         const caminho = `${id ?? "novas"}/${crypto.randomUUID()}.${extensao}`;
         const { error } = await supabase.storage
           .from(BUCKET)
-          .upload(caminho, arquivo, { upsert: false, contentType: arquivo.type });
+          .upload(caminho, otimizado, {
+            upsert: false,
+            contentType: otimizado.type,
+            cacheControl: "31536000",
+          });
         if (error) throw error;
         const { data } = supabase.storage.from(BUCKET).getPublicUrl(caminho);
         novas.push({ url: data.publicUrl, path: caminho });
@@ -502,7 +509,7 @@ export default function ViagemForm() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <SectionTitle
                 titulo="Galeria de imagens"
-                help="Fotos da viagem. Arraste para mudar a ordem e marque a estrela para escolher a foto de capa."
+                help="Fotos da viagem. As imagens são compactadas automaticamente para ocupar pouco espaço sem perder qualidade. Arraste para mudar a ordem e marque a estrela para escolher a capa."
               />
               <input
                 ref={inputArquivo}
@@ -530,8 +537,9 @@ export default function ViagemForm() {
 
             {imagens.length === 0 ? (
               <p className="mt-3 text-xs text-muted-foreground">
-                Nenhuma imagem adicionada. A primeira imagem enviada vira a capa
-                automaticamente.
+                Nenhuma imagem adicionada. As fotos são compactadas
+                automaticamente (até 1920px, formato WebP) e a primeira imagem
+                enviada vira a capa.
               </p>
             ) : (
               <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
