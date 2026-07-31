@@ -71,16 +71,30 @@ export default function Viagens() {
   }, [carregar]);
 
   const filtradas = useMemo(() => {
+    const ordemSituacao: Record<string, number> = {
+      rascunho: 0,
+      ativa: 1,
+      fechada: 2,
+      concluida: 3,
+      cancelada: 4,
+    };
     const termo = busca.trim().toLowerCase();
-    return viagens.filter((v) => {
-      const okTermo =
-        !termo ||
-        v.destino.toLowerCase().includes(termo) ||
-        (v.titulo ?? "").toLowerCase().includes(termo) ||
-        (v.itens_inclusos ?? []).some((i) => i.toLowerCase().includes(termo));
-      const okSituacao = filtro === "todas" || v.situacao === filtro;
-      return okTermo && okSituacao;
-    });
+    return viagens
+      .filter((v) => {
+        const okTermo =
+          !termo ||
+          v.destino.toLowerCase().includes(termo) ||
+          (v.titulo ?? "").toLowerCase().includes(termo) ||
+          (v.itens_inclusos ?? []).some((i) => i.toLowerCase().includes(termo));
+        const okSituacao = filtro === "todas" || v.situacao === filtro;
+        return okTermo && okSituacao;
+      })
+      .sort((a, b) => {
+        const ordemA = ordemSituacao[a.situacao] ?? 99;
+        const ordemB = ordemSituacao[b.situacao] ?? 99;
+        if (ordemA !== ordemB) return ordemA - ordemB;
+        return new Date(a.data_partida).getTime() - new Date(b.data_partida).getTime();
+      });
   }, [viagens, busca, filtro]);
 
   async function excluir(v: Viagem) {
