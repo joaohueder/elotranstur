@@ -17,6 +17,7 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
+import { ViagemCountdown } from "@/components/viagem-countdown";
 import {
   VIAGEM_SITUACOES,
   capaDa,
