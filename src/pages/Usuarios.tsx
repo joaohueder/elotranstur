@@ -364,13 +364,13 @@ export default function Usuarios() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {filtrados.map((u) => {
-              const isMe = u.id === userId;
+              const isOnline = u.online;
               return (
               <article
                 key={u.id}
                 className={cn(
                   "flex flex-col border transition-shadow hover:shadow-lg",
-                  isMe
+                  isOnline
                     ? "border-emerald-200 bg-emerald-50/60"
                     : "border-border bg-background",
                 )}
@@ -398,9 +398,9 @@ export default function Usuarios() {
                       <span className="rounded-sm bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                         {u.is_admin ? "Administrador" : "Usuário"}
                       </span>
-                      {isMe && (
+                      {isOnline && (
                         <span className="rounded-sm bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-800">
-                          Você
+                          Logado agora
                         </span>
                       )}
                     </div>
