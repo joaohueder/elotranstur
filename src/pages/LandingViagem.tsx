@@ -14,6 +14,9 @@ export default function LandingViagem() {
   const { slug } = useParams();
   const [viagem, setViagem] = useState<LandingViagem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [empresa, setEmpresa] = useState<{ nome: string; whatsapp: string } | null>(
+    null,
+  );
   const { seo } = useLayoutSettings();
 
   useEffect(() => {
@@ -30,6 +33,33 @@ export default function LandingViagem() {
       ativo = false;
     };
   }, [slug]);
+
+  /** WhatsApp da empresa (Configurações › Empresa). */
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      const { data } = await supabase
+        .from("app_empresa")
+        .select("nome, whatsapp")
+        .maybeSingle();
+      if (ativo && data) setEmpresa(data as { nome: string; whatsapp: string });
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  /** Monta o link do WhatsApp da empresa com o nome e o destino de interesse. */
+  function montarWhatsapp(dados: { nome: string; whatsapp: string }): string | null {
+    const digitos = (empresa?.whatsapp ?? "").replace(/\D/g, "");
+    if (digitos.length < 10 || !viagem) return null;
+    const numero = digitos.length <= 11 ? `55${digitos}` : digitos;
+    const destino = viagem.titulo || viagem.destino;
+    const texto =
+      `Olá! Meu nome é ${dados.nome} e tenho interesse na viagem para ${destino}. ` +
+      `Meu WhatsApp é ${dados.whatsapp}.`;
+    return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+  }
 
   const tituloViagem = viagem?.titulo || viagem?.destino || "";
   const descricaoCompartilhada = viagem
