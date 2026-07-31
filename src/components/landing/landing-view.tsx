@@ -316,7 +316,7 @@ function Slider({
               type="button"
               onClick={() => ir(idx)}
               aria-label={`Ver foto ${idx + 1}`}
-              className="h-16 w-24 shrink-0 overflow-hidden transition duration-300 hover:opacity-100"
+              className="aspect-[3/2] h-auto w-full overflow-hidden transition duration-300 hover:opacity-100"
               style={{
                 borderRadius: "calc(var(--lp-radius) * 0.6)",
                 outline:
