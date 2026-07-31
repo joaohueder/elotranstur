@@ -190,17 +190,18 @@ export function useImageCropper(opcoes?: CropperOpcoes) {
             Ajustar corte da imagem
           </DialogTitle>
           <DialogDescription>
-            Arraste a imagem para posicionar e use o zoom. A área visível será
-            salva na galeria.
+            {opcoes?.descricao ??
+              "Arraste a imagem para posicionar e use o zoom. A área visível será salva na galeria."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Proporção
-            <HelpTip texto="Formato do recorte. 16:9 é o ideal para fotos de capa." />
+            <HelpTip texto="Formato do recorte: define o formato final da imagem." />
           </span>
-          {PROPORCOES.map((p) => (
+          {listaProporcoes.map((p) => (
+
             <Button
               key={p.key}
               type="button"
