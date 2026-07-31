@@ -3,6 +3,7 @@ import { Loader2, Monitor, Save } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { CrmTab } from "@/components/configuracoes/crm-tab";
+import { DestinosTab } from "@/components/configuracoes/destinos-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 
 import { Button } from "@/components/ui/button";
