@@ -31,17 +31,17 @@ export default function Configuracoes() {
     setSalvando(true);
     try {
       await save(valor);
-      feedback.success({
-        title: "Configurações salvas",
-        description: `A largura máxima do sistema agora é de ${valor}px.`,
-      });
+      feedback.showSuccess(
+        "Configurações salvas",
+        `A largura máxima do sistema agora é de ${valor}px.`,
+      );
     } catch (err) {
-      feedback.error({
-        title: "Não foi possível salvar",
-        description:
-          "Ocorreu um erro ao gravar as configurações de layout. Tente novamente.",
-        error: err,
-      });
+      feedback.showError(
+        "Não foi possível salvar",
+        "Ocorreu um erro ao gravar as configurações de layout. Tente novamente.",
+        err,
+      );
+
     } finally {
       setSalvando(false);
     }
