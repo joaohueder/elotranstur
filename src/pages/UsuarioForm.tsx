@@ -186,7 +186,7 @@ export default function UsuarioForm() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
               Módulo · Usuários
             </p>
-            <h1 className="font-serif text-3xl text-foreground">
+            <h1 className="font-serif text-2xl sm:text-3xl text-foreground">
               {editando ? "Editar usuário" : "Novo usuário"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -212,7 +212,7 @@ export default function UsuarioForm() {
           <div className="border border-border bg-background">
             <Tabs value={aba} onValueChange={setAba}>
               <div className="border-b border-border px-6 pt-6">
-                <TabsList className="rounded-sm">
+                <TabsList className="tabs-scroll w-full justify-start rounded-sm">
                   <TabsTrigger value="dados" className="rounded-sm">
                     Dados do Usuário
                   </TabsTrigger>

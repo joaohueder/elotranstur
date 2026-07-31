@@ -131,7 +131,7 @@ export default function VerifyCodePage() {
           <span className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-brand-accent/10 text-brand-accent">
             <MailCheck className="h-5 w-5" />
           </span>
-          <h2 className="mb-2 font-serif text-3xl text-foreground">
+          <h2 className="mb-2 font-serif text-2xl sm:text-3xl text-foreground">
             Confirme o código
           </h2>
           <p className="text-muted-foreground">

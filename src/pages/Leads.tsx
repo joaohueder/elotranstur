@@ -129,7 +129,7 @@ export default function Leads() {
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · Leads
           </p>
-          <h1 className="mt-2 font-serif text-3xl text-foreground">Leads</h1>
+          <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">Leads</h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             {filtrados.length} de {leads.length} lead(s) cadastrado(s).
             <HelpTip texto="Lead é um contato interessado que ainda pode virar cliente. Aqui aparecem todos, em lista." />

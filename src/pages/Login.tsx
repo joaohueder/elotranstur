@@ -179,7 +179,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-10">
-            <h2 className="mb-2 font-serif text-3xl text-foreground">
+            <h2 className="mb-2 font-serif text-2xl sm:text-3xl text-foreground">
               Bem-vindo de volta
             </h2>
             <p className="text-muted-foreground">

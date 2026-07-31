@@ -270,7 +270,7 @@ export default function Usuarios() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
               Módulo
             </p>
-            <h1 className="font-serif text-3xl text-foreground">Usuários</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl text-foreground">Usuários</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Gerencie acessos, papéis e permissões do sistema.
             </p>

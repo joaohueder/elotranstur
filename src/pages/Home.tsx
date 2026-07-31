@@ -16,7 +16,7 @@ export default function Home() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
           Painel
         </p>
-        <h1 className="mt-2 font-serif text-3xl text-foreground">
+        <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">
           Bem-vindo, {nome || email}
         </h1>
         <p className="mt-2 max-w-xl text-sm text-muted-foreground">

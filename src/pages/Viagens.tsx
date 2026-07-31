@@ -171,7 +171,7 @@ export default function Viagens() {
             Módulo · Viagens
           </p>
           <div className="mt-1 flex items-center gap-2">
-            <h1 className="font-serif text-3xl text-foreground">Viagens</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl text-foreground">Viagens</h1>
             <HelpTip texto="Aqui você vê e gerencia todos os pacotes de viagem cadastrados." />
           </div>
         </div>

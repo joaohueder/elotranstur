@@ -91,7 +91,7 @@ export default function Perfil() {
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
           Minha conta · Perfil
         </p>
-        <h1 className="mt-2 font-serif text-3xl text-foreground">Editar perfil</h1>
+        <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">Editar perfil</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">
           Atualize o seu nome e, se quiser, defina uma nova senha de acesso.
         </p>

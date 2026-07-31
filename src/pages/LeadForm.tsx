@@ -363,7 +363,7 @@ export default function LeadForm() {
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · {noModuloLeads ? "Leads" : "CRM"}
           </p>
-          <h1 className="mt-1 flex items-center gap-1.5 font-serif text-3xl text-foreground">
+          <h1 className="mt-1 flex items-center gap-1.5 font-serif text-2xl sm:text-3xl text-foreground">
             {editando ? "Editar lead" : "Novo lead"}
             <HelpTip texto="Cadastro de um lead: um contato interessado que ainda vai virar cliente" />
           </h1>
@@ -377,7 +377,7 @@ export default function LeadForm() {
       ) : (
         <div className="w-full rounded-sm border border-border bg-background p-6">
           <Tabs value={abaAtiva} onValueChange={setAbaAtiva} className="w-full">
-            <TabsList className="mb-6">
+            <TabsList className="tabs-scroll mb-6 w-full justify-start">
               <TabsTrigger value="dados">Dados do Lead</TabsTrigger>
               <TabsTrigger value="viagens">Viagens de Interesse</TabsTrigger>
               <TabsTrigger value="notas">Notas</TabsTrigger>

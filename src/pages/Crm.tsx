@@ -223,7 +223,7 @@ export default function Crm() {
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · CRM
           </p>
-          <h1 className="mt-2 font-serif text-3xl text-foreground">
+          <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">
             Funil de leads
           </h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
