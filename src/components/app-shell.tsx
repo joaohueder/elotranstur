@@ -86,12 +86,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted font-sans">
+    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-muted font-sans">
       {/* HEADER FIXO */}
-      <header className="fixed inset-x-0 top-0 z-40 h-16 border-b border-border bg-background">
-        <div className="app-container flex h-full items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="grid h-9 w-14 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
+      <header className="fixed inset-x-0 top-0 z-40 h-14 border-b border-border bg-background sm:h-16">
+        <div className="app-container flex h-full items-center justify-between px-3 sm:px-6">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3">
+            <span className="grid h-8 w-12 place-items-center rounded-sm bg-brand-accent font-serif text-base font-bold italic text-primary-foreground sm:h-9 sm:w-14 sm:text-lg">
               ELO
             </span>
             <span className="hidden text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground sm:block">
