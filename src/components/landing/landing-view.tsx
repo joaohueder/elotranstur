@@ -333,6 +333,8 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     (u): u is string => !!u,
   );
   const [fotoAberta, setFotoAberta] = useState<number | null>(null);
+  const [capaSelecionada, setCapaSelecionada] = useState<string | null>(null);
+  const capaAtiva = capaSelecionada ?? capa;
   const abrirFoto = (url: string | null) => {
     if (!url) return;
     const i = todasFotos.indexOf(url);
@@ -418,8 +420,10 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
         <Foto
           key={img.url}
           url={img.url}
-          className="aspect-[4/3] w-full"
-          onClick={() => abrirFoto(img.url)}
+          className={`aspect-[4/3] w-full transition ${
+            capaAtiva === img.url ? "opacity-100 ring-2 ring-offset-2" : "opacity-80 hover:opacity-100"
+          }`}
+          onClick={() => setCapaSelecionada(img.url)}
         />
       ))}
     </div>
@@ -480,8 +484,8 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.1fr_1fr] lg:py-16">
         <div className="space-y-8">
           <Foto
-            onClick={() => abrirFoto(capa)}
-            url={capa}
+            onClick={() => abrirFoto(capaAtiva)}
+            url={capaAtiva}
             className="aspect-[4/3] w-full"
           />
           {miniGaleria}
@@ -503,7 +507,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     return wrapper(
       <div>
         <div className="relative h-[62vh] min-h-[380px] w-full overflow-hidden">
-          <Foto onClick={() => abrirFoto(capa)} url={capa} className="absolute inset-0 h-full w-full" />
+          <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="absolute inset-0 h-full w-full" />
           <div
             className="absolute inset-0"
             style={{
@@ -539,7 +543,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     return wrapper(
       <div className="mx-auto max-w-4xl space-y-10 px-5 py-12">
         <div className="text-center">{cabecalho}</div>
-        <Foto onClick={() => abrirFoto(capa)} url={capa} className="aspect-[16/9] w-full" />
+        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="aspect-[16/9] w-full" />
         <div className="mx-auto max-w-2xl space-y-8 text-center">
           <div className="flex justify-center">{preco}</div>
           {descricao}
@@ -577,7 +581,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           {preco}
         </div>
 
-        <Foto onClick={() => abrirFoto(capa)} url={capa} className="mb-8 aspect-[21/9] w-full" />
+        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mb-8 aspect-[21/9] w-full" />
 
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-8">
@@ -612,7 +616,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           </span>
           {preco}
         </div>
-        <Foto onClick={() => abrirFoto(capa)} url={capa} className="mt-8 aspect-[16/7] w-full" />
+        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mt-8 aspect-[16/7] w-full" />
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1fr]">
           <div className="space-y-8">
             {descricao}
@@ -646,7 +650,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
             </p>
           )}
         </div>
-        <Foto onClick={() => abrirFoto(capa)} url={capa} className="my-10 aspect-[3/2] w-full" />
+        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="my-10 aspect-[3/2] w-full" />
         <div className="space-y-10">
           {preco}
           {descricao}
@@ -672,7 +676,7 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           boxShadow: "0 30px 60px -30px rgba(0,0,0,0.45)",
         }}
       >
-        <Foto onClick={() => abrirFoto(capa)} url={capa} className="aspect-[16/8] w-full" />
+        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="aspect-[16/8] w-full" />
         <div className="space-y-8 p-6 sm:p-10">
           {cabecalho}
           {preco}
