@@ -594,12 +594,12 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
         </div>
 
         <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mb-8 aspect-[21/9] w-full" />
+        {miniGaleria && <div className="mb-10">{miniGaleria}</div>}
 
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-8">
             {descricao}
             {inclusos}
-            {miniGaleria}
           </div>
           <div className="space-y-6">
             {infos}
