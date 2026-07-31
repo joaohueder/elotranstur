@@ -1,17 +1,42 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import {
+  Anchor,
+  ArrowRight,
+  Bus,
   CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
+  Circle,
   Clock,
+  Compass,
+  Flame,
+  Hash,
   MapPin,
+  Navigation,
+  Plane,
   Send,
+  ShieldCheck,
+  Square,
+  Star,
+  Ticket,
+  Timer,
   Users,
   X,
 } from "lucide-react";
 
-import { getLandingModel, type LandingModel } from "@/lib/landing-models";
+import {
+  getLandingModel,
+  type LandingModel,
+} from "@/lib/landing-models";
+import { getLandingPalette, type LandingPalette } from "@/lib/landing-palettes";
 import {
   capaDa,
   formatarData,
@@ -33,12 +58,14 @@ export type LandingViagem = {
   itens_inclusos: string[] | null;
   imagens: ViagemImagem[] | null;
   modelo?: string | null;
+  paleta?: string | null;
   slug?: string | null;
 };
 
 type Props = {
   viagem: LandingViagem;
   modelo?: string | null;
+  paleta?: string | null;
   /** Envia o lead; retorna mensagem de erro ou null em caso de sucesso. */
   onSubmit?: (dados: {
     nome: string;
@@ -49,50 +76,205 @@ type Props = {
   preview?: boolean;
 };
 
-function themeVars(m: LandingModel): CSSProperties {
+/* ------------------------------------------------------------------ */
+/* Fontes                                                              */
+/* ------------------------------------------------------------------ */
+
+const fontesCarregadas = new Set<string>();
+
+function useGoogleFont(query: string) {
+  useEffect(() => {
+    if (fontesCarregadas.has(query)) return;
+    fontesCarregadas.add(query);
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${query}&display=swap`;
+    document.head.appendChild(link);
+  }, [query]);
+}
+
+/* ------------------------------------------------------------------ */
+/* Ícones por modelo                                                   */
+/* ------------------------------------------------------------------ */
+
+const ICONES = {
+  classico: { destino: MapPin, data: CalendarDays, hora: Clock, vagas: Users, marca: Star },
+  viagem: { destino: Plane, data: CalendarDays, hora: Timer, vagas: Users, marca: Compass },
+  geometrico: { destino: Square, data: Hash, hora: Circle, vagas: Users, marca: ArrowRight },
+  bussola: { destino: Navigation, data: CalendarDays, hora: Clock, vagas: Users, marca: Anchor },
+  bilhete: { destino: Bus, data: Ticket, hora: Clock, vagas: Users, marca: Ticket },
+} as const;
+
+/* ------------------------------------------------------------------ */
+/* Tema                                                                */
+/* ------------------------------------------------------------------ */
+
+function themeVars(m: LandingModel, p: LandingPalette): CSSProperties {
   return {
-    ["--lp-bg" as string]: m.theme.bg,
-    ["--lp-surface" as string]: m.theme.surface,
-    ["--lp-fg" as string]: m.theme.fg,
-    ["--lp-muted" as string]: m.theme.muted,
-    ["--lp-border" as string]: m.theme.border,
-    ["--lp-accent" as string]: m.theme.accent,
-    ["--lp-accent-fg" as string]: m.theme.accentFg,
+    ["--lp-bg" as string]: p.bg,
+    ["--lp-surface" as string]: p.surface,
+    ["--lp-fg" as string]: p.fg,
+    ["--lp-muted" as string]: p.muted,
+    ["--lp-border" as string]: p.border,
+    ["--lp-accent" as string]: p.accent,
+    ["--lp-accent2" as string]: p.accent2,
+    ["--lp-accent-fg" as string]: p.accentFg,
     ["--lp-radius" as string]: m.radius,
+    ["--lp-title" as string]: m.fonts.titulo,
+    ["--lp-body" as string]: m.fonts.corpo,
+    fontFamily: "var(--lp-body)",
   };
 }
 
-function Foto({
-  url,
+/* ------------------------------------------------------------------ */
+/* Galeria em slider                                                   */
+/* ------------------------------------------------------------------ */
+
+function Slider({
+  urls,
+  aspect = "aspect-[4/3]",
+  radius = true,
   className,
-  onClick,
+  overlay,
+  onAmpliar,
+  miniaturas = true,
 }: {
-  url: string | null;
+  urls: string[];
+  aspect?: string;
+  radius?: boolean;
   className?: string;
-  onClick?: () => void;
+  overlay?: ReactNode;
+  onAmpliar?: (i: number) => void;
+  miniaturas?: boolean;
 }) {
-  if (!url) {
+  const [i, setI] = useState(0);
+  const [pausado, setPausado] = useState(false);
+  const total = urls.length;
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (total < 2 || pausado) return;
+    timer.current = window.setInterval(
+      () => setI((v) => (v + 1) % total),
+      5000,
+    );
+    return () => {
+      if (timer.current) window.clearInterval(timer.current);
+    };
+  }, [total, pausado]);
+
+  useEffect(() => {
+    if (i >= total) setI(0);
+  }, [i, total]);
+
+  if (total === 0) {
     return (
       <div
-        className={className}
-        style={{ background: "var(--lp-surface)" }}
+        className={`${aspect} w-full ${className ?? ""}`}
+        style={{
+          background: "var(--lp-surface)",
+          borderRadius: radius ? "var(--lp-radius)" : undefined,
+        }}
         aria-hidden
       />
     );
   }
+
+  const ir = (novo: number) => setI(((novo % total) + total) % total);
+
   return (
-    <img
-      src={url}
-      alt=""
-      loading="lazy"
-      onClick={onClick}
-      className={`${className ?? ""}${onClick ? " cursor-zoom-in" : ""}`}
-      style={{ objectFit: "cover" }}
-    />
+    <div className={className}>
+      <div
+        className={`relative w-full overflow-hidden ${aspect}`}
+        style={{ borderRadius: radius ? "var(--lp-radius)" : undefined }}
+        onMouseEnter={() => setPausado(true)}
+        onMouseLeave={() => setPausado(false)}
+      >
+        {urls.map((url, idx) => (
+          <img
+            key={url + idx}
+            src={url}
+            alt=""
+            loading={idx === 0 ? "eager" : "lazy"}
+            onClick={() => onAmpliar?.(idx)}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+              idx === i ? "opacity-100" : "opacity-0"
+            } ${onAmpliar ? "cursor-zoom-in" : ""}`}
+          />
+        ))}
+
+        {overlay}
+
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Foto anterior"
+              onClick={(e) => {
+                e.stopPropagation();
+                ir(i - 1);
+              }}
+              className="absolute left-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/70"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Próxima foto"
+              onClick={(e) => {
+                e.stopPropagation();
+                ir(i + 1);
+              }}
+              className="absolute right-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/70"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5">
+              {urls.map((u, idx) => (
+                <button
+                  key={`dot-${u}-${idx}`}
+                  type="button"
+                  aria-label={`Ir para a foto ${idx + 1}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    ir(idx);
+                  }}
+                  className={`h-1.5 rounded-full transition-all ${
+                    idx === i ? "w-6 bg-white" : "w-1.5 bg-white/55"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {miniaturas && total > 1 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {urls.map((url, idx) => (
+            <button
+              key={`thumb-${url}-${idx}`}
+              type="button"
+              onClick={() => ir(idx)}
+              aria-label={`Ver foto ${idx + 1}`}
+              className="h-14 w-20 shrink-0 overflow-hidden transition"
+              style={{
+                borderRadius: "var(--lp-radius)",
+                outline:
+                  idx === i ? "2px solid var(--lp-accent)" : "1px solid var(--lp-border)",
+                opacity: idx === i ? 1 : 0.65,
+              }}
+            >
+              <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-/** Galeria em tela cheia com navegação entre as fotos. */
+/** Galeria em tela cheia. */
 function Lightbox({
   urls,
   indice,
@@ -166,36 +348,111 @@ function Lightbox({
   );
 }
 
-function Info({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+/* ------------------------------------------------------------------ */
+/* Contagem regressiva                                                 */
+/* ------------------------------------------------------------------ */
+
+function Countdown({ data, hora }: { data: string; hora: string | null }) {
+  const alvo = useMemo(
+    () => new Date(`${data}T${(hora || "00:00").slice(0, 5)}:00`).getTime(),
+    [data, hora],
+  );
+  const [agora, setAgora] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setAgora(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const restante = Math.max(0, alvo - agora);
+  if (!alvo || Number.isNaN(alvo)) return null;
+
+  const dias = Math.floor(restante / 86400000);
+  const horas = Math.floor((restante % 86400000) / 3600000);
+  const min = Math.floor((restante % 3600000) / 60000);
+  const seg = Math.floor((restante % 60000) / 1000);
+  const partes = [
+    { v: dias, l: "dias" },
+    { v: horas, l: "horas" },
+    { v: min, l: "min" },
+    { v: seg, l: "seg" },
+  ];
+
   return (
-    <div
-      className="flex items-center gap-3 p-3"
-      style={{
-        border: "1px solid var(--lp-border)",
-        borderRadius: "var(--lp-radius)",
-        background: "var(--lp-surface)",
-      }}
-    >
-      <span style={{ color: "var(--lp-accent)" }}>{icon}</span>
-      <span className="leading-tight">
-        <span
-          className="block text-[10px] uppercase tracking-[0.18em]"
-          style={{ color: "var(--lp-muted)" }}
+    <div className="flex items-center gap-2">
+      {partes.map((p) => (
+        <div
+          key={p.l}
+          className="min-w-[58px] px-2 py-2 text-center"
+          style={{
+            background: "var(--lp-surface)",
+            border: "1px solid var(--lp-border)",
+            borderRadius: "var(--lp-radius)",
+          }}
         >
-          {label}
-        </span>
-        <span className="block text-sm font-medium">{value}</span>
-      </span>
+          <span
+            className="block text-xl font-bold leading-none tabular-nums"
+            style={{ color: "var(--lp-accent)" }}
+          >
+            {String(p.v).padStart(2, "0")}
+          </span>
+          <span
+            className="mt-1 block text-[9px] uppercase tracking-[0.18em]"
+            style={{ color: "var(--lp-muted)" }}
+          >
+            {p.l}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Botão principal                                                     */
+/* ------------------------------------------------------------------ */
+
+function ctaStyle(m: LandingModel): CSSProperties {
+  const base: CSSProperties = {
+    borderRadius: m.cta === "bloco" ? "0" : "var(--lp-radius)",
+  };
+  if (m.cta === "gradiente")
+    return {
+      ...base,
+      background: "linear-gradient(100deg, var(--lp-accent), var(--lp-accent2))",
+      color: "var(--lp-accent-fg)",
+    };
+  if (m.cta === "contorno")
+    return {
+      ...base,
+      background: "transparent",
+      color: "var(--lp-accent)",
+      border: "1.5px solid var(--lp-accent)",
+    };
+  if (m.cta === "brilho")
+    return {
+      ...base,
+      background: "var(--lp-accent)",
+      color: "var(--lp-accent-fg)",
+      boxShadow: "0 12px 34px -10px var(--lp-accent)",
+    };
+  return { ...base, background: "var(--lp-accent)", color: "var(--lp-accent-fg)" };
+}
+
+/* ------------------------------------------------------------------ */
+/* Formulário de lead                                                  */
+/* ------------------------------------------------------------------ */
+
 function Formulario({
+  m,
   onSubmit,
   preview,
+  compacto,
 }: {
+  m: LandingModel;
   onSubmit?: Props["onSubmit"];
   preview?: boolean;
+  compacto?: boolean;
 }) {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -211,16 +468,15 @@ function Formulario({
     color: "var(--lp-fg)",
   };
 
+  const caixa: CSSProperties = {
+    border: "1px solid var(--lp-border)",
+    borderRadius: "var(--lp-radius)",
+    background: "var(--lp-surface)",
+  };
+
   if (ok) {
     return (
-      <div
-        className="p-6 text-center"
-        style={{
-          border: "1px solid var(--lp-border)",
-          borderRadius: "var(--lp-radius)",
-          background: "var(--lp-surface)",
-        }}
-      >
+      <div className="p-6 text-center" style={caixa} id="reservar">
         <span
           className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-full"
           style={{ background: "var(--lp-accent)", color: "var(--lp-accent-fg)" }}
@@ -237,12 +493,9 @@ function Formulario({
 
   return (
     <form
+      id="reservar"
       className="space-y-3 p-5"
-      style={{
-        border: "1px solid var(--lp-border)",
-        borderRadius: "var(--lp-radius)",
-        background: "var(--lp-surface)",
-      }}
+      style={caixa}
       onSubmit={async (e) => {
         e.preventDefault();
         setErro(null);
@@ -258,9 +511,14 @@ function Formulario({
       }}
     >
       <div>
-        <p className="text-lg font-semibold">Quero saber mais</p>
+        <p
+          className="text-lg font-semibold"
+          style={{ fontFamily: "var(--lp-title)" }}
+        >
+          Receba todos os detalhes
+        </p>
         <p className="text-sm" style={{ color: "var(--lp-muted)" }}>
-          Deixe seus dados e receba todos os detalhes desta viagem.
+          Preencha e um consultor fala com você hoje mesmo.
         </p>
       </div>
 
@@ -283,15 +541,17 @@ function Formulario({
         className="h-11 w-full px-3 text-sm outline-none"
         style={inputStyle}
       />
-      <textarea
-        value={mensagem}
-        onChange={(e) => setMensagem(e.target.value)}
-        placeholder="Mensagem (opcional)"
-        aria-label="Mensagem"
-        rows={3}
-        className="w-full resize-none px-3 py-2 text-sm outline-none"
-        style={inputStyle}
-      />
+      {!compacto && (
+        <textarea
+          value={mensagem}
+          onChange={(e) => setMensagem(e.target.value)}
+          placeholder="Mensagem (opcional)"
+          aria-label="Mensagem"
+          rows={3}
+          className="w-full resize-none px-3 py-2 text-sm outline-none"
+          style={inputStyle}
+        />
+      )}
 
       {erro && (
         <p className="text-sm" style={{ color: "#dc2626" }}>
@@ -302,82 +562,188 @@ function Formulario({
       <button
         type="submit"
         disabled={enviando}
-        className="flex h-11 w-full items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] disabled:opacity-60"
-        style={{
-          background: "var(--lp-accent)",
-          color: "var(--lp-accent-fg)",
-          borderRadius: "var(--lp-radius)",
-        }}
+        className="flex h-12 w-full items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.16em] transition hover:brightness-110 disabled:opacity-60"
+        style={ctaStyle(m)}
       >
         <Send className="h-4 w-4" />
-        {enviando ? "Enviando..." : "Quero reservar"}
+        {enviando ? "Enviando..." : m.ctaLabel}
       </button>
-      <p className="text-center text-[11px]" style={{ color: "var(--lp-muted)" }}>
+      <p
+        className="flex items-center justify-center gap-1.5 text-center text-[11px]"
+        style={{ color: "var(--lp-muted)" }}
+      >
+        <ShieldCheck className="h-3.5 w-3.5" />
         Sem compromisso. Seus dados ficam protegidos.
       </p>
     </form>
   );
 }
 
-/** Renderiza a landing page da viagem no modelo escolhido. */
-export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
+/* ------------------------------------------------------------------ */
+/* LandingView                                                         */
+/* ------------------------------------------------------------------ */
+
+export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props) {
   const m = useMemo(
     () => getLandingModel(modelo ?? viagem.modelo),
     [modelo, viagem.modelo],
   );
+  const p = useMemo(
+    () => getLandingPalette(paleta ?? viagem.paleta ?? m.paletaPadrao),
+    [paleta, viagem.paleta, m.paletaPadrao],
+  );
+  useGoogleFont(m.fonts.google);
 
   const imagens = viagem.imagens ?? [];
   const capa = capaDa(imagens);
-  const galeria = imagens.slice(0, 6);
-  const todasFotos = Array.from(
-    new Set([capa, ...galeria.map((i) => i.url)]),
-  ).filter((u): u is string => !!u);
+  const fotos = Array.from(
+    new Set([capa, ...imagens.map((i) => i.url)].filter((u): u is string => !!u)),
+  );
   const [fotoAberta, setFotoAberta] = useState<number | null>(null);
-  const [capaSelecionada, setCapaSelecionada] = useState<string | null>(null);
-  const capaAtiva = capaSelecionada ?? capa;
-  const abrirFoto = (url: string | null) => {
-    if (!url) return;
-    const i = todasFotos.indexOf(url);
-    if (i >= 0) setFotoAberta(i);
-  };
   const itens = viagem.itens_inclusos ?? [];
   const titulo = viagem.titulo?.trim() || viagem.destino;
-  const fonte = m.fonte === "serif" ? "font-serif" : "font-sans";
+  const Ico = ICONES[m.icones];
 
-  const infos = (
-    <div className="grid gap-3 sm:grid-cols-2">
-      <Info
-        icon={<MapPin className="h-4 w-4" />}
-        label="Destino"
-        value={viagem.destino}
-      />
-      <Info
-        icon={<CalendarDays className="h-4 w-4" />}
-        label="Partida"
-        value={formatarData(viagem.data_partida)}
-      />
-      <Info
-        icon={<Clock className="h-4 w-4" />}
-        label="Horário"
-        value={formatarHora(viagem.hora_partida)}
-      />
-      <Info
-        icon={<Users className="h-4 w-4" />}
-        label="Vagas"
-        value={viagem.vagas > 0 ? `${viagem.vagas} lugares` : "Consulte"}
-      />
-    </div>
+  const tituloStyle: CSSProperties = {
+    fontFamily: "var(--lp-title)",
+    fontWeight: m.peso,
+    letterSpacing: m.tracking,
+    textTransform: m.caixaAlta ? "uppercase" : "none",
+  };
+
+  const caixa: CSSProperties = {
+    border: "1px solid var(--lp-border)",
+    borderRadius: "var(--lp-radius)",
+    background: "var(--lp-surface)",
+  };
+
+  /* ---- blocos reutilizáveis ---- */
+
+  const galeria = (
+    <Slider urls={fotos} onAmpliar={(i) => setFotoAberta(i)} />
   );
 
+  const dadosInfo = [
+    { icon: <Ico.destino className="h-4 w-4" />, label: "Destino", value: viagem.destino },
+    { icon: <Ico.data className="h-4 w-4" />, label: "Partida", value: formatarData(viagem.data_partida) },
+    { icon: <Ico.hora className="h-4 w-4" />, label: "Horário", value: formatarHora(viagem.hora_partida) },
+    { icon: <Ico.vagas className="h-4 w-4" />, label: "Vagas", value: `${viagem.vagas || 0} lugares` },
+  ];
+
+  const infos = (() => {
+    if (m.blocos === "pilulas") {
+      return (
+        <div className="flex flex-wrap gap-2">
+          {dadosInfo.map((d) => (
+            <span
+              key={d.label}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm"
+              style={{
+                border: "1px solid var(--lp-border)",
+                borderRadius: "999px",
+                background: "var(--lp-surface)",
+              }}
+            >
+              <span style={{ color: "var(--lp-accent)" }}>{d.icon}</span>
+              <span className="font-medium">{d.value}</span>
+            </span>
+          ))}
+        </div>
+      );
+    }
+    if (m.blocos === "linhas") {
+      return (
+        <div style={{ borderTop: "1px solid var(--lp-border)" }}>
+          {dadosInfo.map((d) => (
+            <div
+              key={d.label}
+              className="flex items-center justify-between gap-4 py-3"
+              style={{ borderBottom: "1px solid var(--lp-border)" }}
+            >
+              <span
+                className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em]"
+                style={{ color: "var(--lp-muted)" }}
+              >
+                <span style={{ color: "var(--lp-accent)" }}>{d.icon}</span>
+                {d.label}
+              </span>
+              <span className="text-sm font-medium">{d.value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (m.blocos === "faixa") {
+      return (
+        <div
+          className="grid grid-cols-2 sm:grid-cols-4"
+          style={{ ...caixa, overflow: "hidden" }}
+        >
+          {dadosInfo.map((d, i) => (
+            <div
+              key={d.label}
+              className="p-4"
+              style={{
+                borderRight: i < 3 ? "1px solid var(--lp-border)" : undefined,
+              }}
+            >
+              <span style={{ color: "var(--lp-accent)" }}>{d.icon}</span>
+              <span
+                className="mt-2 block text-[10px] uppercase tracking-[0.18em]"
+                style={{ color: "var(--lp-muted)" }}
+              >
+                {d.label}
+              </span>
+              <span className="block text-sm font-semibold">{d.value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (m.blocos === "grade") {
+      return (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {dadosInfo.map((d) => (
+            <div key={d.label} className="p-4" style={caixa}>
+              <span style={{ color: "var(--lp-accent)" }}>{d.icon}</span>
+              <span
+                className="mt-2 block text-[10px] uppercase tracking-[0.18em]"
+                style={{ color: "var(--lp-muted)" }}
+              >
+                {d.label}
+              </span>
+              <span className="block text-sm font-semibold">{d.value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {dadosInfo.map((d) => (
+          <div key={d.label} className="flex items-center gap-3 p-3" style={caixa}>
+            <span style={{ color: "var(--lp-accent)" }}>{d.icon}</span>
+            <span className="leading-tight">
+              <span
+                className="block text-[10px] uppercase tracking-[0.18em]"
+                style={{ color: "var(--lp-muted)" }}
+              >
+                {d.label}
+              </span>
+              <span className="block text-sm font-medium">{d.value}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  })();
+
   const preco = (
-    <div className="flex items-baseline gap-2">
-      <span
-        className="text-[10px] uppercase tracking-[0.22em]"
-        style={{ color: "var(--lp-muted)" }}
-      >
-        A partir de
+    <div className="flex items-end gap-2">
+      <span className="text-xs" style={{ color: "var(--lp-muted)" }}>
+        a partir de
       </span>
-      <span className={`text-3xl ${fonte}`} style={{ color: "var(--lp-accent)" }}>
+      <span className="text-4xl leading-none" style={{ ...tituloStyle, color: "var(--lp-accent)" }}>
         {formatarValor(viagem.valor)}
       </span>
       <span className="text-xs" style={{ color: "var(--lp-muted)" }}>
@@ -386,21 +752,41 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     </div>
   );
 
-  const inclusos = itens.length > 0 && (
-    <div>
+  const selo = m.escassez && (
+    <span
+      className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em]"
+      style={{
+        background: "var(--lp-accent)",
+        color: "var(--lp-accent-fg)",
+        borderRadius: "999px",
+      }}
+    >
+      <Flame className="h-3.5 w-3.5" />
+      {viagem.vagas > 0 ? `Últimas ${viagem.vagas} vagas` : "Vagas limitadas"}
+    </span>
+  );
+
+  const contagem = m.countdown && (
+    <div className="space-y-2">
       <p
-        className="mb-3 text-[10px] uppercase tracking-[0.22em]"
+        className="text-[10px] uppercase tracking-[0.22em]"
         style={{ color: "var(--lp-muted)" }}
       >
+        A viagem começa em
+      </p>
+      <Countdown data={viagem.data_partida} hora={viagem.hora_partida} />
+    </div>
+  );
+
+  const inclusos = itens.length > 0 && (
+    <div>
+      <p className="mb-3 text-lg" style={tituloStyle}>
         O que está incluso
       </p>
       <ul className="grid gap-2 sm:grid-cols-2">
         {itens.map((item, i) => (
           <li key={`${item}-${i}`} className="flex items-start gap-2 text-sm">
-            <Check
-              className="mt-0.5 h-4 w-4 shrink-0"
-              style={{ color: "var(--lp-accent)" }}
-            />
+            <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--lp-accent)" }} />
             <span>{item}</span>
           </li>
         ))}
@@ -409,49 +795,38 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
   );
 
   const descricao = viagem.descricao && (
-    <p className="whitespace-pre-line text-sm leading-relaxed" style={{ color: "var(--lp-muted)" }}>
-      {viagem.descricao}
-    </p>
-  );
-
-  const miniGaleria = galeria.length > 0 && (
-    <div className="space-y-3">
+    <div>
+      <p className="mb-3 text-lg" style={tituloStyle}>
+        Sobre a viagem
+      </p>
       <p
-        className="text-[10px] uppercase tracking-[0.22em]"
+        className="whitespace-pre-line text-sm leading-relaxed"
         style={{ color: "var(--lp-muted)" }}
       >
-        Galeria
+        {viagem.descricao}
       </p>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-        {galeria.map((img) => (
-          <Foto
-            key={img.url}
-            url={img.url}
-            className={`aspect-[4/3] w-full transition ${
-              capaAtiva === img.url
-                ? "opacity-100 ring-2 ring-offset-2"
-                : "opacity-80 hover:opacity-100"
-            }`}
-            onClick={() => setCapaSelecionada(img.url)}
-          />
-        ))}
-      </div>
     </div>
   );
 
   const cabecalho = (
     <div className="space-y-3">
-      <span
-        className="inline-block px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]"
-        style={{
-          background: "var(--lp-accent)",
-          color: "var(--lp-accent-fg)",
-          borderRadius: "var(--lp-radius)",
-        }}
-      >
-        {formatarData(viagem.data_partida)}
-      </span>
-      <h1 className={`text-4xl leading-tight sm:text-5xl ${fonte}`}>{titulo}</h1>
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]"
+          style={{
+            border: "1px solid var(--lp-border)",
+            color: "var(--lp-accent)",
+            borderRadius: "999px",
+          }}
+        >
+          <Ico.marca className="h-3.5 w-3.5" />
+          {formatarData(viagem.data_partida)}
+        </span>
+        {selo}
+      </div>
+      <h1 className="text-4xl leading-[1.05] sm:text-5xl" style={tituloStyle}>
+        {titulo}
+      </h1>
       {viagem.subtitulo && (
         <p className="text-base" style={{ color: "var(--lp-muted)" }}>
           {viagem.subtitulo}
@@ -460,7 +835,23 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     </div>
   );
 
-  const formulario = <Formulario onSubmit={onSubmit} preview={preview} />;
+  const formulario = (
+    <Formulario m={m} onSubmit={onSubmit} preview={preview} />
+  );
+  const formularioCompacto = (
+    <Formulario m={m} onSubmit={onSubmit} preview={preview} compacto />
+  );
+
+  const botaoAncora = (
+    <a
+      href="#reservar"
+      className="inline-flex h-12 items-center justify-center gap-2 px-7 text-xs font-bold uppercase tracking-[0.16em] transition hover:brightness-110"
+      style={ctaStyle(m)}
+    >
+      {m.ctaLabel}
+      <ArrowRight className="h-4 w-4" />
+    </a>
+  );
 
   const rodape = (
     <footer
@@ -471,15 +862,24 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     </footer>
   );
 
+  /** Conteúdo detalhado usado abaixo do hero. */
+  const corpo = (
+    <div className="space-y-10">
+      {infos}
+      {descricao}
+      {inclusos}
+    </div>
+  );
+
   const wrapper = (children: ReactNode) => (
     <div
-      className={`min-h-full w-full ${fonte === "font-serif" ? "font-sans" : "font-sans"}`}
-      style={{ ...themeVars(m), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
+      className="min-h-full w-full"
+      style={{ ...themeVars(m, p), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
     >
       {children}
       {fotoAberta !== null && (
         <Lightbox
-          urls={todasFotos}
+          urls={fotos}
           indice={fotoAberta}
           onFechar={() => setFotoAberta(null)}
           onIr={(i) => setFotoAberta(i)}
@@ -488,24 +888,20 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     </div>
   );
 
-  // ---- Layouts --------------------------------------------------------
-  if (m.layout === "split") {
+  /* ---------------- 1. Aurora — split ---------------- */
+  if (m.hero === "split") {
     return wrapper(
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.1fr_1fr] lg:py-16">
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.05fr_1fr] lg:py-16">
         <div className="space-y-8">
-          <Foto
-            onClick={() => abrirFoto(capaAtiva)}
-            url={capaAtiva}
-            className="aspect-[4/3] w-full"
-          />
-          {miniGaleria}
+          {galeria}
+          {contagem}
+          {descricao}
+          {inclusos}
         </div>
-        <div className="space-y-7">
+        <div className="space-y-7 lg:sticky lg:top-8 lg:self-start">
           {cabecalho}
           {preco}
-          {descricao}
           {infos}
-          {inclusos}
           {formulario}
         </div>
         <div className="lg:col-span-2">{rodape}</div>
@@ -513,95 +909,148 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     );
   }
 
-  if (m.layout === "overlay") {
+  /* ---------------- 2. Impacto — fullbleed ---------------- */
+  if (m.hero === "fullbleed") {
     return wrapper(
       <div>
-        <div className="relative h-[62vh] min-h-[380px] w-full overflow-hidden">
-          <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="absolute inset-0 h-full w-full" />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%)",
-            }}
+        <div className="relative">
+          <Slider
+            urls={fotos}
+            aspect="aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9]"
+            radius={false}
+            miniaturas={false}
+            overlay={
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.88) 100%)",
+                }}
+              />
+            }
           />
-          <div className="absolute inset-x-0 bottom-0 mx-auto max-w-5xl px-5 pb-10 text-white">
-            <h1 className={`max-w-3xl text-4xl leading-tight sm:text-6xl ${fonte}`}>
-              {titulo}
-            </h1>
-            {viagem.subtitulo && (
-              <p className="mt-3 max-w-2xl text-base opacity-90">{viagem.subtitulo}</p>
-            )}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0">
+            <div className="pointer-events-auto mx-auto grid max-w-6xl gap-8 px-5 pb-10 lg:grid-cols-[1.3fr_.9fr]">
+              <div className="space-y-4 text-white">
+                {selo}
+                <h1
+                  className="text-5xl leading-[0.95] sm:text-7xl"
+                  style={{ ...tituloStyle, color: "#fff" }}
+                >
+                  {titulo}
+                </h1>
+                {viagem.subtitulo && (
+                  <p className="max-w-xl text-base opacity-90">{viagem.subtitulo}</p>
+                )}
+              </div>
+              <div className="hidden lg:block">{formularioCompacto}</div>
+            </div>
           </div>
         </div>
-        {miniGaleria && (
-          <div className="mx-auto max-w-5xl px-5 pt-10">{miniGaleria}</div>
-        )}
-        <div className="mx-auto grid max-w-5xl gap-10 px-5 py-12 lg:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-8">
+
+        <div className="mx-auto max-w-6xl space-y-10 px-5 py-10">
+          <div className="flex flex-wrap items-center justify-between gap-6">
             {preco}
-            {descricao}
-            {infos}
-            {inclusos}
+            {contagem}
           </div>
-          <div className="lg:sticky lg:top-10 lg:self-start">{formulario}</div>
+          {corpo}
+          <div className="mx-auto max-w-lg lg:hidden">{formulario}</div>
+          <div className="space-y-3">
+            <p className="text-lg" style={tituloStyle}>
+              Galeria
+            </p>
+            {galeria}
+          </div>
+          {rodape}
+        </div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 3. Diagonal ---------------- */
+  if (m.hero === "diagonal") {
+    return wrapper(
+      <div>
+        <div className="relative overflow-hidden">
+          <Slider urls={fotos} aspect="aspect-[16/10] sm:aspect-[16/7]" radius={false} miniaturas={false} />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: "linear-gradient(115deg, var(--lp-bg) 38%, transparent 62%)",
+            }}
+          />
+          <div className="absolute inset-y-0 left-0 flex w-full max-w-xl items-center px-5 sm:px-10">
+            <div className="space-y-4">
+              {selo}
+              <h1 className="text-4xl leading-[1.02] sm:text-6xl" style={tituloStyle}>
+                {titulo}
+              </h1>
+              {viagem.subtitulo && (
+                <p className="text-sm sm:text-base" style={{ color: "var(--lp-muted)" }}>
+                  {viagem.subtitulo}
+                </p>
+              )}
+              <div className="pt-1">{botaoAncora}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 lg:grid-cols-[1.25fr_1fr]">
+          <div className="space-y-10">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              {preco}
+              {contagem}
+            </div>
+            {infos}
+            {descricao}
+            {inclusos}
+            <div className="space-y-3">
+              <p className="text-lg" style={tituloStyle}>Galeria</p>
+              {galeria}
+            </div>
+          </div>
+          <div className="lg:sticky lg:top-8 lg:self-start">{formulario}</div>
           <div className="lg:col-span-2">{rodape}</div>
         </div>
       </div>,
     );
   }
 
-  if (m.layout === "stack") {
+  /* ---------------- 4. Editorial — magazine ---------------- */
+  if (m.hero === "magazine") {
     return wrapper(
-      <div className="mx-auto max-w-4xl space-y-10 px-5 py-12">
-        <div className="text-center">{cabecalho}</div>
-        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="aspect-[16/9] w-full" />
-        <div className="mx-auto max-w-2xl space-y-8 text-center">
-          <div className="flex justify-center">{preco}</div>
-          {descricao}
-        </div>
-        {infos}
-        {inclusos}
-        {miniGaleria}
-        <div className="mx-auto max-w-md">{formulario}</div>
-        {rodape}
-      </div>,
-    );
-  }
-
-  if (m.layout === "magazine") {
-    return wrapper(
-      <div className="mx-auto max-w-5xl px-5 py-12">
+      <div className="mx-auto max-w-5xl px-5 py-14">
+        <p
+          className="text-[10px] uppercase tracking-[0.4em]"
+          style={{ color: "var(--lp-muted)" }}
+        >
+          Roteiro exclusivo · {viagem.destino}
+        </p>
+        <h1 className="mt-4 text-5xl leading-[1.03] sm:text-6xl" style={tituloStyle}>
+          {titulo}
+        </h1>
         <div
-          className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
+          className="mt-6 grid gap-6 border-y py-6 sm:grid-cols-[1.4fr_1fr]"
           style={{ borderColor: "var(--lp-border)" }}
         >
-          <div className="max-w-2xl space-y-2">
-            <p
-              className="text-[10px] uppercase tracking-[0.3em]"
-              style={{ color: "var(--lp-muted)" }}
-            >
-              Roteiro · {formatarData(viagem.data_partida)}
+          {viagem.subtitulo ? (
+            <p className="text-lg leading-relaxed" style={{ color: "var(--lp-muted)" }}>
+              {viagem.subtitulo}
             </p>
-            <h1 className={`text-4xl leading-tight sm:text-5xl ${fonte}`}>{titulo}</h1>
-            {viagem.subtitulo && (
-              <p className="text-sm" style={{ color: "var(--lp-muted)" }}>
-                {viagem.subtitulo}
-              </p>
-            )}
-          </div>
-          {preco}
+          ) : (
+            <span />
+          )}
+          <div className="sm:justify-self-end">{preco}</div>
         </div>
 
-        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mb-8 aspect-[21/9] w-full" />
-        {miniGaleria && <div className="mb-10">{miniGaleria}</div>}
+        <div className="mt-10">{galeria}</div>
 
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
-          <div className="space-y-8">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+          <div className="space-y-10">
             {descricao}
             {inclusos}
           </div>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {infos}
             {formulario}
           </div>
@@ -611,11 +1060,14 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     );
   }
 
-  if (m.layout === "poster") {
+  /* ---------------- 5. Cartaz — poster ---------------- */
+  if (m.hero === "poster") {
     return wrapper(
-      <div className="mx-auto max-w-5xl px-5 py-12">
+      <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="flex flex-wrap items-center gap-3">{selo}</div>
         <h1
-          className={`text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl ${fonte}`}
+          className="mt-4 text-[13vw] leading-[0.85] sm:text-[9vw]"
+          style={tituloStyle}
         >
           {titulo}
         </h1>
@@ -623,20 +1075,90 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
           className="mt-6 flex flex-wrap items-center justify-between gap-4 border-y py-4"
           style={{ borderColor: "var(--lp-border)" }}
         >
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "var(--lp-muted)" }}>
+          <span
+            className="text-[11px] uppercase tracking-[0.3em]"
+            style={{ color: "var(--lp-muted)" }}
+          >
             {viagem.subtitulo || viagem.destino}
           </span>
           {preco}
         </div>
-        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="mt-8 aspect-[16/7] w-full" />
-        {miniGaleria && <div className="mt-8">{miniGaleria}</div>}
-        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1fr]">
-          <div className="space-y-8">
-            {descricao}
-            {infos}
+
+        <div className="mt-8">
+          <Slider urls={fotos} aspect="aspect-[16/9]" onAmpliar={(i) => setFotoAberta(i)} />
+        </div>
+
+        <div className="mt-8">{contagem}</div>
+        <div className="mt-10 space-y-10">{corpo}</div>
+        <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1fr]">
+          <div className="space-y-4">
+            <p className="text-3xl leading-tight" style={tituloStyle}>
+              Não fique de fora desta viagem.
+            </p>
+            <p className="text-sm" style={{ color: "var(--lp-muted)" }}>
+              As vagas são limitadas e as reservas seguem por ordem de chegada.
+            </p>
+            {botaoAncora}
           </div>
-          <div className="space-y-8">
+          {formulario}
+        </div>
+        {rodape}
+      </div>,
+    );
+  }
+
+  /* ---------------- 6. Bilhete — ticket ---------------- */
+  if (m.hero === "ticket") {
+    return wrapper(
+      <div className="mx-auto max-w-4xl px-4 py-12">
+        <div className="overflow-hidden" style={{ ...caixa, boxShadow: "0 30px 60px -35px rgba(0,0,0,.5)" }}>
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 px-6 py-4"
+            style={{ background: "var(--lp-accent)", color: "var(--lp-accent-fg)" }}
+          >
+            <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em]">
+              <Ticket className="h-4 w-4" /> Boarding pass · ELO
+            </span>
+            <span className="text-xs font-bold uppercase tracking-[0.24em]">
+              {formatarData(viagem.data_partida)}
+            </span>
+          </div>
+
+          <Slider urls={fotos} aspect="aspect-[16/7]" radius={false} miniaturas={false} onAmpliar={(i) => setFotoAberta(i)} />
+
+          <div className="space-y-6 p-6 sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p
+                  className="text-[10px] uppercase tracking-[0.3em]"
+                  style={{ color: "var(--lp-muted)" }}
+                >
+                  Destino
+                </p>
+                <h1 className="text-3xl sm:text-4xl" style={tituloStyle}>
+                  {titulo}
+                </h1>
+              </div>
+              {preco}
+            </div>
+            {viagem.subtitulo && (
+              <p className="text-sm" style={{ color: "var(--lp-muted)" }}>
+                {viagem.subtitulo}
+              </p>
+            )}
+            {infos}
+            <div
+              className="border-t border-dashed pt-6"
+              style={{ borderColor: "var(--lp-border)" }}
+            >
+              {contagem}
+            </div>
+            {descricao}
             {inclusos}
+            <div className="space-y-3">
+              <p className="text-lg" style={tituloStyle}>Galeria</p>
+              {galeria}
+            </div>
             {formulario}
           </div>
         </div>
@@ -645,61 +1167,401 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
     );
   }
 
-  if (m.layout === "minimal") {
+  /* ---------------- 7. Flutuante — cardfloat ---------------- */
+  if (m.hero === "cardfloat") {
     return wrapper(
-      <div className="mx-auto max-w-2xl px-5 py-16">
-        <div className="space-y-4">
-          <p
-            className="text-[10px] uppercase tracking-[0.3em]"
-            style={{ color: "var(--lp-muted)" }}
-          >
-            {viagem.destino} · {formatarData(viagem.data_partida)}
+      <div style={{ background: "var(--lp-accent)" }} className="px-4 py-10 sm:py-16">
+        <div className="mx-auto mb-8 max-w-3xl text-center" style={{ color: "var(--lp-accent-fg)" }}>
+          <p className="text-[11px] uppercase tracking-[0.3em] opacity-80">
+            {viagem.destino}
           </p>
-          <h1 className={`text-4xl leading-tight ${fonte}`}>{titulo}</h1>
+          <h1 className="mt-3 text-4xl leading-tight sm:text-6xl" style={{ ...tituloStyle, color: "var(--lp-accent-fg)" }}>
+            {titulo}
+          </h1>
           {viagem.subtitulo && (
-            <p className="text-base" style={{ color: "var(--lp-muted)" }}>
-              {viagem.subtitulo}
-            </p>
+            <p className="mx-auto mt-3 max-w-xl text-base opacity-85">{viagem.subtitulo}</p>
           )}
         </div>
-        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="my-10 aspect-[3/2] w-full" />
-        <div className="space-y-10">
-          {preco}
-          {descricao}
+
+        <div
+          className="mx-auto max-w-4xl overflow-hidden"
+          style={{
+            background: "var(--lp-surface)",
+            borderRadius: "var(--lp-radius)",
+            boxShadow: "0 40px 80px -30px rgba(0,0,0,.5)",
+            color: "var(--lp-fg)",
+          }}
+        >
+          <div className="p-4 sm:p-6">
+            <Slider urls={fotos} aspect="aspect-[16/9]" onAmpliar={(i) => setFotoAberta(i)} />
+          </div>
+          <div className="space-y-9 px-6 pb-8 sm:px-10">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {preco}
+              {selo}
+            </div>
+            {corpo}
+            {formulario}
+          </div>
+        </div>
+        <div className="mx-auto max-w-4xl" style={{ color: "var(--lp-accent-fg)" }}>
+          <footer className="mt-10 text-center text-[10px] uppercase tracking-[0.24em] opacity-80">
+            ELO Transporte e Turismo
+          </footer>
+        </div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 8. Sereno — centered ---------------- */
+  if (m.hero === "centered") {
+    return wrapper(
+      <div className="mx-auto max-w-3xl px-5 py-16 text-center">
+        <p
+          className="text-[10px] uppercase tracking-[0.35em]"
+          style={{ color: "var(--lp-muted)" }}
+        >
+          {viagem.destino} · {formatarData(viagem.data_partida)}
+        </p>
+        <h1 className="mt-5 text-5xl leading-[1.05]" style={tituloStyle}>
+          {titulo}
+        </h1>
+        {viagem.subtitulo && (
+          <p className="mx-auto mt-4 max-w-xl text-base" style={{ color: "var(--lp-muted)" }}>
+            {viagem.subtitulo}
+          </p>
+        )}
+        <div className="mt-8 flex justify-center">{preco}</div>
+        <div className="mt-10">
+          <Slider urls={fotos} aspect="aspect-[3/2]" onAmpliar={(i) => setFotoAberta(i)} />
+        </div>
+        <div className="mt-12 space-y-10 text-left">
           {infos}
+          {descricao}
           {inclusos}
-          {miniGaleria}
-          {formulario}
+        </div>
+        <div className="mx-auto mt-12 max-w-md text-left">{formulario}</div>
+        {rodape}
+      </div>,
+    );
+  }
+
+  /* ---------------- 9. Mosaico — collage ---------------- */
+  if (m.hero === "collage") {
+    const [f1, f2, f3] = [fotos[0], fotos[1] ?? fotos[0], fotos[2] ?? fotos[0]];
+    return wrapper(
+      <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="sm:col-span-2">
+            <Slider urls={fotos} aspect="aspect-[16/10]" miniaturas={false} onAmpliar={(i) => setFotoAberta(i)} />
+          </div>
+          <div className="grid gap-3">
+            {[f2, f3].filter(Boolean).map((u, i) => (
+              <img
+                key={`${u}-${i}`}
+                src={u}
+                alt=""
+                loading="lazy"
+                onClick={() => setFotoAberta(fotos.indexOf(u))}
+                className="aspect-[4/3] w-full cursor-zoom-in object-cover"
+                style={{ borderRadius: "var(--lp-radius)" }}
+              />
+            ))}
+            {!f1 && <div className="aspect-[4/3]" style={caixa} />}
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-10 lg:grid-cols-[1.2fr_1fr]">
+          <div className="space-y-9">
+            {cabecalho}
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              {preco}
+              {contagem}
+            </div>
+            {infos}
+            {descricao}
+            {inclusos}
+          </div>
+          <div className="lg:sticky lg:top-8 lg:self-start">{formulario}</div>
+          <div className="lg:col-span-2">{rodape}</div>
+        </div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 10. Expresso — banner ---------------- */
+  if (m.hero === "banner") {
+    return wrapper(
+      <div>
+        <div
+          className="px-5 py-2 text-center text-[11px] font-bold uppercase tracking-[0.24em]"
+          style={{ background: "var(--lp-accent)", color: "var(--lp-accent-fg)" }}
+        >
+          Vagas limitadas · reserve hoje e garanta o valor promocional
+        </div>
+
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-8 lg:grid-cols-[1.1fr_.9fr]">
+          <div className="space-y-5">
+            <h1 className="text-4xl leading-[0.98] sm:text-6xl" style={tituloStyle}>
+              {titulo}
+            </h1>
+            {viagem.subtitulo && (
+              <p className="text-base" style={{ color: "var(--lp-muted)" }}>
+                {viagem.subtitulo}
+              </p>
+            )}
+            {infos}
+            <div className="flex flex-wrap items-center gap-6">
+              {preco}
+              {contagem}
+            </div>
+          </div>
+          <div>{formularioCompacto}</div>
+        </div>
+
+        <div className="mx-auto max-w-6xl space-y-10 px-5 pb-12">
+          <Slider urls={fotos} aspect="aspect-[16/7]" onAmpliar={(i) => setFotoAberta(i)} />
+          {descricao}
+          {inclusos}
+          <div className="flex justify-center">{botaoAncora}</div>
+          {rodape}
+        </div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 11. Convite — framed ---------------- */
+  if (m.hero === "framed") {
+    return wrapper(
+      <div className="px-4 py-10 sm:py-14">
+        <div
+          className="mx-auto max-w-4xl p-6 sm:p-12"
+          style={{ border: "1px solid var(--lp-accent)" }}
+        >
+          <div
+            className="p-6 sm:p-10"
+            style={{ border: "1px solid var(--lp-border)" }}
+          >
+            <p
+              className="text-center text-[10px] uppercase tracking-[0.4em]"
+              style={{ color: "var(--lp-accent)" }}
+            >
+              Você está convidado
+            </p>
+            <h1 className="mt-5 text-center text-4xl leading-tight sm:text-5xl" style={tituloStyle}>
+              {titulo}
+            </h1>
+            {viagem.subtitulo && (
+              <p className="mx-auto mt-4 max-w-xl text-center text-sm" style={{ color: "var(--lp-muted)" }}>
+                {viagem.subtitulo}
+              </p>
+            )}
+            <div className="mt-8">
+              <Slider urls={fotos} aspect="aspect-[3/2]" onAmpliar={(i) => setFotoAberta(i)} />
+            </div>
+            <div className="mt-10 flex justify-center">{preco}</div>
+            <div className="mt-10 space-y-10">
+              {infos}
+              {descricao}
+              {inclusos}
+            </div>
+            <div className="mx-auto mt-10 max-w-md">{formulario}</div>
+          </div>
+        </div>
+        <div className="mx-auto max-w-4xl">{rodape}</div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 12. Holofote — spotlight ---------------- */
+  if (m.hero === "spotlight") {
+    return wrapper(
+      <div>
+        <div className="relative">
+          <Slider
+            urls={fotos}
+            aspect="aspect-[4/5] sm:aspect-[16/8]"
+            radius={false}
+            miniaturas={false}
+            overlay={
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 35%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,.92) 100%)",
+                }}
+              />
+            }
+          />
+          <div className="absolute inset-0 flex items-center justify-center px-5">
+            <div className="max-w-2xl space-y-5 text-center text-white">
+              {selo}
+              <h1 className="text-4xl leading-[1.02] sm:text-6xl" style={{ ...tituloStyle, color: "#fff" }}>
+                {titulo}
+              </h1>
+              {viagem.subtitulo && <p className="text-base opacity-90">{viagem.subtitulo}</p>}
+              <div className="flex justify-center pt-2">{botaoAncora}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 lg:grid-cols-[1.2fr_1fr]">
+          <div className="space-y-10">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              {preco}
+              {contagem}
+            </div>
+            {corpo}
+            <div className="space-y-3">
+              <p className="text-lg" style={tituloStyle}>Galeria</p>
+              {galeria}
+            </div>
+          </div>
+          <div className="lg:sticky lg:top-8 lg:self-start">{formulario}</div>
+          <div className="lg:col-span-2">{rodape}</div>
+        </div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 13. Camadas — layered ---------------- */
+  if (m.hero === "layered") {
+    return wrapper(
+      <div className="mx-auto max-w-6xl px-5 py-12">
+        <div className="relative">
+          <div
+            className="absolute -left-2 -top-2 hidden h-full w-full lg:block"
+            style={{ background: "var(--lp-accent2)", borderRadius: "var(--lp-radius)", opacity: 0.35 }}
+            aria-hidden
+          />
+          <div className="relative grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+            <Slider urls={fotos} aspect="aspect-[4/3]" onAmpliar={(i) => setFotoAberta(i)} />
+            <div
+              className="space-y-5 self-center p-6 lg:-ml-16 lg:p-8"
+              style={{ ...caixa, boxShadow: "0 30px 60px -35px rgba(0,0,0,.45)" }}
+            >
+              {cabecalho}
+              {preco}
+              <div>{botaoAncora}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-14 grid gap-10 lg:grid-cols-[1.2fr_1fr]">
+          <div className="space-y-10">
+            {infos}
+            {descricao}
+            {inclusos}
+          </div>
+          <div className="lg:sticky lg:top-8 lg:self-start">{formulario}</div>
         </div>
         {rodape}
       </div>,
     );
   }
 
-  // card
-  return wrapper(
-    <div className="px-4 py-10 sm:py-14">
-      <div
-        className="mx-auto max-w-4xl overflow-hidden"
-        style={{
-          background: "var(--lp-surface)",
-          borderRadius: "var(--lp-radius)",
-          border: "1px solid var(--lp-border)",
-          boxShadow: "0 30px 60px -30px rgba(0,0,0,0.45)",
-        }}
-      >
-        <Foto onClick={() => abrirFoto(capaAtiva)} url={capaAtiva} className="aspect-[16/8] w-full" />
-        <div className="space-y-8 p-6 sm:p-10">
-          {cabecalho}
-          {preco}
-          {descricao}
+  /* ---------------- 14. Stories ---------------- */
+  if (m.hero === "story") {
+    return wrapper(
+      <div className="mx-auto max-w-md px-4 pb-28 pt-6">
+        <div className="relative">
+          <Slider
+            urls={fotos}
+            aspect="aspect-[9/16]"
+            miniaturas={false}
+            onAmpliar={(i) => setFotoAberta(i)}
+            overlay={
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,.85) 100%)",
+                }}
+              />
+            }
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 space-y-3 p-5 text-white">
+            {selo}
+            <h1 className="text-3xl leading-tight" style={{ ...tituloStyle, color: "#fff" }}>
+              {titulo}
+            </h1>
+            {viagem.subtitulo && <p className="text-sm opacity-90">{viagem.subtitulo}</p>}
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {preco}
+          </div>
+          {contagem}
           {infos}
+          {descricao}
           {inclusos}
-          {miniGaleria}
           {formulario}
+          {rodape}
+        </div>
+
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t p-3"
+          style={{ background: "var(--lp-surface)", borderColor: "var(--lp-border)" }}
+        >
+          <div className="mx-auto flex max-w-md items-center gap-3">
+            <span className="flex-1 leading-tight">
+              <span className="block text-[10px] uppercase tracking-[0.18em]" style={{ color: "var(--lp-muted)" }}>
+                a partir de
+              </span>
+              <span className="block text-lg font-bold" style={{ color: "var(--lp-accent)" }}>
+                {formatarValor(viagem.valor)}
+              </span>
+            </span>
+            <a
+              href="#reservar"
+              className="flex h-11 flex-1 items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em]"
+              style={ctaStyle(m)}
+            >
+              {m.ctaLabel}
+            </a>
+          </div>
+        </div>
+      </div>,
+    );
+  }
+
+  /* ---------------- 15. Painel — grid ---------------- */
+  return wrapper(
+    <div className="mx-auto max-w-6xl px-5 py-12">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-5 lg:col-span-2">
+          {cabecalho}
+          <Slider urls={fotos} aspect="aspect-[16/9]" onAmpliar={(i) => setFotoAberta(i)} />
+        </div>
+        <div className="space-y-4">
+          <div className="space-y-5 p-5" style={caixa}>
+            {preco}
+            {contagem}
+            <a
+              href="#reservar"
+              className="flex h-12 w-full items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.16em]"
+              style={ctaStyle(m)}
+            >
+              {m.ctaLabel}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          {selo && <div className="flex">{selo}</div>}
         </div>
       </div>
-      <div className="mx-auto max-w-4xl">{rodape}</div>
+
+      <div className="mt-10">{infos}</div>
+
+      <div className="mt-12 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
+        <div className="space-y-10">
+          {descricao}
+          {inclusos}
+        </div>
+        <div>{formulario}</div>
+      </div>
+      {rodape}
     </div>,
   );
 }
