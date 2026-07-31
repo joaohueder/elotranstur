@@ -50,7 +50,7 @@ export default function Viagens() {
       const { data, error } = await supabase
         .from("viagens")
         .select(
-          "id, titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, created_at",
+          "id, titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, created_at, landing_slug, landing_ativa",
         )
         .order("data_partida", { ascending: true });
       if (error) throw error;
