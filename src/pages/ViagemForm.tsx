@@ -642,9 +642,9 @@ export default function ViagemForm() {
                 ))}
               </ul>
             )}
-          </div>
+          </TabsContent>
 
-          <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
+          <div className="flex justify-end gap-3 border-t border-border p-6">
             <HintButton
               hint="Descarta as alterações e volta para a lista de viagens."
               variant="outline"
@@ -665,6 +665,7 @@ export default function ViagemForm() {
               Salvar
             </HintButton>
           </div>
+          </Tabs>
         </div>
       )}
       {cropperUi}
