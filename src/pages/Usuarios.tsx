@@ -363,10 +363,17 @@ export default function Usuarios() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
-            {filtrados.map((u) => (
+            {filtrados.map((u) => {
+              const isMe = u.id === userId;
+              return (
               <article
                 key={u.id}
-                className="flex flex-col border border-border bg-background transition-shadow hover:shadow-lg"
+                className={cn(
+                  "flex flex-col border transition-shadow hover:shadow-lg",
+                  isMe
+                    ? "border-emerald-200 bg-emerald-50/60"
+                    : "border-border bg-background",
+                )}
               >
                 <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-sm bg-brand-accent font-serif text-base font-bold text-primary-foreground">
@@ -391,6 +398,11 @@ export default function Usuarios() {
                       <span className="rounded-sm bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                         {u.is_admin ? "Administrador" : "Usuário"}
                       </span>
+                      {isMe && (
+                        <span className="rounded-sm bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-800">
+                          Você
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
