@@ -328,10 +328,10 @@ export function LandingView({ viagem, modelo, onSubmit, preview }: Props) {
 
   const imagens = viagem.imagens ?? [];
   const capa = capaDa(imagens);
-  const galeria = imagens.filter((i) => i.url !== capa).slice(0, 6);
-  const todasFotos = [capa, ...galeria.map((i) => i.url)].filter(
-    (u): u is string => !!u,
-  );
+  const galeria = imagens.slice(0, 6);
+  const todasFotos = Array.from(
+    new Set([capa, ...galeria.map((i) => i.url)]),
+  ).filter((u): u is string => !!u);
   const [fotoAberta, setFotoAberta] = useState<number | null>(null);
   const [capaSelecionada, setCapaSelecionada] = useState<string | null>(null);
   const capaAtiva = capaSelecionada ?? capa;
