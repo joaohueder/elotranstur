@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { Loader2, Mail, Save } from "lucide-react";
+import { Loader2, Mail, Save, SendHorizonal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -42,6 +50,9 @@ export function EmailTab() {
   const [senhaDefinida, setSenhaDefinida] = useState(false);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [testeAberto, setTesteAberto] = useState(false);
+  const [destinatario, setDestinatario] = useState("");
+  const [testando, setTestando] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -141,6 +152,43 @@ export function EmailTab() {
       );
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function enviarTeste() {
+    const alvo = destinatario.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(alvo)) {
+      feedback.showNegative(
+        "E-mail inválido",
+        "Informe um endereço de e-mail válido para receber o teste.",
+      );
+      return;
+    }
+
+    setTestando(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "send-test-email",
+        { body: { destinatario: alvo } },
+      );
+      if (error) throw error;
+      if (data && typeof data === "object" && (data as { error?: string }).error) {
+        throw new Error((data as { error: string }).error);
+      }
+
+      setTesteAberto(false);
+      feedback.showSuccess(
+        "E-mail de teste enviado",
+        `Enviamos uma mensagem de teste para ${alvo}. Verifique a caixa de entrada e o spam.`,
+      );
+    } catch (err) {
+      feedback.showError(
+        "Falha no envio de teste",
+        "Não foi possível enviar o e-mail de teste. Confira o servidor, a porta, o usuário e a senha do SMTP.",
+        err,
+      );
+    } finally {
+      setTestando(false);
     }
   }
 
