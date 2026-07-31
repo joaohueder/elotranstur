@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 
 export const MIN_MAX_WIDTH = 960;
@@ -79,6 +80,20 @@ export function LayoutSettingsProvider({ children }: { children: ReactNode }) {
       cancelado = true;
     };
   }, []);
+
+  useRealtime(["user_settings"], () => {
+    void (async () => {
+      const { data } = await supabase.rpc("get_my_settings");
+      if (data && typeof data === "object") {
+        const value = clamp(
+          Number((data as { layout_max_width?: number }).layout_max_width),
+        );
+        setMaxWidth(value);
+        applyToDocument(value);
+        window.localStorage.setItem(STORAGE_KEY, String(value));
+      }
+    })();
+  });
 
   const save = useCallback(async (value: number) => {
     const alvo = clamp(value);
