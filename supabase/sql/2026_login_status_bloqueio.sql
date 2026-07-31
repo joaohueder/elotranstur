@@ -18,7 +18,7 @@ as $$
     where lower(u.email) = lower(trim(_email))
       and (
         (u.banned_until is not null and u.banned_until > now())
-        or coalesce(p.is_active, true) = false
+        or coalesce(p.ativo, true) = false
       )
   );
 $$;
