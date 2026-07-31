@@ -15,6 +15,8 @@ import Configuracoes from "@/pages/Configuracoes";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
+import Perfil from "@/pages/Perfil";
+
 import ResetPassword from "@/pages/ResetPassword";
 import UsuarioForm from "@/pages/UsuarioForm";
 import Usuarios from "@/pages/Usuarios";
@@ -52,6 +54,8 @@ export default function App() {
 
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/perfil" element={<Perfil />} />
+
             <Route path="/login" element={<Login />} />
             <Route path="/verificar-codigo" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
