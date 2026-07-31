@@ -318,12 +318,6 @@
   overflow-x: clip;
   max-width: 100%;
 }
-@media (min-width: 1024px) {
-  .lp-root {
-    max-width: 960px;
-    margin-inline: auto;
-  }
-}
 .lp-root * {
   min-width: 0;
 }

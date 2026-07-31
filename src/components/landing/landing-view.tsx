@@ -727,7 +727,7 @@ export function LandingView({
     background: "var(--lp-surface)",
   };
 
-  const secao = "mx-auto w-full max-w-[960px] px-4 sm:px-6";
+  const secao = "mx-auto w-full max-w-6xl px-4 sm:px-6";
 
   /* ------------------------- blocos ------------------------- */
 
@@ -1015,10 +1015,10 @@ export function LandingView({
   /** Formulário flutuante (desktop): acompanha a rolagem sem cobrir o conteúdo. */
   const formularioFlutuante = (
     <aside
-      className="hidden py-6 lg:block"
+      className="pointer-events-none fixed inset-y-0 right-0 z-[80] hidden w-[24rem] items-center px-5 lg:flex"
       aria-label="Formulário de contato"
     >
-      <div className="lp-flutuante sticky top-6 max-h-[92vh] overflow-y-auto">
+      <div className="lp-flutuante pointer-events-auto max-h-[92vh] w-full overflow-y-auto">
         <Formulario
           m={m}
           onSubmit={onSubmit}
@@ -1034,13 +1034,11 @@ export function LandingView({
   const wrapper = (children: ReactNode) => (
     <div
       ref={raiz}
-      className="lp-root min-h-full w-full pb-24 lg:mx-auto lg:max-w-[960px] lg:pb-0"
+      className="lp-root min-h-full w-full pb-24 lg:pb-0 lg:pr-[24rem]"
       style={{ ...themeVars(m, p), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
     >
-      <div className="lg:grid lg:grid-cols-[1fr_20rem] lg:gap-6">
-        <div className="min-w-0">{children}</div>
-        {formularioFlutuante}
-      </div>
+      {children}
+      {formularioFlutuante}
       {barraMobile}
       {fotoAberta !== null && (
         <Lightbox
@@ -1058,7 +1056,7 @@ export function LandingView({
     return wrapper(
       <>
         <header className={`${secao} pt-6 sm:pt-10`}>
-          <div className="grid gap-8 lg:grid-cols-1 lg:items-start lg:gap-10">
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_.95fr] lg:items-start lg:gap-12">
             <div className="lp-reveal order-1 space-y-4 lg:order-none">
               <div className="flex flex-wrap items-center gap-2">
                 {dataPill()}
@@ -1162,7 +1160,7 @@ export function LandingView({
   /* ---------------- 3. Vitrine — cartão flutuante ---------------- */
   return wrapper(
     <>
-      <div className="mx-auto w-full max-w-[960px] px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div
           className="relative overflow-hidden rounded-b-[2rem] pb-24 pt-8 sm:pb-28 sm:pt-12"
           style={{
@@ -1203,7 +1201,7 @@ export function LandingView({
           className="lp-pop overflow-hidden"
           style={{ ...caixa, boxShadow: "var(--lp-shadow)" }}
         >
-          <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-1 lg:gap-8">
+          <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.1fr_.9fr] lg:gap-8">
             <Slider urls={fotos} onAmpliar={(i) => setFotoAberta(i)} kenburns />
             <div className="space-y-5">
               {selo}
