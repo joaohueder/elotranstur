@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { CrmTab } from "@/components/configuracoes/crm-tab";
 import { DestinosTab } from "@/components/configuracoes/destinos-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
+import { EmpresaTab } from "@/components/configuracoes/empresa-tab";
 
 import { Button } from "@/components/ui/button";
 import { HelpTip, HintButton } from "@/components/help";
@@ -91,6 +92,9 @@ export default function Configuracoes() {
               <TabsTrigger value="layout" className="rounded-sm">
                 Layout
               </TabsTrigger>
+              <TabsTrigger value="empresa" className="rounded-sm">
+                Empresa
+              </TabsTrigger>
               <TabsTrigger value="crm" className="rounded-sm">
                 CRM
               </TabsTrigger>
@@ -102,6 +106,10 @@ export default function Configuracoes() {
               </TabsTrigger>
             </TabsList>
           </div>
+
+          <TabsContent value="empresa" className="m-0 p-4 sm:p-6">
+            <EmpresaTab />
+          </TabsContent>
 
           <TabsContent value="crm" className="m-0 p-4 sm:p-6">
             <CrmTab />
