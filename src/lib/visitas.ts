@@ -30,38 +30,133 @@ function ehPaginaPublica(pathname: string): boolean {
   );
 }
 
-/** Dados de geolocalização aproximada (por IP), buscados uma vez por sessão. */
-let geoCache: Record<string, string> | null = null;
-async function geo(): Promise<Record<string, string>> {
-  if (geoCache) return geoCache;
+/** Dados de geolocalização aproximada (por IP), com múltiplos provedores. */
+type Geo = {
+  ip?: string;
+  cidade?: string;
+  regiao?: string;
+  pais?: string;
+  provedor?: string;
+};
+
+const CHAVE_GEO = "elo:geo";
+let geoCache: Geo | null = null;
+let geoPendente: Promise<Geo> | null = null;
+
+function geoValida(g: Geo | null | undefined): g is Geo {
+  return !!g && (!!g.cidade || !!g.ip);
+}
+
+function lerGeoCache(): Geo | null {
   try {
-    const cache = sessionStorage.getItem("elo:geo");
-    if (cache) {
-      geoCache = JSON.parse(cache);
-      return geoCache!;
-    }
+    const bruto = sessionStorage.getItem(CHAVE_GEO);
+    if (!bruto) return null;
+    const g = JSON.parse(bruto) as Geo;
+    return geoValida(g) ? g : null;
   } catch {
-    /* ignora */
+    return null;
   }
+}
+
+async function buscarJson(url: string, ms = 4000): Promise<Record<string, unknown> | null> {
   try {
-    const r = await fetch("https://ipapi.co/json/");
-    const j = (await r.json()) as Record<string, unknown>;
-    geoCache = {
-      ip: String(j.ip ?? ""),
-      cidade: String(j.city ?? ""),
-      regiao: String(j.region ?? ""),
-      pais: [j.country_name, j.country_code].filter(Boolean).join(" / "),
-      provedor: String(j.org ?? ""),
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    return (await r.json()) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+const txt = (v: unknown) => (v === null || v === undefined ? "" : String(v).trim());
+
+/** Provedores públicos de geolocalização por IP, tentados em ordem. */
+const PROVEDORES: Array<() => Promise<Geo | null>> = [
+  async () => {
+    const j = await buscarJson("https://ipwho.is/");
+    if (!j || j.success === false) return null;
+    const conn = (j.connection ?? {}) as Record<string, unknown>;
+    return {
+      ip: txt(j.ip),
+      cidade: txt(j.city),
+      regiao: txt(j.region),
+      pais: [txt(j.country), txt(j.country_code)].filter(Boolean).join(" / "),
+      provedor: txt(conn.isp) || txt(conn.org),
     };
-    try {
-      sessionStorage.setItem("elo:geo", JSON.stringify(geoCache));
-    } catch {
-      /* ignora */
-    }
-  } catch {
-    geoCache = {};
+  },
+  async () => {
+    const j = await buscarJson("https://ipapi.co/json/");
+    if (!j || j.error) return null;
+    return {
+      ip: txt(j.ip),
+      cidade: txt(j.city),
+      regiao: txt(j.region),
+      pais: [txt(j.country_name), txt(j.country_code)].filter(Boolean).join(" / "),
+      provedor: txt(j.org),
+    };
+  },
+  async () => {
+    const j = await buscarJson("https://freeipapi.com/api/json");
+    if (!j) return null;
+    return {
+      ip: txt(j.ipAddress),
+      cidade: txt(j.cityName),
+      regiao: txt(j.regionName),
+      pais: [txt(j.countryName), txt(j.countryCode)].filter(Boolean).join(" / "),
+      provedor: "",
+    };
+  },
+  async () => {
+    const j = await buscarJson("https://get.geojs.io/v1/ip/geo.json");
+    if (!j) return null;
+    return {
+      ip: txt(j.ip),
+      cidade: txt(j.city),
+      regiao: txt(j.region),
+      pais: [txt(j.country), txt(j.country_code)].filter(Boolean).join(" / "),
+      provedor: txt(j.organization_name),
+    };
+  },
+];
+
+async function geo(): Promise<Geo> {
+  if (geoValida(geoCache)) return geoCache;
+  const cache = lerGeoCache();
+  if (cache) {
+    geoCache = cache;
+    return cache;
   }
-  return geoCache;
+  if (geoPendente) return geoPendente;
+
+  geoPendente = (async () => {
+    for (const buscar of PROVEDORES) {
+      const g = await buscar().catch(() => null);
+      if (geoValida(g)) {
+        const limpo: Geo = {
+          ip: g.ip || "",
+          cidade: g.cidade || "",
+          regiao: g.regiao || "",
+          pais: g.pais || "",
+          provedor: g.provedor || "",
+        };
+        geoCache = limpo;
+        try {
+          sessionStorage.setItem(CHAVE_GEO, JSON.stringify(limpo));
+        } catch {
+          /* ignora */
+        }
+        return limpo;
+      }
+    }
+    return {} as Geo;
+  })();
+
+  const resultado = await geoPendente;
+  geoPendente = null;
+  return resultado;
 }
 
 /** Navegador, sistema e tipo de dispositivo a partir do user agent. */
@@ -90,10 +185,10 @@ function ambiente() {
 }
 
 /** Monta o pacote de detalhes registrado junto com a visita. */
-async function detalhesDaVisita(pathname: string) {
+async function detalhesDaVisita(pathname: string, esperarGeo = true) {
   const { ua, navegador, sistema, dispositivo } = ambiente();
   const params = new URLSearchParams(window.location.search);
-  const g = await geo();
+  const g = esperarGeo ? await geo() : (geoCache ?? lerGeoCache() ?? {});
   return {
     ...g,
     user_agent: ua,
@@ -139,9 +234,9 @@ export function VisitTracker() {
     if (!ehPaginaPublica(pathname)) return;
     const id = visitorId();
 
-    const registrar = async () => {
+    const registrar = async (esperarGeo = true) => {
       if (document.visibilityState !== "visible") return;
-      const dados = await detalhesDaVisita(pathname);
+      const dados = await detalhesDaVisita(pathname, esperarGeo);
       const { error } = await supabase.rpc("registrar_visita", {
         _visitor: id,
         _path: pathname,
@@ -151,7 +246,9 @@ export function VisitTracker() {
       if (error) console.warn("registrar_visita", error.message);
     };
 
-    void registrar();
+    // 1ª chamada imediata (sem esperar a geolocalização) e, em seguida,
+    // uma nova chamada já com cidade/IP para completar o registro.
+    void registrar(false).then(() => registrar(true));
     const timer = setInterval(() => void registrar(), 60_000);
     const aoVoltar = () => void registrar();
     document.addEventListener("visibilitychange", aoVoltar);
