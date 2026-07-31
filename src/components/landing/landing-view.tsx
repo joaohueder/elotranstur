@@ -612,7 +612,14 @@ function Formulario({
 /* LandingView                                                         */
 /* ------------------------------------------------------------------ */
 
-export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props) {
+export function LandingView({
+  viagem,
+  modelo,
+  paleta,
+  onSubmit,
+  whatsappUrl,
+  preview,
+}: Props) {
   const m = useMemo(
     () => getLandingModel(modelo ?? viagem.modelo),
     [modelo, viagem.modelo],
