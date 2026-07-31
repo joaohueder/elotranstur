@@ -31,8 +31,18 @@ function emit(next: Authz) {
   listeners.forEach((l) => l(next));
 }
 
-/** Recarrega perfil e permissões do banco (RPC me()). */
-export async function refreshAuthz(): Promise<Authz> {
+let inflight: Promise<Authz> | null = null;
+
+/** Recarrega perfil e permissões do banco (RPC me()). Evita chamadas concorrentes. */
+export function refreshAuthz(): Promise<Authz> {
+  if (inflight) return inflight;
+  inflight = doRefresh().finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}
+
+async function doRefresh(): Promise<Authz> {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData.user;
   if (!user) {
@@ -71,7 +81,22 @@ let wired = false;
 function wire() {
   if (wired || typeof window === "undefined") return;
   wired = true;
-  supabase.auth.onAuthStateChange(() => {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT" || !session) {
+      emit({ ...initial, loading: false });
+      return;
+    }
+    // Marca como autenticado imediatamente para evitar redirecionos
+    // indevidos para /login enquanto as permissões carregam.
+    if (!state.authenticated) {
+      emit({
+        ...state,
+        loading: true,
+        authenticated: true,
+        userId: session.user.id,
+        email: session.user.email ?? null,
+      });
+    }
     void refreshAuthz();
   });
   window.addEventListener("focus", () => {
@@ -85,7 +110,7 @@ export function useAuthz() {
   useEffect(() => {
     listeners.add(setSnapshot);
     wire();
-    void refreshAuthz();
+    if (state.loading) void refreshAuthz();
     return () => {
       listeners.delete(setSnapshot);
     };
