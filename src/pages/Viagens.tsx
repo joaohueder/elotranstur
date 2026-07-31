@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
 import { useRealtime } from "@/lib/realtime";
-import { supabase } from "@/lib/supabase";
+import { supabase, SUPABASE_BASE_URL } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
 import { ViagemCountdown } from "@/components/viagem-countdown";
