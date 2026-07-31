@@ -29,6 +29,36 @@ type EmailForm = {
   ativo: boolean;
 };
 
+/**
+ * Extrai a mensagem real retornada pela Edge Function.
+ * O supabase-js lança FunctionsHttpError sem o corpo; ele fica em `context` (Response).
+ */
+async function detalharErroFuncao(error: unknown): Promise<Error> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  const base = error instanceof Error ? error.message : String(error);
+
+  if (ctx instanceof Response) {
+    let corpo = "";
+    try {
+      corpo = await ctx.clone().text();
+    } catch {
+      corpo = "";
+    }
+    let detalhe = corpo;
+    try {
+      const parsed = JSON.parse(corpo) as { error?: string; message?: string };
+      detalhe = parsed.error ?? parsed.message ?? corpo;
+    } catch {
+      /* corpo não é JSON */
+    }
+    const status = `HTTP ${ctx.status}${ctx.statusText ? ` ${ctx.statusText}` : ""}`;
+    return new Error(detalhe ? `${status}: ${detalhe}` : `${status}: ${base}`);
+  }
+
+  return error instanceof Error ? error : new Error(base);
+}
+
+
 const VAZIO: EmailForm = {
   smtp_host: "",
   smtp_port: 587,
