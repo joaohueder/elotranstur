@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { FieldLabel, HintButton, SectionTitle } from "@/components/help";
+import { FieldLabel, HelpTip, HintButton, SectionTitle } from "@/components/help";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -46,6 +47,7 @@ export default function ViagemForm() {
 
   const [loading, setLoading] = useState(Boolean(id));
   const [salvando, setSalvando] = useState(false);
+  const [aba, setAba] = useState("dados");
   const [titulo, setTitulo] = useState("");
   const [subtitulo, setSubtitulo] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -209,10 +211,12 @@ export default function ViagemForm() {
 
   async function salvar() {
     if (!destino.trim()) {
+      setAba("dados");
       feedback.showNegative("Campo obrigatório", "Informe o destino da viagem.");
       return;
     }
     if (!dataPartida) {
+      setAba("dados");
       feedback.showNegative(
         "Campo obrigatório",
         "Informe a data de partida da viagem.",
@@ -282,7 +286,33 @@ export default function ViagemForm() {
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : (
-        <div className="w-full rounded-sm border border-border bg-background p-6">
+        <div className="w-full rounded-sm border border-border bg-background">
+          <Tabs value={aba} onValueChange={setAba}>
+            <div className="flex items-center border-b border-border px-6 pt-6">
+              <TabsList className="rounded-sm">
+                <TabsTrigger value="dados" className="rounded-sm">
+                  Dados da Viagem
+                </TabsTrigger>
+                <TabsTrigger value="apresentacao" className="rounded-sm">
+                  Apresentação
+                </TabsTrigger>
+                <TabsTrigger value="galeria" className="rounded-sm">
+                  Galeria de fotos
+                </TabsTrigger>
+              </TabsList>
+              <HelpTip
+                className="ml-2"
+                texto={
+                  aba === "apresentacao"
+                    ? "Textos que o cliente vê divulgando a viagem."
+                    : aba === "galeria"
+                      ? "Fotos da viagem, com escolha da capa e ordenação."
+                      : "Informações operacionais: destino, datas, preço e vagas."
+                }
+              />
+            </div>
+
+          <TabsContent value="apresentacao" className="m-0 p-6">
           <SectionTitle
             titulo="Apresentação"
             help="Textos que aparecem para o cliente divulgando a viagem."
@@ -329,12 +359,13 @@ export default function ViagemForm() {
             </div>
           </div>
 
-          <div className="mt-8 border-t border-border pt-6">
+          </TabsContent>
+
+          <TabsContent value="dados" className="m-0 p-6">
             <SectionTitle
               titulo="Dados da viagem"
               help="Informações operacionais: para onde vai, quando parte, preço e vagas."
             />
-          </div>
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <FieldLabel htmlFor="destino" help="Cidade ou local para onde a viagem vai acontecer.">
@@ -509,8 +540,9 @@ export default function ViagemForm() {
               )}
             </div>
           </div>
+          </TabsContent>
 
-          <div className="mt-8 border-t border-border pt-6">
+          <TabsContent value="galeria" className="m-0 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <SectionTitle
                 titulo="Galeria de imagens"
@@ -614,9 +646,9 @@ export default function ViagemForm() {
                 ))}
               </ul>
             )}
-          </div>
+          </TabsContent>
 
-          <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
+          <div className="flex justify-end gap-3 border-t border-border p-6">
             <HintButton
               hint="Descarta as alterações e volta para a lista de viagens."
               variant="outline"
@@ -637,6 +669,7 @@ export default function ViagemForm() {
               Salvar
             </HintButton>
           </div>
+          </Tabs>
         </div>
       )}
       {cropperUi}
