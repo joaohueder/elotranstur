@@ -236,7 +236,7 @@ export default function Leads() {
                     <span>{lead.whatsapp}</span>
                     <span className="inline-flex items-center gap-1">
                       <CalendarDays className="h-3 w-3" />
-                      Cadastrado em {formatarData(lead.created_at)}
+                      Cadastrado em {formatarDataHora(lead.created_at)}
                     </span>
                     {lead.viagens.length > 0 && (
                       <span
