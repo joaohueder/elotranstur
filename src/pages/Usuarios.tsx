@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { HelpTip, HintButton } from "@/components/help";
 import { useFeedback } from "@/lib/feedback";
 import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permissions";
 import { supabase } from "@/lib/supabase";
@@ -202,20 +203,24 @@ export default function Usuarios() {
             </p>
           </div>
           {isAdmin && (
-            <Button onClick={abrirNovo} className="rounded-sm">
+            <HintButton
+              hint="Cria um novo usuário com acesso ao sistema."
+              onClick={abrirNovo}
+              className="rounded-sm"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Novo usuário
-            </Button>
+            </HintButton>
           )}
         </div>
 
         {/* KPIs */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
-            { label: "Total", value: stats.total, icon: UsersIcon },
-            { label: "Ativos", value: stats.ativos, icon: UserCheck },
-            { label: "Inativos", value: stats.inativos, icon: UserX },
-            { label: "Administradores", value: stats.admins, icon: ShieldCheck },
+            { label: "Total", value: stats.total, icon: UsersIcon, help: "Quantidade total de usuários cadastrados no sistema." },
+            { label: "Ativos", value: stats.ativos, icon: UserCheck, help: "Usuários que podem acessar o sistema normalmente." },
+            { label: "Inativos", value: stats.inativos, icon: UserX, help: "Usuários bloqueados, sem acesso ao sistema." },
+            { label: "Administradores", value: stats.admins, icon: ShieldCheck, help: "Usuários com acesso total a todos os módulos." },
           ].map((kpi) => (
             <div
               key={kpi.label}
@@ -226,8 +231,9 @@ export default function Usuarios() {
               </span>
               <div>
                 <p className="font-serif text-2xl text-foreground">{kpi.value}</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                   {kpi.label}
+                  <HelpTip texto={kpi.help} />
                 </p>
               </div>
             </div>
@@ -243,6 +249,7 @@ export default function Usuarios() {
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar por nome ou e-mail"
               className="h-11 rounded-sm pl-9"
+              title="Filtra a lista de usuários pelo nome ou e-mail digitado."
             />
           </div>
           <div className="flex gap-1">
@@ -257,6 +264,7 @@ export default function Usuarios() {
               <button
                 key={key}
                 type="button"
+                title={`Mostrar apenas usuários: ${label}`}
                 onClick={() => setFiltro(key)}
                 className={cn(
                   "h-11 rounded-sm border px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors",
@@ -328,8 +336,9 @@ export default function Usuarios() {
                 </div>
 
                 <div className="border-t border-border px-6 py-4">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                     Permissões
+                    <HelpTip texto="Módulos que este usuário pode ver, editar ou excluir." />
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {u.is_admin ? (
@@ -358,7 +367,8 @@ export default function Usuarios() {
                 </div>
 
                 <div className="mt-auto flex items-center gap-2 border-t border-border px-6 py-4">
-                  <Button
+                  <HintButton
+                    hint="Abre a tela para editar os dados e permissões deste usuário."
                     variant="outline"
                     size="sm"
                     className="rounded-sm"
@@ -367,8 +377,9 @@ export default function Usuarios() {
                   >
                     <Pencil className="mr-2 h-3.5 w-3.5" />
                     Editar
-                  </Button>
-                  <Button
+                  </HintButton>
+                  <HintButton
+                    hint={u.ativo ? "Bloqueia o acesso deste usuário ao sistema." : "Libera novamente o acesso deste usuário."}
                     variant="outline"
                     size="sm"
                     className="rounded-sm"
@@ -386,8 +397,9 @@ export default function Usuarios() {
                         Ativar
                       </>
                     )}
-                  </Button>
-                  <Button
+                  </HintButton>
+                  <HintButton
+                    hint="Remove definitivamente este usuário do sistema."
                     variant="ghost"
                     size="sm"
                     className="ml-auto rounded-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
@@ -395,7 +407,7 @@ export default function Usuarios() {
                     onClick={() => setToDelete(u)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  </HintButton>
                 </div>
               </article>
             ))}
@@ -417,20 +429,22 @@ export default function Usuarios() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
+            <HintButton
+              hint="Fecha esta janela sem excluir o usuário."
               variant="outline"
               className="rounded-sm"
               onClick={() => setToDelete(null)}
             >
               Cancelar
-            </Button>
-            <Button
+            </HintButton>
+            <HintButton
+              hint="Confirma a exclusão permanente deste usuário."
               variant="destructive"
               className="rounded-sm"
               onClick={() => void excluir()}
             >
               Excluir definitivamente
-            </Button>
+            </HintButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

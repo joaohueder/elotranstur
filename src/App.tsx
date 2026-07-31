@@ -2,7 +2,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { FeedbackProvider } from "@/lib/feedback";
+
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
@@ -40,9 +42,11 @@ function RequireModule({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <TooltipProvider delayDuration={200}>
       <FeedbackProvider>
         <LayoutSettingsProvider>
         <BrowserRouter>
+
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -136,6 +140,8 @@ export default function App() {
         </BrowserRouter>
         </LayoutSettingsProvider>
       </FeedbackProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
+

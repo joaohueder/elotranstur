@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ForgotPasswordModal } from "@/components/forgot-password-modal";
-import { Button } from "@/components/ui/button";
+import { HelpTip, HintButton } from "@/components/help";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -188,12 +189,15 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                E-MAIL
-              </Label>
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="email"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  E-MAIL
+                </Label>
+                <HelpTip texto="Use o e-mail cadastrado para você no sistema." />
+              </div>
               <Input
                 id="email"
                 type="email"
@@ -207,15 +211,19 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex justify-between">
-                <Label
-                  htmlFor="password"
-                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
-                  Senha
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <Label
+                    htmlFor="password"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
+                    Senha
+                  </Label>
+                  <HelpTip texto="Sua senha pessoal. Nunca compartilhe com outras pessoas." />
+                </div>
                 <button
                   type="button"
                   onClick={() => setForgotOpen(true)}
+                  title="Receba um código por e-mail para criar uma nova senha"
                   className="text-xs font-medium text-brand-accent hover:underline"
                 >
                   Esqueceu a senha?
@@ -245,16 +253,19 @@ export default function LoginPage() {
               >
                 Ficar conectado por 30 dias
               </Label>
+              <HelpTip texto="Se marcado, você não precisa fazer login de novo por 30 dias neste aparelho." />
             </div>
 
-            <Button
+            <HintButton
+              hint="Entrar no sistema com o e-mail e a senha informados"
               type="submit"
               disabled={loading}
               className="w-full rounded-none bg-primary py-6 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
               {loading ? "Processando..." : "Acessar painel"}
-            </Button>
+            </HintButton>
           </form>
+
         </div>
       </div>
 

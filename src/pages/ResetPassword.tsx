@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { HelpTip, HintButton } from "@/components/help";
 import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFeedback } from "@/lib/feedback";
@@ -115,12 +117,15 @@ export default function ResetPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label
-              htmlFor="new-password"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Nova senha
-            </Label>
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor="new-password"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Nova senha
+              </Label>
+              <HelpTip texto="Crie uma senha com pelo menos 8 caracteres, misturando letras e números." />
+            </div>
             <Input
               id="new-password"
               type="password"
@@ -133,12 +138,15 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor="confirm-password"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Confirmar nova senha
-            </Label>
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor="confirm-password"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Confirmar nova senha
+              </Label>
+              <HelpTip texto="Digite a mesma senha de novo para evitar erro de digitação." />
+            </div>
             <Input
               id="confirm-password"
               type="password"
@@ -150,21 +158,24 @@ export default function ResetPasswordPage() {
             />
           </div>
 
-          <Button
+          <HintButton
+            hint="Grava a nova senha e libera o acesso ao painel"
             type="submit"
             disabled={loading || !ready}
             className="w-full rounded-none bg-primary py-6 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
           >
             {loading ? "Salvando..." : "Salvar nova senha"}
-          </Button>
+          </HintButton>
 
           <button
             type="button"
             onClick={() => navigate("/login", { replace: true })}
+            title="Cancela a troca de senha e volta para a tela de login"
             className="w-full text-xs font-medium text-brand-accent hover:underline"
           >
             Voltar para o login
           </button>
+
         </form>
       </div>
     </div>

@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MailCheck } from "lucide-react";
 
+import { HelpTip, HintButton } from "@/components/help";
 import { Button } from "@/components/ui/button";
+
 import {
   InputOTP,
   InputOTPGroup,
@@ -171,6 +173,12 @@ export default function VerifyCodePage() {
           }}
           className="space-y-6"
         >
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Código de verificação
+            </span>
+            <HelpTip texto="Digite os 6 caracteres que chegaram no seu e-mail. Verifique também o spam." />
+          </div>
           <InputOTP
             maxLength={CODE_LENGTH}
             value={code}
@@ -191,19 +199,21 @@ export default function VerifyCodePage() {
             </InputOTPGroup>
           </InputOTP>
 
-          <Button
+          <HintButton
+            hint="Confere o código digitado e libera a criação da nova senha"
             type="submit"
             disabled={loading}
             className="w-full rounded-none bg-primary py-6 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
           >
             {loading ? "Confirmando..." : "Confirmar código"}
-          </Button>
+          </HintButton>
 
           <div className="flex items-center justify-between text-xs">
             <button
               type="button"
               onClick={handleResend}
               disabled={cooldown > 0}
+              title="Envia um novo código para o seu e-mail"
               className="font-medium text-brand-accent hover:underline disabled:text-muted-foreground disabled:no-underline"
             >
               {cooldown > 0
@@ -213,11 +223,13 @@ export default function VerifyCodePage() {
             <button
               type="button"
               onClick={() => navigate("/login", { replace: true })}
+              title="Cancela a recuperação e volta para a tela de login"
               className="font-medium text-muted-foreground hover:underline"
             >
               Voltar para o login
             </button>
           </div>
+
         </form>
       </div>
     </div>
