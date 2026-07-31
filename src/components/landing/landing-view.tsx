@@ -970,10 +970,10 @@ export function LandingView({
     </footer>
   );
 
-  /** Barra fixa de ação no celular. */
+  /** Barra fixa de ação — visível em todos os tamanhos de tela. */
   const barraMobile = (
     <div
-      className={`lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 transition-transform duration-300 ease-out will-change-transform lg:hidden ${
+      className={`lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 transition-transform duration-300 ease-out will-change-transform ${
         formularioVisivel ? "translate-y-full opacity-0" : "translate-y-0 opacity-100"
       }`}
       style={{
@@ -1012,37 +1012,13 @@ export function LandingView({
     </div>
   );
 
-  /** Formulário flutuante (desktop): acompanha a rolagem sem cobrir o conteúdo.
-   *  Alinhado à borda direita do container centralizado (--app-max-width). */
-  const formularioFlutuante = (
-    <aside
-      className="pointer-events-none fixed inset-y-0 z-[80] hidden w-[24rem] items-center px-5 lg:flex"
-      aria-label="Formulário de contato"
-      style={{
-        right: "calc((100vw - min(100vw, var(--app-max-width, 1280px))) / 2)",
-      }}
-    >
-      <div className="lp-flutuante pointer-events-auto max-h-[92vh] w-full overflow-y-auto">
-        <Formulario
-          m={m}
-          onSubmit={onSubmit}
-          whatsappUrl={whatsappUrl}
-          preview={preview}
-          compacto
-          ancora={false}
-        />
-      </div>
-    </aside>
-  );
-
   const wrapper = (children: ReactNode) => (
     <div
       ref={raiz}
-      className="lp-root min-h-full w-full pb-24 lg:pb-0 lg:pr-[24rem]"
+      className="lp-root min-h-full w-full pb-24"
       style={{ ...themeVars(m, p), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
     >
       {children}
-      {formularioFlutuante}
       {barraMobile}
       {fotoAberta !== null && (
         <Lightbox
@@ -1093,7 +1069,7 @@ export function LandingView({
         <main className={`${secao} space-y-12 sm:space-y-14`}>
           {infos}
           {corpoComum}
-          <div className="lg:hidden">{formulario}</div>
+          {formulario}
           {rodape}
         </main>
       </>,
@@ -1154,7 +1130,7 @@ export function LandingView({
           {ofertaCard}
           {infos}
           {corpoComum}
-          <div className="mx-auto max-w-lg lg:hidden">{formulario}</div>
+          <div className="mx-auto max-w-lg">{formulario}</div>
           {rodape}
         </main>
       </>,
@@ -1211,15 +1187,13 @@ export function LandingView({
               {selo}
               {preco}
               {contagem()}
-              <div className="lg:hidden">
-                <Formulario
-                  m={m}
-                  onSubmit={onSubmit}
-                  whatsappUrl={whatsappUrl}
-                  preview={preview}
-                  compacto
-                />
-              </div>
+              <Formulario
+                m={m}
+                onSubmit={onSubmit}
+                whatsappUrl={whatsappUrl}
+                preview={preview}
+                compacto
+              />
             </div>
           </div>
         </div>
