@@ -50,6 +50,7 @@ type UsuarioRow = {
   sessao_iniciada_em: string | null;
   sessao_atualizada_em: string | null;
   sessao_expira_em: string | null;
+  sessao_remember: boolean | null;
   sessao_ip: string | null;
 };
 
@@ -128,6 +129,10 @@ export default function Usuarios() {
         sessao_iniciada_em: (u.sessao_iniciada_em as string) ?? null,
         sessao_atualizada_em: (u.sessao_atualizada_em as string) ?? null,
         sessao_expira_em: (u.sessao_expira_em as string) ?? null,
+        sessao_remember:
+          u.sessao_remember === null || u.sessao_remember === undefined
+            ? null
+            : Boolean(u.sessao_remember),
         sessao_ip: (u.sessao_ip as string) ?? null,
       })),
     );
@@ -244,6 +249,7 @@ export default function Usuarios() {
               sessao_iniciada_em: null,
               sessao_atualizada_em: null,
               sessao_expira_em: null,
+              sessao_remember: null,
               sessao_ip: null,
             }
           : r,
@@ -440,12 +446,16 @@ export default function Usuarios() {
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
                       Expira em
-                      <HelpTip texto="Tempo restante até a sessão deste usuário expirar e ele precisar fazer login novamente." />
+                      <HelpTip texto="Tempo restante até a sessão expirar. Se a pessoa não marcou 'Ficar conectado por 30 dias', a sessão encerra no logoff." />
                     </p>
                     <p className="mt-0.5 text-foreground">
-                      {u.online && u.sessao_expira_em
-                        ? formatarTempoRestante(u.sessao_expira_em, agora)
-                        : "—"}
+                      {!u.online
+                        ? "—"
+                        : u.sessao_remember === false
+                          ? "No logoff"
+                          : u.sessao_expira_em
+                            ? formatarTempoRestante(u.sessao_expira_em, agora)
+                            : "—"}
                     </p>
                   </div>
                 </div>
