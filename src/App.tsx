@@ -13,6 +13,7 @@ import LeadForm from "@/pages/LeadForm";
 import Leads from "@/pages/Leads";
 import Configuracoes from "@/pages/Configuracoes";
 import Home from "@/pages/Home";
+import LandingViagem from "@/pages/LandingViagem";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import Perfil from "@/pages/Perfil";
@@ -55,6 +56,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/perfil" element={<Perfil />} />
+            <Route path="/v/:slug" element={<LandingViagem />} />
 
             <Route path="/login" element={<Login />} />
             <Route path="/verificar-codigo" element={<VerifyCode />} />

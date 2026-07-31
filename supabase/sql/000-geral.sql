@@ -1029,3 +1029,17 @@ WHERE NOT EXISTS (
   SELECT 1 FROM public.user_permissions up
   WHERE up.user_id = p.id AND up.modulo = 'leads'
 );
+
+-- =====================================================================
+-- LANDING PAGES DE VIAGENS (ver 016-landing-pages.sql)
+-- =====================================================================
+alter table public.viagens
+  add column if not exists landing_modelo text    not null default 'aurora',
+  add column if not exists landing_slug   text,
+  add column if not exists landing_ativa  boolean not null default true;
+
+create unique index if not exists viagens_landing_slug_uidx
+  on public.viagens (landing_slug) where landing_slug is not null;
+
+-- Funções públicas landing_viagem(text) e landing_lead(text,text,text,text):
+-- ver arquivo supabase/sql/016-landing-pages.sql (execute-o na íntegra).
