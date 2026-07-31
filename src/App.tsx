@@ -56,11 +56,40 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/perfil" element={<Perfil />} />
-            <Route path="/v/:slug" element={<LandingViagem />} />
+            <Route
+              path="/v/:slug"
+              element={
+                <PublicShell>
+                  <LandingViagem />
+                </PublicShell>
+              }
+            />
 
-            <Route path="/login" element={<Login />} />
-            <Route path="/verificar-codigo" element={<VerifyCode />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/login"
+              element={
+                <PublicShell>
+                  <Login />
+                </PublicShell>
+              }
+            />
+            <Route
+              path="/verificar-codigo"
+              element={
+                <PublicShell>
+                  <VerifyCode />
+                </PublicShell>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <PublicShell>
+                  <ResetPassword />
+                </PublicShell>
+              }
+            />
+
             <Route
               path="/viagens"
               element={
