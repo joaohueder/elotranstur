@@ -204,6 +204,93 @@ export default function Leads() {
         )}
       </div>
 
+      {/* Mini dashboard */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <div className="rounded-sm border border-border bg-background p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Total de leads
+            <HelpTip texto="Quantidade total de leads já cadastrados no sistema." />
+          </p>
+          <p className="mt-3 font-serif text-4xl text-foreground">{leads.length}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {evolucao[evolucao.length - 1]?.total ?? 0} novo(s) neste mês
+          </p>
+        </div>
+
+        <div className="rounded-sm border border-border bg-background p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Últimos 6 meses
+            <HelpTip texto="Mostra quantos leads entraram em cada um dos últimos 6 meses." />
+          </p>
+          <div className="mt-3 h-[120px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={evolucao} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                <XAxis
+                  dataKey="mes"
+                  tickLine={false}
+                  axisLine={false}
+                  fontSize={11}
+                  stroke="hsl(var(--muted-foreground))"
+                />
+                <Tooltip
+                  cursor={{ fill: "hsl(var(--muted))" }}
+                  contentStyle={{
+                    fontSize: 12,
+                    borderRadius: 2,
+                    border: "1px solid hsl(var(--border))",
+                    background: "hsl(var(--background))",
+                  }}
+                  formatter={(v: number) => [`${v} lead(s)`, "Total"]}
+                />
+                <Bar dataKey="total" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-border bg-background p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Origens
+            <HelpTip texto="De quais canais os leads chegaram até você." />
+          </p>
+          <div className="mt-3 h-[120px]">
+            {porOrigem.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                Sem dados
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={porOrigem}
+                    dataKey="total"
+                    nameKey="nome"
+                    innerRadius={28}
+                    outerRadius={52}
+                    paddingAngle={2}
+                  >
+                    {porOrigem.map((o, i) => (
+                      <Cell key={o.nome} fill={CORES_PIZZA[i % CORES_PIZZA.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: 12,
+                      borderRadius: 2,
+                      border: "1px solid hsl(var(--border))",
+                      background: "hsl(var(--background))",
+                    }}
+                    formatter={(v: number, n: string) => [`${v} lead(s)`, n]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+
+
       {/* Filtros */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-1.5 sm:max-w-sm sm:flex-1">
