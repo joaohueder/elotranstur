@@ -225,9 +225,9 @@ export default function UsuariosPage() {
 
 
   useEffect(() => {
-    if (authz.loading || !authz.isAdmin) return;
+    if (authz.loading || !authz.can("usuarios", "view")) return;
     void load();
-  }, [authz.loading, authz.isAdmin, load]);
+  }, [authz, load]);
 
   const selected = useMemo(
     () => users.find((u) => u.id === selectedId) ?? null,
@@ -528,7 +528,7 @@ export default function UsuariosPage() {
     );
   }
 
-  if (!authz.isAdmin) {
+  if (!authz.can("usuarios", "view")) {
     return (
       <AppShell>
         <Card className="rounded-none border-border">
@@ -537,7 +537,8 @@ export default function UsuariosPage() {
               Acesso restrito
             </CardTitle>
             <CardDescription>
-              Apenas administradores podem gerenciar usuários e permissões.
+              Você não tem permissão para visualizar o módulo de usuários.
+              Procure o administrador do sistema.
             </CardDescription>
           </CardHeader>
         </Card>
