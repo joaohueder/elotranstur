@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { supabase } from "@/lib/supabase";
-import { setSeo } from "@/lib/seo";
+import { useSeo } from "@/lib/seo";
 
 /** Landing page pública de uma viagem (/v/:slug). */
 export default function LandingViagem() {
@@ -21,20 +21,22 @@ export default function LandingViagem() {
       const v = (data ?? null) as LandingViagem | null;
       setViagem(v);
       setLoading(false);
-      if (v) {
-        setSeo({
-          title: `${v.titulo || v.destino} · ELO Transporte e Turismo`,
-          description:
-            v.subtitulo ||
-            (v.descricao ?? "").slice(0, 155) ||
-            `Viagem para ${v.destino}. Garanta sua vaga com a ELO Transporte e Turismo.`,
-        });
-      }
     })();
     return () => {
       ativo = false;
     };
   }, [slug]);
+
+  useSeo({
+    title: viagem
+      ? `${viagem.titulo || viagem.destino} · ELO Transporte e Turismo`
+      : "Viagem · ELO Transporte e Turismo",
+    description: viagem
+      ? viagem.subtitulo ||
+        (viagem.descricao ?? "").slice(0, 155) ||
+        `Viagem para ${viagem.destino}. Garanta sua vaga com a ELO Transporte e Turismo.`
+      : "Conheça as viagens da ELO Transporte e Turismo.",
+  });
 
   async function enviarLead(dados: {
     nome: string;
