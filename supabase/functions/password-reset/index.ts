@@ -122,13 +122,11 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
     throw new Error("O envio de e-mails está desativado em Configurações > E-mail.");
   }
 
-
-  await client.send({
-    from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
-    to: para,
-    replyTo: cfg.reply_to || undefined,
-    subject: `${codigo} é o seu código de recuperação · ELO`,
-    html: `
+  await enviarSmtp(
+    cfg,
+    para,
+    `${codigo} é o seu código de recuperação · ELO`,
+    `
       <div style="font-family:Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#111827">
         <p style="letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 8px">
           ELO Transporte e Turismo
@@ -146,9 +144,7 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
         </p>
       </div>
     `,
-  });
-
-  await client.close();
+  );
 }
 
 Deno.serve(async (req) => {
@@ -161,11 +157,69 @@ Deno.serve(async (req) => {
       code?: string;
       token?: string;
       password?: string;
+      destinatario?: string;
+      smtp?: Record<string, unknown>;
     };
 
     const db = admin();
     const email = (body.email ?? "").trim().toLowerCase();
     const acao = body.action;
+
+    // Teste de envio a partir de Configurações > E-mail (somente admin).
+    if (acao === "test") {
+      const asUser = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        {
+          global: {
+            headers: { Authorization: req.headers.get("Authorization") ?? "" },
+          },
+        },
+      );
+
+      const { data: userData } = await asUser.auth.getUser();
+      if (!userData?.user) return json({ error: "Não autenticado" }, 401);
+
+      const { data: papel } = await asUser
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!papel) {
+        return json({ error: "Acesso negado: somente administradores" }, 403);
+      }
+
+      const destinatario = (body.destinatario ?? "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(destinatario)) {
+        return json({ error: "Informe um destinatário válido." }, 400);
+      }
+
+      const cfg = await carregarSmtp(db, body.smtp as Partial<SmtpCfg>);
+      await enviarSmtp(
+        cfg,
+        destinatario,
+        "Teste de envio · ELO Transporte e Turismo",
+        `
+          <div style="font-family:Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#111827">
+            <p style="letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 8px">
+              ELO Transporte e Turismo
+            </p>
+            <h1 style="font-size:22px;margin:0 0 16px">Teste de envio bem-sucedido</h1>
+            <p style="font-size:14px;line-height:1.6;color:#374151;margin:0 0 12px">
+              Esta mensagem foi enviada usando o SMTP configurado no sistema
+              (${cfg.smtp_host}:${cfg.smtp_port}).
+            </p>
+            <p style="font-size:12px;color:#9ca3af;margin-top:24px">
+              Enviado em ${new Date().toLocaleString("pt-BR")}
+            </p>
+          </div>
+        `,
+      );
+
+      return json({ ok: true });
+    }
+
 
     if (acao === "request") {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
