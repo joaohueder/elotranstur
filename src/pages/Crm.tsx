@@ -52,7 +52,7 @@ function LeadViagens({
 }) {
   if (!viagens.length) return null;
 
-  const visiveis = compacto ? viagens.slice(0, 2) : viagens;
+  const visiveis = compacto ? viagens.slice(0, 3) : viagens;
   const restantes = compacto ? viagens.length - visiveis.length : 0;
 
   return (
@@ -62,66 +62,35 @@ function LeadViagens({
         Viagens de interesse
         <HelpTip texto="Viagens que o lead demonstrou interesse. Clique no lead para gerenciar." />
       </p>
-      <div className={cn("grid gap-2", compacto ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2")}>
+      <div className="flex flex-wrap gap-1.5">
         {visiveis.map((v) => {
-          const capa = capaDa(v.imagens);
+          const nome = v.titulo?.trim() || v.destino;
+          const detalhes = `${v.destino} · ${formatarData(v.data_partida)}${
+            v.hora_partida ? ` · ${formatarHora(v.hora_partida)}` : ""
+          } · ${formatarValor(v.valor ?? 0)} por pessoa · ${v.vagas ?? 0} vagas`;
           return (
-            <div
+            <span
               key={v.id}
-              className="flex gap-2 rounded-sm border border-border bg-muted/20 p-2"
+              title={detalhes}
+              className={cn(
+                "inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-brand-accent/30 bg-brand-accent/10 px-2.5 py-1 text-xs font-medium text-brand-accent",
+                !compacto && "px-3 py-1.5",
+              )}
             >
-              <div className="hidden h-14 w-14 shrink-0 overflow-hidden rounded-sm border border-border bg-muted sm:block">
-                {capa ? (
-                  <img
-                    src={capa}
-                    alt={`Foto de capa da viagem para ${v.destino}`}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-foreground">
-                  {v.titulo?.trim() || v.destino}
-                </p>
-                <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted-foreground">
-                  <CalendarDays className="h-3 w-3 shrink-0" />
-                  {formatarData(v.data_partida)}
-                  {v.hora_partida ? ` · ${formatarHora(v.hora_partida)}` : ""}
-                </p>
-                {!compacto && (
-                  <>
-                    <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted-foreground">
-                      <Wallet className="h-3 w-3 shrink-0" />
-                      {formatarValor(v.valor ?? 0)} por pessoa
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted-foreground">
-                      <Users className="h-3 w-3 shrink-0" />
-                      {v.vagas ?? 0} vagas
-                    </p>
-                  </>
-                )}
-                <div className="mt-1.5">
-                  <ViagemCountdown
-                    data={v.data_partida}
-                    hora={v.hora_partida}
-                    className="px-2 py-1 text-[10px]"
-                  />
-                </div>
-              </div>
-            </div>
+              <CalendarDays className="h-3 w-3 shrink-0" />
+              <span className="truncate">{nome}</span>
+            </span>
           );
         })}
+        {restantes > 0 && (
+          <span
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+            title={`+${restantes} viagem${restantes === 1 ? "" : "ens"} de interesse`}
+          >
+            +{restantes}
+          </span>
+        )}
       </div>
-      {restantes > 0 && (
-        <p className="text-[10px] text-muted-foreground">
-          +{restantes} viagem{restantes === 1 ? "" : "ens"} de interesse
-        </p>
-      )}
     </div>
   );
 }
