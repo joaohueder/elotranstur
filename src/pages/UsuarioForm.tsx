@@ -24,6 +24,7 @@ type FormState = {
   nome: string;
   email: string;
   senha: string;
+  confirmarSenha: string;
   isAdmin: boolean;
   ativo: boolean;
   permissoes: PermissionMap;
@@ -33,6 +34,7 @@ const EMPTY_FORM: FormState = {
   nome: "",
   email: "",
   senha: "",
+  confirmarSenha: "",
   isAdmin: false,
   ativo: true,
   permissoes: {},
@@ -74,6 +76,7 @@ export default function UsuarioForm() {
       nome: (u.nome as string) ?? "",
       email: String(u.email ?? ""),
       senha: "",
+      confirmarSenha: "",
       isAdmin: Boolean(u.is_admin),
       ativo: Boolean(u.ativo),
       permissoes: normalizePermissions(u.permissoes),
@@ -124,6 +127,12 @@ export default function UsuarioForm() {
       }
     } else if (form.senha && form.senha.length < 8) {
       showNegative("Senha inválida", "A nova senha deve ter no mínimo 8 caracteres.");
+      setAba("dados");
+      return;
+    }
+
+    if (form.senha && form.senha !== form.confirmarSenha) {
+      showNegative("Senhas diferentes", "A confirmação de senha não confere com a senha informada.");
       setAba("dados");
       return;
     }
@@ -231,7 +240,7 @@ export default function UsuarioForm() {
                     />
                   </div>
 
-                  <div className="space-y-2 lg:col-span-2">
+                  <div className="space-y-2">
                     <Label className="text-[10px] uppercase tracking-widest">
                       {editando ? "Nova senha (opcional)" : "Senha"}
                     </Label>
@@ -243,6 +252,25 @@ export default function UsuarioForm() {
                       className="rounded-sm"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest">
+                      Confirmar senha
+                    </Label>
+                    <Input
+                      type="password"
+                      value={form.confirmarSenha}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, confirmarSenha: e.target.value }))
+                      }
+                      placeholder="Repita a senha"
+                      className="rounded-sm"
+                    />
+                    {form.confirmarSenha && form.senha !== form.confirmarSenha && (
+                      <p className="text-xs text-destructive">As senhas não conferem.</p>
+                    )}
+                  </div>
+
 
                   <div className="flex items-center justify-between border border-border p-4">
                     <div>
