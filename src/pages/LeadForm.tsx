@@ -107,6 +107,13 @@ export default function LeadForm() {
   const [salvandoNota, setSalvandoNota] = useState(false);
 
   useEffect(() => {
+    if (abaAtiva === "notas" && !novaNotaDataHora) {
+      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abaAtiva]);
+
+  useEffect(() => {
     let ativo = true;
     (async () => {
       setLoading(true);
