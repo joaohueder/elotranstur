@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useFeedback } from "@/lib/feedback";
 import { comprimirImagem } from "@/lib/image-compress";
+import { useImageCropper } from "@/components/image-crop-modal";
 import { supabase } from "@/lib/supabase";
 import {
   VIAGEM_SITUACOES,
@@ -41,6 +42,7 @@ export default function ViagemForm() {
   const editando = Boolean(id);
   const navigate = useNavigate();
   const feedback = useFeedback();
+  const { cropperUi, ajustarCorte } = useImageCropper();
 
   const [loading, setLoading] = useState(Boolean(id));
   const [salvando, setSalvando] = useState(false);
@@ -150,8 +152,11 @@ export default function ViagemForm() {
           );
           continue;
         }
+        // Abre o modal de corte antes do envio.
+        const recortado = await ajustarCorte(arquivo);
+        if (!recortado) continue;
         // Comprime antes de enviar: menor arquivo possível mantendo a qualidade.
-        const otimizado = await comprimirImagem(arquivo);
+        const otimizado = await comprimirImagem(recortado);
         const extensao = otimizado.name.split(".").pop() ?? "jpg";
         const caminho = `${id ?? "novas"}/${crypto.randomUUID()}.${extensao}`;
         const { error } = await supabase.storage
@@ -634,6 +639,7 @@ export default function ViagemForm() {
           </div>
         </div>
       )}
+      {cropperUi}
     </AppShell>
   );
 }
