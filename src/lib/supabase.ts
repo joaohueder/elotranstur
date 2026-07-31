@@ -162,6 +162,13 @@ let _client: SupabaseClient | undefined;
 
 /** URL pública da instância Supabase auto-hospedada (usada em Edge Functions). */
 export const SUPABASE_BASE_URL = SUPABASE_URL;
+/** Anon key pública da instância auto-hospedada. */
+export const SUPABASE_ANON_PUBLIC_KEY = SUPABASE_ANON_KEY;
+
+/** Indica se a sessão atual foi criada com "Ficar conectado por 30 dias". */
+export function isRememberMeEnabled(): boolean {
+  return rememberEnabled();
+}
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
