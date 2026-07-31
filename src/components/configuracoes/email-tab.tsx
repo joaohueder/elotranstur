@@ -171,10 +171,11 @@ export function EmailTab() {
         "send-test-email",
         { body: { destinatario: alvo } },
       );
-      if (error) throw error;
+      if (error) throw await detalharErroFuncao(error);
       if (data && typeof data === "object" && (data as { error?: string }).error) {
         throw new Error((data as { error: string }).error);
       }
+
 
       setTesteAberto(false);
       feedback.showSuccess(
