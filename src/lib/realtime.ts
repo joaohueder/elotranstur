@@ -29,12 +29,9 @@ export function useRealtime(
 
     const channel = supabase.channel(`rt:${key}:${Math.random().toString(36).slice(2)}`);
     for (const table of lista) {
-      channel.on(
-        // @ts-expect-error assinatura genérica do supabase-js
-        "postgres_changes",
-        { event: "*", schema: "public", table },
-        disparar,
-      );
+      (channel as unknown as {
+        on: (t: string, f: Record<string, string>, cb: () => void) => void;
+      }).on("postgres_changes", { event: "*", schema: "public", table }, disparar);
     }
     channel.subscribe();
 
