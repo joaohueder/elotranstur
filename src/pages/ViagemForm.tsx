@@ -750,12 +750,49 @@ export default function ViagemForm() {
 
             <div className="mt-8">
               <SectionTitle
+                titulo="Paleta de cores"
+                help="Escolha as cores da página. A paleta pode ser combinada com qualquer modelo."
+              />
+              <div className="mt-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                {LANDING_PALETTES.map((pal) => {
+                  const ativo = landingPaleta === pal.key;
+                  return (
+                    <button
+                      key={pal.key}
+                      type="button"
+                      title={pal.descricao}
+                      onClick={() => setLandingPaleta(pal.key)}
+                      className={`rounded-sm border p-2 text-left transition-colors ${
+                        ativo
+                          ? "border-brand-accent ring-1 ring-brand-accent"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      <span className="flex h-8 w-full overflow-hidden rounded-sm">
+                        <span className="flex-1" style={{ background: pal.bg }} />
+                        <span className="flex-1" style={{ background: pal.surface }} />
+                        <span className="flex-1" style={{ background: pal.accent }} />
+                        <span className="flex-1" style={{ background: pal.accent2 }} />
+                        <span className="flex-1" style={{ background: pal.fg }} />
+                      </span>
+                      <span className="mt-2 block text-xs font-medium text-foreground">
+                        {pal.nome}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <SectionTitle
                 titulo="Modelo visual"
-                help="Escolha o estilo da página. Todos mostram os mesmos dados da viagem."
+                help="Escolha a estrutura da página: cada modelo tem layout, fonte e ícones próprios."
               />
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {LANDING_MODELS.map((m) => {
                   const ativo = landingModelo === m.key;
+                  const pal = getLandingPalette(landingPaleta);
                   return (
                     <div
                       key={m.key}
@@ -769,24 +806,24 @@ export default function ViagemForm() {
                     >
                       <span
                         className="mb-3 flex h-16 w-full items-end gap-1 overflow-hidden rounded-sm p-2"
-                        style={{ background: m.theme.bg }}
+                        style={{ background: pal.bg }}
                       >
                         <span
                           className="h-full w-1/3 rounded-sm"
-                          style={{ background: m.theme.accent }}
+                          style={{ background: pal.accent }}
                         />
                         <span className="flex-1 space-y-1">
                           <span
                             className="block h-2 w-full rounded-sm"
-                            style={{ background: m.theme.fg, opacity: 0.85 }}
+                            style={{ background: pal.fg, opacity: 0.85 }}
                           />
                           <span
                             className="block h-2 w-2/3 rounded-sm"
-                            style={{ background: m.theme.muted, opacity: 0.6 }}
+                            style={{ background: pal.muted, opacity: 0.6 }}
                           />
                           <span
                             className="block h-6 w-full rounded-sm"
-                            style={{ background: m.theme.surface }}
+                            style={{ background: pal.surface }}
                           />
                         </span>
                       </span>
@@ -815,6 +852,7 @@ export default function ViagemForm() {
                 })}
               </div>
             </div>
+
 
             <Dialog
               open={!!previewModelo}
