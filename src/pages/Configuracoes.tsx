@@ -1,14 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  Image as ImageIcon,
-  Loader2,
-  Monitor,
-  Save,
-  Search,
-  Trash2,
-  Upload,
-} from "lucide-react";
-
+import { useEffect, useState } from "react";
+import { Loader2, Monitor, Save, Search } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { CrmTab } from "@/components/configuracoes/crm-tab";
@@ -16,7 +7,6 @@ import { DestinosTab } from "@/components/configuracoes/destinos-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 import { EmpresaTab } from "@/components/configuracoes/empresa-tab";
 
-import { Button } from "@/components/ui/button";
 import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,11 +22,6 @@ import {
   useLayoutSettings,
 } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
-import { useImageCropper } from "@/components/image-crop-modal";
-import { comprimirImagem } from "@/lib/image-compress";
-import { supabase } from "@/lib/supabase";
-
-const BUCKET_SEO = "viagens";
 
 export default function Configuracoes() {
   const { maxWidth, seo, loading, save } = useLayoutSettings();
