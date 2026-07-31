@@ -129,6 +129,10 @@ export default function Usuarios() {
         sessao_iniciada_em: (u.sessao_iniciada_em as string) ?? null,
         sessao_atualizada_em: (u.sessao_atualizada_em as string) ?? null,
         sessao_expira_em: (u.sessao_expira_em as string) ?? null,
+        sessao_remember:
+          u.sessao_remember === null || u.sessao_remember === undefined
+            ? null
+            : Boolean(u.sessao_remember),
         sessao_ip: (u.sessao_ip as string) ?? null,
       })),
     );
