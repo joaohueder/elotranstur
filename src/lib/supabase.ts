@@ -38,20 +38,33 @@ const SUPABASE_ANON_KEY = readEnv("VITE_SELFHOSTED_SUPABASE_ANON_KEY") ?? DEFAUL
  */
 export const REMEMBER_ME_KEY = "elo.auth.remember";
 const REMEMBER_EXPIRES_KEY = "elo.auth.remember_expires_at";
+const SHORT_EXPIRES_KEY = "elo.auth.session_expires_at";
 export const REMEMBER_ME_DAYS = 30;
 const REMEMBER_ME_MS = REMEMBER_ME_DAYS * 24 * 60 * 60 * 1000;
+/** Sem "manter conectado": a sessão vale 6 horas (ou até o logout). */
+export const SHORT_SESSION_HOURS = 6;
+const SHORT_SESSION_MS = SHORT_SESSION_HOURS * 60 * 60 * 1000;
 
 function rememberEnabled(): boolean {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem(REMEMBER_ME_KEY) === "true";
 }
 
-function rememberExpired(): boolean {
-  if (typeof window === "undefined") return false;
-  const raw = window.localStorage.getItem(REMEMBER_EXPIRES_KEY);
+function isExpired(storage: Storage, key: string): boolean {
+  const raw = storage.getItem(key);
   if (!raw) return false;
   const expiresAt = Number(raw);
   return Number.isFinite(expiresAt) && Date.now() > expiresAt;
+}
+
+function rememberExpired(): boolean {
+  if (typeof window === "undefined") return false;
+  return isExpired(window.localStorage, REMEMBER_EXPIRES_KEY);
+}
+
+function shortSessionExpired(): boolean {
+  if (typeof window === "undefined") return false;
+  return isExpired(window.sessionStorage, SHORT_EXPIRES_KEY);
 }
 
 /** Define se a sessão atual deve durar 30 dias (checkbox "Manter conectado"). */
@@ -63,15 +76,24 @@ export function setRememberMe(remember: boolean) {
       REMEMBER_EXPIRES_KEY,
       String(Date.now() + REMEMBER_ME_MS),
     );
+    window.sessionStorage.removeItem(SHORT_EXPIRES_KEY);
   } else {
     window.localStorage.removeItem(REMEMBER_ME_KEY);
     window.localStorage.removeItem(REMEMBER_EXPIRES_KEY);
+    // Sessão curta: expira em 6 horas ou ao sair.
+    window.sessionStorage.setItem(
+      SHORT_EXPIRES_KEY,
+      String(Date.now() + SHORT_SESSION_MS),
+    );
   }
 }
 
 /** Limpa os marcadores de persistência (usar no logout). */
 export function clearRememberMe() {
-  setRememberMe(false);
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(REMEMBER_ME_KEY);
+  window.localStorage.removeItem(REMEMBER_EXPIRES_KEY);
+  window.sessionStorage.removeItem(SHORT_EXPIRES_KEY);
 }
 
 const persistentAuthStorage = {
@@ -85,6 +107,13 @@ const persistentAuthStorage = {
         return null;
       }
       return window.localStorage.getItem(key);
+    }
+    if (shortSessionExpired()) {
+      // Passou das 6 horas: exige novo login.
+      window.sessionStorage.removeItem(key);
+      window.localStorage.removeItem(key);
+      clearRememberMe();
+      return null;
     }
     return (
       window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key)
@@ -106,6 +135,7 @@ const persistentAuthStorage = {
     window.sessionStorage.removeItem(key);
   },
 };
+
 
 function createSelfHostedClient(): SupabaseClient {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
