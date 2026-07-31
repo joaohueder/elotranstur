@@ -697,10 +697,22 @@ export function LandingView({
     new Set([capa, ...imagens.map((i) => i.url)].filter((u): u is string => !!u)),
   );
   const [fotoAberta, setFotoAberta] = useState<number | null>(null);
+  const [formularioVisivel, setFormularioVisivel] = useState(false);
   const itens = viagem.itens_inclusos ?? [];
   const titulo = viagem.titulo?.trim() || viagem.destino;
   const Ico = ICONES[m.icones];
   const raiz = useRevealOnScroll([m.key, p.key, viagem.id]);
+
+  useEffect(() => {
+    const el = document.getElementById("reservar");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setFormularioVisivel(entry.isIntersecting),
+      { rootMargin: "0px 0px -80px 0px", threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const tituloStyle: CSSProperties = {
     fontFamily: "var(--lp-title)",
@@ -961,7 +973,9 @@ export function LandingView({
   /** Barra fixa de ação no celular. */
   const barraMobile = (
     <div
-      className="lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 lg:hidden"
+      className={`lp-barra fixed inset-x-0 bottom-0 z-[90] flex items-center gap-3 border-t px-4 py-3 transition-transform duration-300 ease-out will-change-transform lg:hidden ${
+        formularioVisivel ? "translate-y-full opacity-0" : "translate-y-0 opacity-100"
+      }`}
       style={{
         background: "var(--lp-surface)",
         borderColor: "var(--lp-border)",
