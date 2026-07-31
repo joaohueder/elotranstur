@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KeyRound } from "lucide-react";
 
+import { HelpTip, HintButton } from "@/components/help";
 import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
