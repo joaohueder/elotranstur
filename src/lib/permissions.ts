@@ -2,6 +2,7 @@
 export const MODULES = [
   { key: "viagens", label: "Viagens" },
   { key: "crm", label: "CRM" },
+  { key: "leads", label: "Leads" },
   { key: "usuarios", label: "Usuários" },
   { key: "configuracoes", label: "Configurações" },
 ] as const;

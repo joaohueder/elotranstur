@@ -10,6 +10,7 @@ import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
 import LeadForm from "@/pages/LeadForm";
+import Leads from "@/pages/Leads";
 import Configuracoes from "@/pages/Configuracoes";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
@@ -98,6 +99,30 @@ export default function App() {
               path="/crm/leads/:id"
               element={
                 <RequireModule modulo="crm">
+                  <LeadForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/leads"
+              element={
+                <RequireModule modulo="leads">
+                  <Leads />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/leads/novo"
+              element={
+                <RequireModule modulo="leads">
+                  <LeadForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/leads/:id"
+              element={
+                <RequireModule modulo="leads">
                   <LeadForm />
                 </RequireModule>
               }
