@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Loader2, MapPin, Plus, Save, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronUp, Loader2, Lock, MapPin, Plus, Save, Trash2 } from "lucide-react";
 
 import { HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useDestinos, type Destino } from "@/lib/destinos";
 import { useConfirm } from "@/lib/confirm";
 import { useFeedback } from "@/lib/feedback";
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 
@@ -23,8 +24,29 @@ export function DestinosTab() {
 
   const [drafts, setDrafts] = useState<DestinoDraft[] | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [emUso, setEmUso] = useState<Record<string, number>>({});
+
+  const carregarUso = useCallback(async () => {
+    const { data } = await supabase.from("viagens").select("destino");
+    const mapa: Record<string, number> = {};
+    for (const linha of data ?? []) {
+      const chave = (linha.destino ?? "").trim().toLowerCase();
+      if (!chave) continue;
+      mapa[chave] = (mapa[chave] ?? 0) + 1;
+    }
+    setEmUso(mapa);
+  }, []);
+
+  useEffect(() => {
+    void carregarUso();
+  }, [carregarUso]);
+
+  useRealtime(["viagens"], () => void carregarUso());
+
+  const usos = (nome: string) => emUso[(nome ?? "").trim().toLowerCase()] ?? 0;
 
   const lista: DestinoDraft[] = drafts ?? destinos.map((d) => ({ ...d }));
+
 
   function update(index: number, patch: Partial<DestinoDraft>) {
     setDrafts(lista.map((d, i) => (i === index ? { ...d, ...patch } : { ...d })));
@@ -60,6 +82,15 @@ export function DestinosTab() {
       return;
     }
     if (!podeExcluir) return;
+    const quantidade = usos(item.nome);
+    if (quantidade > 0) {
+      feedback.showNegative(
+        "Destino em uso",
+        `O destino "${item.nome}" está sendo usado em ${quantidade} viagem(ns) e por isso não pode ser excluído. Altere ou exclua essas viagens antes.`,
+      );
+      return;
+    }
+
     const ok = await confirm({
       title: "Excluir destino",
       message: `Tem certeza que deseja excluir o destino "${item.nome}"? Esta ação não poderá ser desfeita.`,
@@ -214,6 +245,12 @@ export function DestinosTab() {
               />
 
               <div className="flex items-center justify-between gap-3 sm:justify-end">
+                {!d.novo && usos(d.nome) > 0 && (
+                  <span className="flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    <Lock className="h-3 w-3" />
+                    Em uso ({usos(d.nome)})
+                  </span>
+                )}
                 <label className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Switch
                     checked={d.ativo}
@@ -225,16 +262,22 @@ export function DestinosTab() {
                 </label>
                 {(podeExcluir || d.novo) && (
                   <HintButton
-                    hint="Remove este destino da lista."
+                    hint={
+                      !d.novo && usos(d.nome) > 0
+                        ? "Este destino está sendo usado em viagens e não pode ser excluído."
+                        : "Remove este destino da lista."
+                    }
                     variant="outline"
                     size="icon"
                     className="rounded-sm text-destructive"
+                    disabled={!d.novo && usos(d.nome) > 0}
                     onClick={() => void remover(index)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </HintButton>
                 )}
               </div>
+
             </li>
           ))}
           {lista.length === 0 && (
