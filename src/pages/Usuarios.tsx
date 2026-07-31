@@ -10,6 +10,9 @@ import {
   UserCheck,
   UserX,
   Users as UsersIcon,
+  LogOut,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -24,6 +27,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { HelpTip, HintButton } from "@/components/help";
+import { useConfirm } from "@/lib/confirm";
+import { tempoDeVida } from "@/lib/crm";
 import { useFeedback } from "@/lib/feedback";
 import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permissions";
 import { useRealtime } from "@/lib/realtime";
@@ -41,6 +46,9 @@ type UsuarioRow = {
   last_sign_in_at: string | null;
   is_admin: boolean;
   permissoes: PermissionMap;
+  online: boolean;
+  sessao_iniciada_em: string | null;
+  sessao_ip: string | null;
 };
 
 
@@ -70,6 +78,8 @@ export default function Usuarios() {
   const navigate = useNavigate();
   const { can, userId, isAdmin } = useAuthz();
   const { showSuccess, showNegative, showError } = useFeedback();
+  const { confirm } = useConfirm();
+  const [agora, setAgora] = useState(() => Date.now());
 
   const [rows, setRows] = useState<UsuarioRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,12 +122,27 @@ export default function Usuarios() {
         last_sign_in_at: (u.last_sign_in_at as string) ?? null,
         is_admin: Boolean(u.is_admin),
         permissoes: normalizePermissions(u.permissoes),
+        online: Boolean(u.online),
+        sessao_iniciada_em: (u.sessao_iniciada_em as string) ?? null,
+        sessao_ip: (u.sessao_ip as string) ?? null,
       })),
     );
   }, [showError]);
 
   useEffect(() => {
     void carregar();
+  }, [carregar]);
+
+  // Atualiza o marcador de "logado há" a cada segundo.
+  useEffect(() => {
+    const id = window.setInterval(() => setAgora(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Mantém as informações de sessão (online / IP) atualizadas.
+  useEffect(() => {
+    const id = window.setInterval(() => void carregar(true), 30_000);
+    return () => window.clearInterval(id);
   }, [carregar]);
 
   useRealtime(["profiles", "user_roles", "user_permissions"], () =>
@@ -180,6 +205,42 @@ export default function Usuarios() {
       u.ativo
         ? `${u.nome ?? u.email} não poderá mais acessar o sistema.`
         : `${u.nome ?? u.email} voltou a ter acesso ao sistema.`,
+    );
+  }
+
+  async function forcarLogoff(u: UsuarioRow) {
+    if (!podeEditar) return;
+    const ok = await confirm({
+      title: "Forçar logoff",
+      message: `Tem certeza que deseja encerrar a sessão de ${u.nome ?? u.email}? A pessoa precisará fazer login novamente.`,
+      confirmText: "Sim, encerrar sessão",
+      variant: "destructive",
+    });
+    if (!ok) return;
+    const { error } = await supabase.rpc("admin_force_logout", { _user_id: u.id });
+    if (error) {
+      showError(
+        "Falha ao encerrar sessão",
+        error.message ?? "Não foi possível encerrar a sessão deste usuário.",
+        error,
+      );
+      return;
+    }
+    if (u.id === userId) {
+      await supabase.auth.signOut();
+      navigate("/login", { replace: true });
+      return;
+    }
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === u.id
+          ? { ...r, online: false, sessao_iniciada_em: null, sessao_ip: null }
+          : r,
+      ),
+    );
+    showSuccess(
+      "Sessão encerrada",
+      `${u.nome ?? u.email} foi desconectado do sistema.`,
     );
   }
 
@@ -347,6 +408,39 @@ export default function Usuarios() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3 border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
+                      Sessão
+                      <HelpTip texto="Mostra há quanto tempo a pessoa está logada. Se estiver fora do sistema, aparece 'Não logado'." />
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-foreground">
+                      {u.online ? (
+                        <>
+                          <Wifi className="h-3.5 w-3.5 text-emerald-600" />
+                          <span key={agora}>
+                            {u.sessao_iniciada_em
+                              ? `Logado há ${tempoDeVida(u.sessao_iniciada_em)}`
+                              : "Logado"}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
+                          Não logado
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
+                      IP
+                      <HelpTip texto="Endereço de internet (IP) usado no acesso atual." />
+                    </p>
+                    <p className="mt-0.5 text-foreground">{u.sessao_ip ?? "—"}</p>
+                  </div>
+                </div>
+
                 <div className="border-t border-border px-6 py-4">
                   <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                     Permissões
@@ -409,6 +503,17 @@ export default function Usuarios() {
                         Ativar
                       </>
                     )}
+                  </HintButton>
+                  <HintButton
+                    hint="Encerra a sessão ativa deste usuário, obrigando-o a fazer login novamente."
+                    variant="outline"
+                    size="sm"
+                    className="rounded-sm"
+                    disabled={!podeEditar || !u.online}
+                    onClick={() => void forcarLogoff(u)}
+                  >
+                    <LogOut className="mr-2 h-3.5 w-3.5" />
+                    Logoff
                   </HintButton>
                   <HintButton
                     hint="Remove definitivamente este usuário do sistema."
