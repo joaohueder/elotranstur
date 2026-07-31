@@ -54,10 +54,15 @@ export default function UsuarioForm() {
 
   const carregar = useCallback(async () => {
     if (!id) return;
+    const { data: sessao } = await supabase.auth.getSession();
+    if (!sessao.session) return;
+
     setLoading(true);
     const { data, error } = await supabase.rpc("admin_list_users");
     setLoading(false);
     if (error) {
+      const { data: aindaLogado } = await supabase.auth.getSession();
+      if (!aindaLogado.session) return;
       showError(
         "Falha ao carregar usuário",
         "Não foi possível obter os dados do usuário.",
