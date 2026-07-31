@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { HelpTip, HintButton } from "@/components/help";
 import { useFeedback } from "@/lib/feedback";
 import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permissions";
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
@@ -81,8 +82,8 @@ export default function Usuarios() {
   const podeEditar = can("usuarios", "edit");
   const podeExcluir = can("usuarios", "delete");
 
-  const carregar = useCallback(async () => {
-    setLoading(true);
+  const carregar = useCallback(async (silencioso = false) => {
+    if (!silencioso) setLoading(true);
     const { data, error } = await supabase.rpc("admin_list_users");
     setLoading(false);
     if (error) {
@@ -111,6 +112,10 @@ export default function Usuarios() {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  useRealtime(["profiles", "user_roles", "user_permissions"], () =>
+    void carregar(true),
+  );
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();

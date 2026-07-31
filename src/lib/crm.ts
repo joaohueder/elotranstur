@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import type { Viagem } from "@/lib/viagens";
 
@@ -77,8 +78,8 @@ export function useCrmData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silencioso = false) => {
+    if (!silencioso) setLoading(true);
     setError(null);
     try {
       const [s, l, v] = await Promise.all([
@@ -134,6 +135,10 @@ export function useCrmData() {
     void load();
   }, [load]);
 
+  useRealtime(["crm_stages", "crm_leads", "crm_lead_viagens", "viagens"], () =>
+    void load(true),
+  );
+
   return { stages, leads, loading, error, reload: load, setLeads };
 }
 
@@ -150,8 +155,8 @@ export function useCrmOrigens(somenteAtivas = false) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silencioso = false) => {
+    if (!silencioso) setLoading(true);
     setError(null);
     try {
       let query = supabase
@@ -172,6 +177,8 @@ export function useCrmOrigens(somenteAtivas = false) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useRealtime(["crm_origens"], () => void load(true));
 
   return { origens, loading, error, reload: load };
 }
