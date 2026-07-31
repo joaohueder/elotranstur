@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Eye, Loader2, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Eye, Loader2, MapPin, Timer } from "lucide-react";
 
 import { HelpTip, HintButton } from "@/components/help";
 import {
@@ -38,6 +38,24 @@ function utm(v: VisitaDetalhada) {
   return partes.length ? partes.join(" · ") : "—";
 }
 
+const JANELA_MS = 3 * 60 * 1000;
+
+/** Contador regressivo dos 3 minutos em que a visita conta como online. */
+function Expiracao({ visita, agora }: { visita: VisitaDetalhada; agora: number }) {
+  const base = new Date(visita.updated_at || visita.created_at).getTime();
+  const restante = base + JANELA_MS - agora;
+  if (!Number.isFinite(base) || restante <= 0) return null;
+  const total = Math.ceil(restante / 1000);
+  const mm = String(Math.floor(total / 60)).padStart(2, "0");
+  const ss = String(total % 60).padStart(2, "0");
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-600">
+      <Timer className="h-3 w-3" />
+      {mm}:{ss}
+    </span>
+  );
+}
+
 /** Linha rótulo/valor do modal de detalhes. */
 function Linha({ rotulo, valor }: { rotulo: string; valor?: unknown }) {
   const texto =
@@ -58,6 +76,12 @@ function Linha({ rotulo, valor }: { rotulo: string; valor?: unknown }) {
 export function UltimasVisitas() {
   const { visitas, loading } = useUltimasVisitas(10);
   const [detalhe, setDetalhe] = useState<VisitaDetalhada | null>(null);
+  const [agora, setAgora] = useState(() => Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
     <div className="rounded-sm border border-border bg-background">
@@ -87,6 +111,12 @@ export function UltimasVisitas() {
               <thead className="bg-muted/40 text-[10px] uppercase tracking-widest text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Data/hora</th>
+                  <th className="px-4 py-2 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Online
+                      <HelpTip texto="Tempo restante para esta visita deixar de ser contada como online (3 minutos sem atividade)." />
+                    </span>
+                  </th>
                   <th className="px-4 py-2 font-medium">Cidade</th>
                   <th className="px-4 py-2 font-medium">IP</th>
                   <th className="px-4 py-2 font-medium">Página</th>
@@ -100,6 +130,9 @@ export function UltimasVisitas() {
                 {visitas.map((v) => (
                   <tr key={v.id} className="border-t border-border/70">
                     <td className="whitespace-nowrap px-4 py-2">{quando(v.created_at)}</td>
+                    <td className="whitespace-nowrap px-4 py-2">
+                      <Expiracao visita={v} agora={agora} />
+                    </td>
                     <td className="px-4 py-2">{local(v)}</td>
                     <td className="px-4 py-2 font-mono">{v.ip || "—"}</td>
                     <td className="max-w-[14rem] truncate px-4 py-2">{v.path}</td>
@@ -139,8 +172,9 @@ export function UltimasVisitas() {
             {visitas.map((v) => (
               <div key={v.id} className="space-y-1.5 p-4 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-foreground">
+                  <span className="flex items-center gap-2 font-medium text-foreground">
                     {quando(v.created_at)}
+                    <Expiracao visita={v} agora={agora} />
                   </span>
                   {v.virou_lead && (
                     <span className="rounded-full bg-emerald-600/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
