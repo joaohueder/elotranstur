@@ -194,8 +194,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       {/* BARRA DE MENU FIXA */}
-      <nav className="fixed inset-x-0 top-16 z-30 h-12 border-b border-border bg-background/95 backdrop-blur">
-        <div className="app-container flex h-full items-center gap-1 px-6">
+      <nav className="fixed inset-x-0 top-14 z-30 h-12 border-b border-border bg-background/95 backdrop-blur sm:top-16">
+        <div className="app-container no-scrollbar flex h-full items-center gap-1 overflow-x-auto px-2 sm:px-6">
           {items.map((m) => {
             const Icon = ICONS[m.key] ?? Users;
             const path = PATHS[m.key] ?? `/${m.key}`;
@@ -206,15 +206,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     to={path}
                     className={cn(
-                      "flex h-full items-center gap-2 border-b-2 px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+                      "flex h-full shrink-0 items-center gap-2 border-b-2 px-3 text-[11px] font-semibold uppercase tracking-widest transition-colors sm:px-4",
                       active
                         ? "border-brand-accent text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground",
-                      m.key === "configuracoes" && "ml-auto",
+                      m.key === "configuracoes" && "sm:ml-auto",
                     )}
                   >
-                    <Icon className="h-3.5 w-3.5" />
-                    {m.label}
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden xs:inline">{m.label}</span>
+                    <span className="xs:hidden">{m.label}</span>
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[240px] text-xs">
@@ -228,9 +229,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
 
       {/* MAIN */}
-      <main className="app-container flex-1 px-6 pb-10 pt-[7.5rem]">
+      <main className="app-container w-full flex-1 px-3 pb-10 pt-[7rem] sm:px-6 sm:pt-[7.5rem]">
         {children}
       </main>
+
 
       {/* RODAPÉ */}
       <footer className="border-t border-border bg-background">
