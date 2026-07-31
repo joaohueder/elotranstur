@@ -103,11 +103,29 @@ export default function Viagens() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** Quantidade de leads vinculados a cada viagem (bloqueia exclusão). */
+  const [leadsPorViagem, setLeadsPorViagem] = useState<Record<string, number>>({});
+
+  const carregarLeads = useCallback(async () => {
+    const { data } = await supabase.from("crm_lead_viagens").select("viagem_id");
+    const mapa: Record<string, number> = {};
+    for (const linha of data ?? []) {
+      const id = (linha as { viagem_id: string }).viagem_id;
+      if (!id) continue;
+      mapa[id] = (mapa[id] ?? 0) + 1;
+    }
+    setLeadsPorViagem(mapa);
+  }, []);
+
+  const leadsDa = (v: Viagem) => leadsPorViagem[v.id] ?? 0;
+
   useEffect(() => {
     void carregar();
-  }, [carregar]);
+    void carregarLeads();
+  }, [carregar, carregarLeads]);
 
   useRealtime(["viagens"], () => void carregar(true));
+  useRealtime(["crm_lead_viagens"], () => void carregarLeads());
 
   const filtradas = useMemo(() => {
     const ordemSituacao: Record<string, number> = {
