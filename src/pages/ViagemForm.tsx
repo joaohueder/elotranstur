@@ -943,6 +943,7 @@ export default function ViagemForm() {
                       subtitulo: subtitulo || null,
                       descricao: descricao || null,
                       destino: destino || "Destino da viagem",
+                      uf: null,
                       data_partida: dataPartida || "2026-01-01",
                       hora_partida: horaPartida || null,
                       valor: parseValor(valor),

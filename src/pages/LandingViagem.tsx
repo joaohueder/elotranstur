@@ -49,15 +49,17 @@ export default function LandingViagem() {
     };
   }, []);
 
-  /** Monta o link do WhatsApp da empresa com o nome e o destino de interesse. */
+  /** Monta o link do WhatsApp da empresa com o nome e o destino/UF de interesse. */
   function montarWhatsapp(dados: { nome: string; whatsapp: string }): string | null {
     const digitos = (empresa?.whatsapp ?? "").replace(/\D/g, "");
     if (digitos.length < 10 || !viagem) return null;
     const numero = digitos.length <= 11 ? `55${digitos}` : digitos;
-    const destino = viagem.titulo || viagem.destino;
+    const local = [viagem.titulo || viagem.destino, viagem.uf]
+      .filter(Boolean)
+      .join(" / ");
     const texto =
-      `Olá! Meu nome é ${dados.nome} e tenho interesse em viajar para ${destino}.` +
-      `Gostaria de receber mais informações sobre  formas de pagamento e tudo o que está incluso no pacote. Pode me ajudar?`;
+      `Olá! Meu nome é ${dados.nome} e tenho interesse em viajar para ${local}.` +
+      `Gostaria de receber mais informações sobre formas de pagamento e tudo o que está incluso no pacote. Pode me ajudar?`;
     return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
   }
 
