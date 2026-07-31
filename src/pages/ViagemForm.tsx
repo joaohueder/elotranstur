@@ -29,6 +29,13 @@ import { comprimirImagem } from "@/lib/image-compress";
 import { useImageCropper } from "@/components/image-crop-modal";
 import { supabase } from "@/lib/supabase";
 import {
+  DEFAULT_LANDING_MODEL,
+  LANDING_MODELS,
+  slugify,
+} from "@/lib/landing-models";
+import { LandingView } from "@/components/landing/landing-view";
+import { Switch } from "@/components/ui/switch";
+import {
   VIAGEM_SITUACOES,
   maskValor,
   parseValor,
@@ -64,6 +71,9 @@ export default function ViagemForm() {
   const [imagens, setImagens] = useState<ViagemImagem[]>([]);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [arrastandoImg, setArrastandoImg] = useState<number | null>(null);
+  const [landingModelo, setLandingModelo] = useState<string>(DEFAULT_LANDING_MODEL);
+  const [landingSlug, setLandingSlug] = useState("");
+  const [landingAtiva, setLandingAtiva] = useState(true);
   const inputArquivo = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -75,7 +85,7 @@ export default function ViagemForm() {
         const { data, error } = await supabase
           .from("viagens")
           .select(
-            "titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao",
+            "titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, landing_modelo, landing_slug, landing_ativa",
           )
           .eq("id", id)
           .maybeSingle();
@@ -92,6 +102,9 @@ export default function ViagemForm() {
         setItens((data.itens_inclusos ?? []) as string[]);
         setImagens((data.imagens ?? []) as ViagemImagem[]);
         setSituacao((data.situacao ?? "rascunho") as ViagemSituacao);
+        setLandingModelo((data.landing_modelo as string) ?? DEFAULT_LANDING_MODEL);
+        setLandingSlug((data.landing_slug as string) ?? "");
+        setLandingAtiva(data.landing_ativa !== false);
       } catch (err) {
         feedback.showError(
           "Não foi possível carregar",
@@ -238,6 +251,12 @@ export default function ViagemForm() {
         itens_inclusos: itens,
         imagens,
         situacao,
+        landing_modelo: landingModelo,
+        landing_slug:
+          slugify(landingSlug || titulo || destino) ||
+          slugify(destino) ||
+          null,
+        landing_ativa: landingAtiva,
       };
       const { error } = editando
         ? await supabase.from("viagens").update(payload).eq("id", id!)
@@ -299,11 +318,16 @@ export default function ViagemForm() {
                 <TabsTrigger value="galeria" className="rounded-sm">
                   Galeria de fotos
                 </TabsTrigger>
+                <TabsTrigger value="landing" className="rounded-sm">
+                  Landing Page
+                </TabsTrigger>
               </TabsList>
               <HelpTip
                 className="ml-2"
                 texto={
-                  aba === "apresentacao"
+                  aba === "landing"
+                    ? "Escolha o modelo da página pública que divulga a viagem e captura os interessados."
+                    : aba === "apresentacao"
                     ? "Textos que o cliente vê divulgando a viagem."
                     : aba === "galeria"
                       ? "Fotos da viagem, com escolha da capa e ordenação."
@@ -646,6 +670,142 @@ export default function ViagemForm() {
                 ))}
               </ul>
             )}
+          </TabsContent>
+
+          <TabsContent value="landing" className="m-0 p-6">
+            <SectionTitle
+              titulo="Landing Page da viagem"
+              help="Página pública para divulgar a viagem e receber contatos de interessados."
+            />
+
+            <div className="mt-4 grid gap-5 lg:grid-cols-2">
+              <div className="space-y-1.5">
+                <FieldLabel help="Endereço público da página. Use apenas letras, números e hífen.">
+                  Endereço da página
+                </FieldLabel>
+                <div className="flex items-center gap-2">
+                  <span className="hidden text-xs text-muted-foreground sm:block">
+                    {window.location.origin}/v/
+                  </span>
+                  <Input
+                    value={landingSlug}
+                    onChange={(e) => setLandingSlug(e.target.value)}
+                    onBlur={() => setLandingSlug(slugify(landingSlug))}
+                    placeholder={slugify(destino || "minha-viagem")}
+                    className="rounded-sm"
+                  />
+                </div>
+                {editando && landingSlug && (
+                  <a
+                    href={`/v/${slugify(landingSlug)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block text-xs font-medium text-primary underline underline-offset-4"
+                  >
+                    Abrir página publicada
+                  </a>
+                )}
+              </div>
+
+              <div className="flex items-start gap-3 rounded-sm border border-border p-4">
+                <Switch
+                  checked={landingAtiva}
+                  onCheckedChange={setLandingAtiva}
+                  aria-label="Landing page ativa"
+                />
+                <div>
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    Página publicada
+                    <HelpTip texto="Se desligado, a página fica indisponível para o público." />
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Quando ligado, qualquer pessoa com o link consegue ver a viagem
+                    e enviar o contato.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <SectionTitle
+                titulo="Modelo visual"
+                help="Escolha o estilo da página. Todos mostram os mesmos dados da viagem."
+              />
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {LANDING_MODELS.map((m) => {
+                  const ativo = landingModelo === m.key;
+                  return (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => setLandingModelo(m.key)}
+                      title={m.descricao}
+                      className={`rounded-sm border p-3 text-left transition-colors ${
+                        ativo
+                          ? "border-brand-accent ring-1 ring-brand-accent"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      <span
+                        className="mb-3 flex h-16 w-full items-end gap-1 overflow-hidden rounded-sm p-2"
+                        style={{ background: m.theme.bg }}
+                      >
+                        <span
+                          className="h-full w-1/3 rounded-sm"
+                          style={{ background: m.theme.accent }}
+                        />
+                        <span className="flex-1 space-y-1">
+                          <span
+                            className="block h-2 w-full rounded-sm"
+                            style={{ background: m.theme.fg, opacity: 0.85 }}
+                          />
+                          <span
+                            className="block h-2 w-2/3 rounded-sm"
+                            style={{ background: m.theme.muted, opacity: 0.6 }}
+                          />
+                          <span
+                            className="block h-6 w-full rounded-sm"
+                            style={{ background: m.theme.surface }}
+                          />
+                        </span>
+                      </span>
+                      <span className="block text-sm font-medium text-foreground">
+                        {m.nome}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {m.descricao}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <SectionTitle
+                titulo="Pré-visualização"
+                help="Veja como a página ficará para o cliente com os dados atuais."
+              />
+              <div className="mt-4 max-h-[600px] overflow-auto rounded-sm border border-border">
+                <LandingView
+                  preview
+                  modelo={landingModelo}
+                  viagem={{
+                    id: id ?? "preview",
+                    titulo: titulo || null,
+                    subtitulo: subtitulo || null,
+                    descricao: descricao || null,
+                    destino: destino || "Destino da viagem",
+                    data_partida: dataPartida || "2026-01-01",
+                    hora_partida: horaPartida || null,
+                    valor: parseValor(valor),
+                    vagas: Number(vagas) || 0,
+                    itens_inclusos: itens,
+                    imagens,
+                  }}
+                />
+              </div>
+            </div>
           </TabsContent>
 
           <div className="flex justify-end gap-3 border-t border-border p-6">
