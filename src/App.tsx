@@ -40,9 +40,11 @@ function RequireModule({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <TooltipProvider delayDuration={200}>
       <FeedbackProvider>
         <LayoutSettingsProvider>
         <BrowserRouter>
+
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
