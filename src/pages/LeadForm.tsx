@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FieldLabel, HelpTip, HintButton } from "@/components/help";
 import {
   Select,
   SelectContent,
@@ -129,15 +129,21 @@ export default function LeadForm() {
   return (
     <AppShell>
       <div className="mb-8 flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => navigate("/crm")}>
+        <HintButton
+          hint="Volta para a lista de leads do CRM sem salvar"
+          variant="outline"
+          size="icon"
+          onClick={() => navigate("/crm")}
+        >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </HintButton>
         <div>
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · CRM
           </p>
-          <h1 className="mt-1 font-serif text-3xl text-foreground">
+          <h1 className="mt-1 flex items-center gap-1.5 font-serif text-3xl text-foreground">
             {editando ? "Editar lead" : "Novo lead"}
+            <HelpTip texto="Cadastro de um lead: um contato interessado que ainda vai virar cliente" />
           </h1>
         </div>
       </div>
@@ -150,7 +156,9 @@ export default function LeadForm() {
         <div className="w-full rounded-sm border border-border bg-background p-6">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Label htmlFor="nome">Nome</Label>
+              <FieldLabel htmlFor="nome" help="Nome completo do lead, para identificá-lo no funil">
+                Nome
+              </FieldLabel>
               <Input
                 id="nome"
                 value={nome}
@@ -161,7 +169,9 @@ export default function LeadForm() {
             </div>
 
             <div>
-              <Label htmlFor="whatsapp">WhatsApp</Label>
+              <FieldLabel htmlFor="whatsapp" help="Número de WhatsApp com DDD, usado para contato">
+                WhatsApp
+              </FieldLabel>
               <Input
                 id="whatsapp"
                 value={whatsapp}
@@ -173,7 +183,9 @@ export default function LeadForm() {
             </div>
 
             <div>
-              <Label>Origem</Label>
+              <FieldLabel help="Como esse lead chegou até você, ex.: WhatsApp, site, indicação">
+                Origem
+              </FieldLabel>
               <Select value={origem} onValueChange={setOrigem}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Selecione" />
@@ -189,7 +201,9 @@ export default function LeadForm() {
             </div>
 
             <div className="sm:col-span-2">
-              <Label>Etapa do funil</Label>
+              <FieldLabel help="Fase atual do lead dentro do funil de vendas do CRM">
+                Etapa do funil
+              </FieldLabel>
               <Select value={stageId} onValueChange={setStageId}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Selecione a etapa" />
@@ -206,17 +220,25 @@ export default function LeadForm() {
           </div>
 
           <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
-            <Button variant="outline" onClick={() => navigate("/crm")}>
+            <HintButton
+              hint="Descarta as alterações e volta para a lista de leads"
+              variant="outline"
+              onClick={() => navigate("/crm")}
+            >
               Cancelar
-            </Button>
-            <Button onClick={salvar} disabled={salvando}>
+            </HintButton>
+            <HintButton
+              hint="Grava os dados do lead no sistema"
+              onClick={salvar}
+              disabled={salvando}
+            >
               {salvando ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
               Salvar
-            </Button>
+            </HintButton>
           </div>
         </div>
       )}
