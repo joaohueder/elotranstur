@@ -6,6 +6,8 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
+import VerifyCode from "@/pages/VerifyCode";
+
 
 const queryClient = new QueryClient();
 

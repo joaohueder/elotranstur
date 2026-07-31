@@ -246,6 +246,13 @@ export default function LoginPage() {
           </form>
         </div>
       </div>
+
+      <ForgotPasswordModal
+        open={forgotOpen}
+        onOpenChange={setForgotOpen}
+        defaultEmail={email}
+      />
     </div>
+
   );
 }
