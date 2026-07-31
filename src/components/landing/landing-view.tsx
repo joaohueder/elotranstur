@@ -880,7 +880,12 @@ export function LandingView({
   );
 
   const formulario = (
-    <Formulario m={m} onSubmit={onSubmit} preview={preview} />
+    <Formulario
+      m={m}
+      onSubmit={onSubmit}
+      whatsappUrl={whatsappUrl}
+      preview={preview}
+    />
   );
 
   const botaoAncora = (
