@@ -7,6 +7,8 @@ import {
   MapPin,
   Plus,
   Save,
+  StickyNote,
+  Trash2,
   Users,
   Wallet,
   X,
@@ -14,6 +16,7 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldLabel, HelpTip, HintButton } from "@/components/help";
 import {
   Select,
@@ -22,18 +25,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatWhatsapp, useCrmOrigens, type CrmStage } from "@/lib/crm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  formatWhatsapp,
+  useCrmOrigens,
+  type CrmLeadNota,
+  type CrmStage,
+} from "@/lib/crm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
-import { cn } from "@/lib/utils";
 import { ViagemCountdown } from "@/components/viagem-countdown";
 import {
   capaDa,
   formatarData,
   formatarHora,
   formatarValor,
-  situacaoClasses,
-  situacaoLabel,
   type Viagem,
 } from "@/lib/viagens";
 
@@ -52,6 +58,28 @@ type ViagemOpcao = Pick<
   | "situacao"
 >;
 
+function dataHoraLocalParaUTC(value: string): string {
+  if (!value) return "";
+  const tzOffset = new Date().getTimezoneOffset();
+  const [data, hora] = value.split("T");
+  const [ano, mes, dia] = data.split("-").map(Number);
+  const [hh, mm] = (hora || "00:00").split(":").map(Number);
+  const localDate = new Date(ano, mes - 1, dia, hh, mm, 0, 0);
+  const utcDate = new Date(localDate.getTime() - tzOffset * 60 * 1000);
+  return utcDate.toISOString().slice(0, 16);
+}
+
+function dataHoraUTCParaLocal(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}T${hh}:${mm}`;
+}
+
 export default function LeadForm() {
   const { id } = useParams();
   const editando = Boolean(id);
@@ -62,13 +90,21 @@ export default function LeadForm() {
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState("dados");
+
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [origem, setOrigem] = useState<string>("WhatsApp");
   const [stageId, setStageId] = useState<string>("");
+
   const [viagens, setViagens] = useState<ViagemOpcao[]>([]);
   const [viagensInteresse, setViagensInteresse] = useState<string[]>([]);
   const [viagemSelecionada, setViagemSelecionada] = useState<string>("");
+
+  const [notas, setNotas] = useState<CrmLeadNota[]>([]);
+  const [novaNotaDataHora, setNovaNotaDataHora] = useState<string>("");
+  const [novaNotaDescricao, setNovaNotaDescricao] = useState("");
+  const [salvandoNota, setSalvandoNota] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -116,9 +152,16 @@ export default function LeadForm() {
             .eq("lead_id", id);
           if (lvErr) throw lvErr;
           if (!ativo) return;
-          setViagensInteresse((lvData ?? []).map((r: { viagem_id: string }) => r.viagem_id));
+          setViagensInteresse(
+            (lvData ?? []).map((r: { viagem_id: string }) => r.viagem_id),
+          );
+
+          await carregarNotas(id);
         } else {
           setStageId(lista[0]?.id ?? "");
+          setNovaNotaDataHora(
+            dataHoraUTCParaLocal(new Date().toISOString()),
+          );
         }
       } catch (err) {
         feedback.showError(
@@ -136,22 +179,40 @@ export default function LeadForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  async function salvar() {
+  async function carregarNotas(leadId: string) {
+    const { data, error } = await supabase
+      .from("crm_lead_notas")
+      .select("id, lead_id, data_hora, descricao, created_by, created_at, updated_at")
+      .eq("lead_id", leadId)
+      .order("data_hora", { ascending: false });
+    if (error) throw error;
+    setNotas((data ?? []) as CrmLeadNota[]);
+  }
+
+  function validarDadosLead(): boolean {
     if (!nome.trim()) {
       feedback.showNegative("Campo obrigatório", "Informe o nome do lead.");
-      return;
+      setAbaAtiva("dados");
+      return false;
     }
     if (whatsapp.replace(/\D/g, "").length < 10) {
       feedback.showNegative(
         "WhatsApp inválido",
         "Informe um número de WhatsApp válido com DDD.",
       );
-      return;
+      setAbaAtiva("dados");
+      return false;
     }
     if (!stageId) {
       feedback.showNegative("Etapa obrigatória", "Selecione a etapa do funil.");
-      return;
+      setAbaAtiva("dados");
+      return false;
     }
+    return true;
+  }
+
+  async function salvar() {
+    if (!validarDadosLead()) return;
 
     setSalvando(true);
     try {
@@ -212,6 +273,90 @@ export default function LeadForm() {
     }
   }
 
+  async function adicionarNota() {
+    if (!novaNotaDescricao.trim()) {
+      feedback.showNegative("Descrição obrigatória", "Informe o conteúdo da nota.");
+      return;
+    }
+    if (!novaNotaDataHora) {
+      feedback.showNegative("Data/hora obrigatória", "Informe quando a nota foi registrada.");
+      return;
+    }
+    if (!id) {
+      feedback.showNegative(
+        "Lead não salvo",
+        "Salve o lead antes de adicionar notas.",
+      );
+      setAbaAtiva("dados");
+      return;
+    }
+
+    setSalvandoNota(true);
+    try {
+      const { error } = await supabase.from("crm_lead_notas").insert({
+        lead_id: id,
+        data_hora: dataHoraLocalParaUTC(novaNotaDataHora),
+        descricao: novaNotaDescricao.trim(),
+      });
+      if (error) throw error;
+
+      setNovaNotaDescricao("");
+      setNovaNotaDataHora(dataHoraUTCParaLocal(new Date().toISOString()));
+      await carregarNotas(id);
+      feedback.showSuccess("Nota adicionada", "A anotação foi salva no histórico do lead.");
+    } catch (err) {
+      feedback.showError(
+        "Não foi possível salvar a nota",
+        "Ocorreu um erro ao gravar a anotação.",
+        err,
+      );
+    } finally {
+      setSalvandoNota(false);
+    }
+  }
+
+  async function excluirNota(notaId: string) {
+    if (!id) return;
+    try {
+      const { error } = await supabase
+        .from("crm_lead_notas")
+        .delete()
+        .eq("id", notaId);
+      if (error) throw error;
+      await carregarNotas(id);
+      feedback.showSuccess("Nota removida", "A anotação foi excluída do histórico.");
+    } catch (err) {
+      feedback.showError(
+        "Não foi possível excluir",
+        "Ocorreu um erro ao remover a anotação.",
+        err,
+      );
+    }
+  }
+
+  function formatarDataHoraNota(iso: string): string {
+    const d = new Date(iso);
+    return d.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  const viagensInteresseAtivas = viagensInteresse
+    .map((vid) => viagens.find((x) => x.id === vid))
+    .filter(
+      (v): v is ViagemOpcao =>
+        v !== undefined && v.situacao === "ativa",
+    )
+    .sort((a, b) =>
+      `${a.data_partida}T${a.hora_partida || "00:00"}`.localeCompare(
+        `${b.data_partida}T${b.hora_partida || "00:00"}`,
+      ),
+    );
+
   return (
     <AppShell>
       <div className="mb-8 flex items-center gap-4">
@@ -240,141 +385,147 @@ export default function LeadForm() {
         </div>
       ) : (
         <div className="w-full rounded-sm border border-border bg-background p-6">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <FieldLabel htmlFor="nome" help="Nome completo do lead, para identificá-lo no funil">
-                Nome
-              </FieldLabel>
-              <Input
-                id="nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Nome do lead"
-                className="mt-1.5"
-              />
-            </div>
+          <Tabs value={abaAtiva} onValueChange={setAbaAtiva} className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="dados">Dados do Lead</TabsTrigger>
+              <TabsTrigger value="viagens">Viagens de Interesse</TabsTrigger>
+              <TabsTrigger value="notas">Notas</TabsTrigger>
+            </TabsList>
 
-            <div>
-              <FieldLabel htmlFor="whatsapp" help="Número de WhatsApp com DDD, usado para contato">
-                WhatsApp
-              </FieldLabel>
-              <Input
-                id="whatsapp"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
-                placeholder="(00) 00000-0000"
-                inputMode="numeric"
-                className="mt-1.5"
-              />
-            </div>
+            <TabsContent value="dados" className="space-y-5">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <FieldLabel
+                    htmlFor="nome"
+                    help="Nome completo do lead, para identificá-lo no funil"
+                  >
+                    Nome
+                  </FieldLabel>
+                  <Input
+                    id="nome"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Nome do lead"
+                    className="mt-1.5"
+                  />
+                </div>
 
-            <div>
-              <FieldLabel help="Como esse lead chegou até você, ex.: WhatsApp, site, indicação">
-                Origem
-              </FieldLabel>
-              <Select value={origem} onValueChange={setOrigem}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {origens.map((o) => (
-                    <SelectItem key={o.id} value={o.nome}>
-                      {o.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <div>
+                  <FieldLabel
+                    htmlFor="whatsapp"
+                    help="Número de WhatsApp com DDD, usado para contato"
+                  >
+                    WhatsApp
+                  </FieldLabel>
+                  <Input
+                    id="whatsapp"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
+                    placeholder="(00) 00000-0000"
+                    inputMode="numeric"
+                    className="mt-1.5"
+                  />
+                </div>
 
-            <div className="sm:col-span-2">
-              <FieldLabel help="Fase atual do lead dentro do funil de vendas do CRM">
-                Etapa do funil
-              </FieldLabel>
-              <Select value={stageId} onValueChange={setStageId}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Selecione a etapa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stages.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="sm:col-span-2">
-              <FieldLabel help="Viagens que interessam a esse lead. Você pode adicionar quantas quiser">
-                Viagens de interesse
-              </FieldLabel>
-              <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
-                <Select
-                  value={viagemSelecionada}
-                  onValueChange={setViagemSelecionada}
-                >
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Selecione uma viagem" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {viagens
-                      .filter(
-                        (v) =>
-                          v.situacao === "ativa" &&
-                          !viagensInteresse.includes(v.id),
-                      )
-                      .sort((a, b) =>
-                        `${a.data_partida}T${a.hora_partida || "00:00"}`.localeCompare(
-                          `${b.data_partida}T${b.hora_partida || "00:00"}`,
-                        ),
-                      )
-                      .map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          {v.destino} · {formatarData(v.data_partida)} ·{" "}
-                          {formatarHora(v.hora_partida)}
+                <div>
+                  <FieldLabel help="Como esse lead chegou até você, ex.: WhatsApp, site, indicação">
+                    Origem
+                  </FieldLabel>
+                  <Select value={origem} onValueChange={setOrigem}>
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {origens.map((o) => (
+                        <SelectItem key={o.id} value={o.nome}>
+                          {o.nome}
                         </SelectItem>
                       ))}
-                  </SelectContent>
-                </Select>
-                <HintButton
-                  type="button"
-                  hint="Adiciona a viagem selecionada à lista de interesses do lead"
-                  variant="outline"
-                  disabled={!viagemSelecionada}
-                  onClick={() => {
-                    if (!viagemSelecionada) return;
-                    setViagensInteresse((atual) =>
-                      atual.includes(viagemSelecionada)
-                        ? atual
-                        : [...atual, viagemSelecionada],
-                    );
-                    setViagemSelecionada("");
-                  }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Adicionar
-                </HintButton>
-              </div>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {viagensInteresse.length === 0 ? (
-                <p className="mt-3 rounded-sm border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
-                  Nenhuma viagem adicionada. Selecione acima as viagens que o
-                  lead quer conhecer.
-                </p>
-              ) : (
-                <ul className="mt-3 space-y-2">
-                  {viagensInteresse
-                    .map((vid) => viagens.find((x) => x.id === vid))
-                    .filter(
-                      (v): v is ViagemOpcao =>
-                        v !== undefined && v.situacao === "ativa",
-                    )
-                    .sort((a, b) =>
-                      `${a.data_partida}T${a.hora_partida || "00:00"}`.localeCompare(
-                        `${b.data_partida}T${b.hora_partida || "00:00"}`,
-                      ),
-                    )
-                    .map((v) => {
+                <div className="sm:col-span-2">
+                  <FieldLabel help="Fase atual do lead dentro do funil de vendas do CRM">
+                    Etapa do funil
+                  </FieldLabel>
+                  <Select value={stageId} onValueChange={setStageId}>
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="Selecione a etapa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stages.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="viagens" className="space-y-5">
+              <div>
+                <FieldLabel help="Viagens que interessam a esse lead. Você pode adicionar quantas quiser">
+                  Viagens de interesse
+                </FieldLabel>
+                <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
+                  <Select
+                    value={viagemSelecionada}
+                    onValueChange={setViagemSelecionada}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Selecione uma viagem" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {viagens
+                        .filter(
+                          (v) =>
+                            v.situacao === "ativa" &&
+                            !viagensInteresse.includes(v.id),
+                        )
+                        .sort((a, b) =>
+                          `${a.data_partida}T${a.hora_partida || "00:00"}`.localeCompare(
+                            `${b.data_partida}T${b.hora_partida || "00:00"}`,
+                          ),
+                        )
+                        .map((v) => (
+                          <SelectItem key={v.id} value={v.id}>
+                            {v.destino} · {formatarData(v.data_partida)} ·{" "}
+                            {formatarHora(v.hora_partida)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <HintButton
+                    type="button"
+                    hint="Adiciona a viagem selecionada à lista de interesses do lead"
+                    variant="outline"
+                    disabled={!viagemSelecionada}
+                    onClick={() => {
+                      if (!viagemSelecionada) return;
+                      setViagensInteresse((atual) =>
+                        atual.includes(viagemSelecionada)
+                          ? atual
+                          : [...atual, viagemSelecionada],
+                      );
+                      setViagemSelecionada("");
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar
+                  </HintButton>
+                </div>
+
+                {viagensInteresseAtivas.length === 0 ? (
+                  <p className="mt-3 rounded-sm border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+                    Nenhuma viagem adicionada. Selecione acima as viagens que o
+                    lead quer conhecer.
+                  </p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {viagensInteresseAtivas.map((v) => {
                       const capa = capaDa(v.imagens);
                       const itens = v.itens_inclusos ?? [];
 
@@ -479,10 +630,103 @@ export default function LeadForm() {
                         </li>
                       );
                     })}
-                </ul>
-              )}
-            </div>
-          </div>
+                  </ul>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="notas" className="space-y-5">
+              <div className="rounded-sm border border-border bg-muted/20 p-4">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+                  <StickyNote className="h-4 w-4" />
+                  Nova anotação
+                  <HelpTip texto="Registre contatos, observações ou qualquer informação importante sobre o lead. A data/hora ajuda a reconstruir o histórico." />
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-[260px_1fr]">
+                  <div>
+                    <FieldLabel help="Momento em que a anotação foi feita">
+                      Data e hora
+                    </FieldLabel>
+                    <Input
+                      type="datetime-local"
+                      value={novaNotaDataHora}
+                      onChange={(e) => setNovaNotaDataHora(e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel help="Texto livre com o registro da conversa, observação ou próximo passo">
+                      Descrição
+                    </FieldLabel>
+                    <Textarea
+                      value={novaNotaDescricao}
+                      onChange={(e) => setNovaNotaDescricao(e.target.value)}
+                      placeholder="Digite aqui a anotação sobre o lead..."
+                      className="mt-1.5 min-h-[80px] resize-y"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <HintButton
+                    type="button"
+                    hint="Salva a anotação no histórico deste lead"
+                    onClick={adicionarNota}
+                    disabled={salvandoNota}
+                  >
+                    {salvandoNota ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="mr-2 h-4 w-4" />
+                    )}
+                    Adicionar nota
+                  </HintButton>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+                  Histórico de notas
+                  <HelpTip texto="Todas as anotações deste lead, da mais recente para a mais antiga" />
+                </h3>
+
+                {notas.length === 0 ? (
+                  <p className="rounded-sm border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+                    Nenhuma nota registrada para este lead.
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {notas.map((nota) => (
+                      <li
+                        key={nota.id}
+                        className="rounded-sm border border-border bg-background p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                              <CalendarDays className="h-3 w-3" />
+                              {formatarDataHoraNota(nota.data_hora)}
+                            </span>
+                          </div>
+                          <HintButton
+                            type="button"
+                            hint="Remove esta anotação permanentemente"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => excluirNota(nota.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </HintButton>
+                        </div>
+                        <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
+                          {nota.descricao}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
             <HintButton
