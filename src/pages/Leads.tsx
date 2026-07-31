@@ -204,17 +204,26 @@ export default function Leads() {
         )}
       </div>
 
-      {/* Mini dashboard */}
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-sm border border-border bg-background p-4">
-          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+      {/* Mini dashboard (somente desktop) */}
+      <div className="mb-6 hidden gap-4 lg:grid lg:grid-cols-3">
+        <div className="relative overflow-hidden rounded-sm border border-border bg-gradient-to-br from-indigo-500 to-violet-600 p-5 text-primary-foreground">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] opacity-80">
             Total de leads
             <HelpTip texto="Quantidade total de leads já cadastrados no sistema." />
           </p>
-          <p className="mt-3 font-serif text-4xl text-foreground">{leads.length}</p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {evolucao[evolucao.length - 1]?.total ?? 0} novo(s) neste mês
-          </p>
+          <p className="mt-3 font-serif text-5xl leading-none">{leads.length}</p>
+          <div className="mt-4 flex items-center gap-4 text-xs opacity-90">
+            <span>
+              <strong className="text-base">
+                {evolucao[evolucao.length - 1]?.total ?? 0}
+              </strong>{" "}
+              neste mês
+            </span>
+            <span>
+              <strong className="text-base">{porOrigem.length}</strong> origem(ns)
+            </span>
+          </div>
+          <Users className="pointer-events-none absolute -bottom-4 -right-3 h-24 w-24 opacity-15" />
         </div>
 
         <div className="rounded-sm border border-border bg-background p-4">
@@ -222,9 +231,10 @@ export default function Leads() {
             Últimos 6 meses
             <HelpTip texto="Mostra quantos leads entraram em cada um dos últimos 6 meses." />
           </p>
-          <div className="mt-3 h-[120px]">
+          <div className="mt-3 h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={evolucao} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+              <BarChart data={evolucao} margin={{ top: 18, right: 8, left: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="mes"
                   tickLine={false}
@@ -233,16 +243,26 @@ export default function Leads() {
                   stroke="hsl(var(--muted-foreground))"
                 />
                 <Tooltip
-                  cursor={{ fill: "hsl(var(--muted))" }}
+                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
                   contentStyle={{
                     fontSize: 12,
-                    borderRadius: 2,
+                    borderRadius: 6,
                     border: "1px solid hsl(var(--border))",
                     background: "hsl(var(--background))",
                   }}
                   formatter={(v: number) => [`${v} lead(s)`, "Total"]}
                 />
-                <Bar dataKey="total" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={26}>
+                  <LabelList
+                    dataKey="total"
+                    position="top"
+                    fontSize={11}
+                    fill="hsl(var(--muted-foreground))"
+                  />
+                  {evolucao.map((m, i) => (
+                    <Cell key={m.chave} fill={CORES_BARRAS[i % CORES_BARRAS.length]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -253,41 +273,62 @@ export default function Leads() {
             Origens
             <HelpTip texto="De quais canais os leads chegaram até você." />
           </p>
-          <div className="mt-3 h-[120px]">
+          <div className="mt-3 flex h-[150px] items-center gap-3">
             {porOrigem.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                 Sem dados
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={porOrigem}
-                    dataKey="total"
-                    nameKey="nome"
-                    innerRadius={28}
-                    outerRadius={52}
-                    paddingAngle={2}
-                  >
-                    {porOrigem.map((o, i) => (
-                      <Cell key={o.nome} fill={CORES_PIZZA[i % CORES_PIZZA.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      fontSize: 12,
-                      borderRadius: 2,
-                      border: "1px solid hsl(var(--border))",
-                      background: "hsl(var(--background))",
-                    }}
-                    formatter={(v: number, n: string) => [`${v} lead(s)`, n]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <div className="h-full w-[150px] shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={porOrigem}
+                        dataKey="total"
+                        nameKey="nome"
+                        innerRadius={34}
+                        outerRadius={62}
+                        paddingAngle={3}
+                        stroke="hsl(var(--background))"
+                        strokeWidth={2}
+                      >
+                        {porOrigem.map((o, i) => (
+                          <Cell key={o.nome} fill={CORES_PIZZA[i % CORES_PIZZA.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          fontSize: 12,
+                          borderRadius: 6,
+                          border: "1px solid hsl(var(--border))",
+                          background: "hsl(var(--background))",
+                        }}
+                        formatter={(v: number, n: string) => [`${v} lead(s)`, n]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <ul className="min-w-0 flex-1 space-y-1.5 overflow-y-auto text-xs">
+                  {porOrigem.slice(0, 6).map((o, i) => (
+                    <li key={o.nome} className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: CORES_PIZZA[i % CORES_PIZZA.length] }}
+                      />
+                      <span className="truncate text-muted-foreground">{o.nome}</span>
+                      <span className="ml-auto font-medium text-foreground">
+                        {Math.round((o.total / leads.length) * 100)}%
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         </div>
       </div>
+
 
 
 
