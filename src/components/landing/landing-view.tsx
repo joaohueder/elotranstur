@@ -1012,11 +1012,15 @@ export function LandingView({
     </div>
   );
 
-  /** Formulário flutuante (desktop): acompanha a rolagem sem cobrir o conteúdo. */
+  /** Formulário flutuante (desktop): acompanha a rolagem sem cobrir o conteúdo.
+   *  Alinhado à borda direita do container centralizado (--app-max-width). */
   const formularioFlutuante = (
     <aside
-      className="pointer-events-none fixed inset-y-0 right-0 z-[80] hidden w-[24rem] items-center px-5 lg:flex"
+      className="pointer-events-none fixed inset-y-0 z-[80] hidden w-[24rem] items-center px-5 lg:flex"
       aria-label="Formulário de contato"
+      style={{
+        right: "calc((100vw - min(100vw, var(--app-max-width, 1280px))) / 2)",
+      }}
     >
       <div className="lp-flutuante pointer-events-auto max-h-[92vh] w-full overflow-y-auto">
         <Formulario
