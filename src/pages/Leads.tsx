@@ -12,7 +12,9 @@ import {
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
+  LabelList,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -36,16 +38,26 @@ import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { useCrmData, type CrmLead } from "@/lib/crm";
 
-const CORES_PIZZA = [
-  "hsl(var(--primary))",
-  "hsl(var(--brand-accent, var(--primary)))",
-  "#0ea5e9",
+const CORES_BARRAS = [
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
   "#f59e0b",
   "#10b981",
+  "#0ea5e9",
+];
+
+const CORES_PIZZA = [
+  "#6366f1",
+  "#0ea5e9",
+  "#10b981",
+  "#f59e0b",
+  "#ec4899",
   "#8b5cf6",
   "#ef4444",
-  "#64748b",
+  "#14b8a6",
 ];
+
 
 
 /** Formata um timestamp ISO completo em data e hora no padrão brasileiro. */
