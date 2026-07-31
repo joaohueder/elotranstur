@@ -1,6 +1,6 @@
-> Robots do sistema ELO
-> A aplicação (painel administrativo e login) não deve ser indexada.
-> Apenas as páginas públicas de viagens (/v/:slug) são liberadas.
+# Robots do sistema ELO
+# A aplicação (painel administrativo e login) não deve ser indexada.
+# Apenas as páginas públicas de viagens (/v/:slug) são liberadas.
 
 User-agent: *
 Allow: /v/
