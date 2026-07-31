@@ -506,12 +506,15 @@ function Formulario({
   whatsappUrl,
   preview,
   compacto = false,
+  ancora = true,
 }: {
   m: LandingModel;
   onSubmit?: Props["onSubmit"];
   whatsappUrl?: Props["whatsappUrl"];
   preview?: boolean;
   compacto?: boolean;
+  /** Só um formulário na página deve carregar a âncora #reservar. */
+  ancora?: boolean;
 }) {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -536,7 +539,7 @@ function Formulario({
 
   if (ok) {
     return (
-      <div className="lp-pop p-6 text-center sm:p-7" style={caixa} id="reservar">
+      <div className="lp-pop p-6 text-center sm:p-7" style={caixa} id={ancora ? "reservar" : undefined}>
         <span
           className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full"
           style={{ background: "var(--lp-accent)", color: "var(--lp-accent-fg)" }}
@@ -569,7 +572,7 @@ function Formulario({
 
   return (
     <form
-      id="reservar"
+      id={ancora ? "reservar" : undefined}
       className={compacto ? "space-y-3 p-5" : "space-y-3.5 p-5 sm:p-6"}
       style={caixa}
       onSubmit={async (e) => {
@@ -994,13 +997,33 @@ export function LandingView({
     </div>
   );
 
+  /** Formulário flutuante (desktop): acompanha a rolagem sem cobrir o conteúdo. */
+  const formularioFlutuante = (
+    <aside
+      className="pointer-events-none fixed inset-y-0 right-0 z-[80] hidden w-[24rem] items-center px-5 lg:flex"
+      aria-label="Formulário de contato"
+    >
+      <div className="lp-flutuante pointer-events-auto max-h-[92vh] w-full overflow-y-auto">
+        <Formulario
+          m={m}
+          onSubmit={onSubmit}
+          whatsappUrl={whatsappUrl}
+          preview={preview}
+          compacto
+          ancora={false}
+        />
+      </div>
+    </aside>
+  );
+
   const wrapper = (children: ReactNode) => (
     <div
       ref={raiz}
-      className="lp-root min-h-full w-full pb-24 lg:pb-0"
+      className="lp-root min-h-full w-full pb-24 lg:pb-0 lg:pr-[24rem]"
       style={{ ...themeVars(m, p), background: "var(--lp-bg)", color: "var(--lp-fg)" }}
     >
       {children}
+      {formularioFlutuante}
       {barraMobile}
       {fotoAberta !== null && (
         <Lightbox
@@ -1037,8 +1060,8 @@ export function LandingView({
               )}
               <div className="pt-1">{preco}</div>
               <div className="lp-reveal">{contagem()}</div>
-              <div className="hidden lg:block">{formulario}</div>
             </div>
+
 
             <div className="lp-reveal order-0 lg:order-none lg:sticky lg:top-6">
               <Slider urls={fotos} onAmpliar={(i) => setFotoAberta(i)} kenburns />
@@ -1081,7 +1104,7 @@ export function LandingView({
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0">
             <div
-              className={`${secao} pointer-events-auto grid gap-7 pb-7 sm:pb-9 lg:grid-cols-[1.25fr_.85fr] lg:items-end`}
+              className={`${secao} pointer-events-auto grid gap-7 pb-7 sm:pb-9`}
             >
               <div className="lp-rise space-y-3.5 text-white">
                 <div className="flex flex-wrap items-center gap-2">
@@ -1101,7 +1124,7 @@ export function LandingView({
                 )}
                 <div className="pt-1">{contagem(true)}</div>
               </div>
-              <div className="hidden lg:block">{formulario}</div>
+              
             </div>
           </div>
         </header>
@@ -1167,13 +1190,15 @@ export function LandingView({
               {selo}
               {preco}
               {contagem()}
-              <Formulario
-                m={m}
-                onSubmit={onSubmit}
-                whatsappUrl={whatsappUrl}
-                preview={preview}
-                compacto
-              />
+              <div className="lg:hidden">
+                <Formulario
+                  m={m}
+                  onSubmit={onSubmit}
+                  whatsappUrl={whatsappUrl}
+                  preview={preview}
+                  compacto
+                />
+              </div>
             </div>
           </div>
         </div>
