@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col bg-muted font-sans">
       {/* HEADER FIXO */}
       <header className="fixed inset-x-0 top-0 z-40 h-16 border-b border-border bg-background">
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
+        <div className="app-container flex h-full items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-3">
             <span className="grid h-9 w-14 place-items-center rounded-sm bg-brand-accent font-serif text-lg font-bold italic text-primary-foreground">
               ELO
@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* BARRA DE MENU FIXA */}
       <nav className="fixed inset-x-0 top-16 z-30 h-12 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-full max-w-7xl items-center gap-1 px-6">
+        <div className="app-container flex h-full items-center gap-1 px-6">
           {items.map((m) => {
             const Icon = ICONS[m.key] ?? Users;
             const path = PATHS[m.key] ?? `/${m.key}`;
@@ -115,13 +115,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
 
       {/* MAIN */}
-      <main className="mx-auto w-full max-w-7xl flex-1 px-6 pb-10 pt-[7.5rem]">
+      <main className="app-container flex-1 px-6 pb-10 pt-[7.5rem]">
         {children}
       </main>
 
       {/* RODAPÉ */}
       <footer className="border-t border-border bg-background">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
+        <div className="app-container flex flex-col items-center justify-between gap-2 px-6 py-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
           <span>ELO Transporte e Turismo</span>
           <span>Sistema de gestão · {new Date().getFullYear()}</span>
         </div>

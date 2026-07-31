@@ -3,7 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 
 import { FeedbackProvider } from "@/lib/feedback";
+import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { useAuthz } from "@/lib/use-authz";
+import Configuracoes from "@/pages/Configuracoes";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
@@ -35,6 +37,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <FeedbackProvider>
+        <LayoutSettingsProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -67,9 +70,19 @@ export default function App() {
             />
 
 
+            <Route
+              path="/configuracoes"
+              element={
+                <RequireModule modulo="configuracoes">
+                  <Configuracoes />
+                </RequireModule>
+              }
+            />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </LayoutSettingsProvider>
       </FeedbackProvider>
     </QueryClientProvider>
   );
