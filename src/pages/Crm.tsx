@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 import {
   useCrmData,
   whatsappLink,
+  tempoDeVida,
+  isStageFinal,
   type CrmLead,
   type CrmStage,
   type CrmLeadViagem,
