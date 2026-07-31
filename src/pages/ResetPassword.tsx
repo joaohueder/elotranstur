@@ -59,22 +59,25 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      const token = resetTokenStore.get();
+      if (!token) throw new Error("Sessão de recuperação expirada.");
+
+      await redefinirSenhaComToken(token, password);
+      resetTokenStore.clear();
 
       showSuccess(
         "Senha atualizada",
         "Sua nova senha foi definida com sucesso. Faça login para acessar o painel.",
       );
-      await supabase.auth.signOut();
       navigate("/login", { replace: true });
     } catch (err) {
       showError(
         "Falha ao redefinir a senha",
-        "Não conseguimos atualizar sua senha. O link pode ter expirado — solicite um novo na tela de login.",
+        "Não conseguimos atualizar sua senha. A sessão de recuperação pode ter expirado — solicite um novo código na tela de login.",
         err,
       );
     } finally {
+
       setLoading(false);
     }
   };
