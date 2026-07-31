@@ -51,27 +51,22 @@ export function LayoutSettingsProvider({ children }: { children: ReactNode }) {
   });
   const [loading, setLoading] = useState(true);
 
+  const aplicar = useCallback((raw: unknown) => {
+    if (!raw || typeof raw !== "object") return;
+    const value = clamp(Number((raw as { layout_max_width?: number }).layout_max_width));
+    setMaxWidth(value);
+    applyToDocument(value);
+    window.localStorage.setItem(STORAGE_KEY, String(value));
+  }, []);
+
   useEffect(() => {
     let cancelado = false;
 
     async function carregar() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        if (!cancelado) setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase.rpc("get_my_settings");
+      // Configuração global: vale também para páginas públicas (sem login).
+      const { data, error } = await supabase.rpc("get_layout_settings");
       if (cancelado) return;
-
-      if (!error && data && typeof data === "object") {
-        const value = clamp(
-          Number((data as { layout_max_width?: number }).layout_max_width),
-        );
-        setMaxWidth(value);
-        applyToDocument(value);
-        window.localStorage.setItem(STORAGE_KEY, String(value));
-      }
+      if (!error) aplicar(data);
       setLoading(false);
     }
 
@@ -79,25 +74,18 @@ export function LayoutSettingsProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelado = true;
     };
-  }, []);
+  }, [aplicar]);
 
-  useRealtime(["user_settings"], () => {
+  useRealtime(["app_layout_settings"], () => {
     void (async () => {
-      const { data } = await supabase.rpc("get_my_settings");
-      if (data && typeof data === "object") {
-        const value = clamp(
-          Number((data as { layout_max_width?: number }).layout_max_width),
-        );
-        setMaxWidth(value);
-        applyToDocument(value);
-        window.localStorage.setItem(STORAGE_KEY, String(value));
-      }
+      const { data } = await supabase.rpc("get_layout_settings");
+      aplicar(data);
     })();
   });
 
   const save = useCallback(async (value: number) => {
     const alvo = clamp(value);
-    const { error } = await supabase.rpc("save_my_settings", {
+    const { error } = await supabase.rpc("save_layout_settings", {
       _layout_max_width: alvo,
     });
     if (error) throw error;
@@ -106,6 +94,7 @@ export function LayoutSettingsProvider({ children }: { children: ReactNode }) {
     applyToDocument(alvo);
     window.localStorage.setItem(STORAGE_KEY, String(alvo));
   }, []);
+
 
   const value = useMemo(
     () => ({ maxWidth, loading, save }),

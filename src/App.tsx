@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConfirmProvider } from "@/lib/confirm";
 import { FeedbackProvider } from "@/lib/feedback";
 
+import { PublicShell } from "@/components/public-shell";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
+
 import { useAuthz } from "@/lib/use-authz";
 import Crm from "@/pages/Crm";
 import LeadForm from "@/pages/LeadForm";
@@ -56,11 +58,40 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/perfil" element={<Perfil />} />
-            <Route path="/v/:slug" element={<LandingViagem />} />
+            <Route
+              path="/v/:slug"
+              element={
+                <PublicShell>
+                  <LandingViagem />
+                </PublicShell>
+              }
+            />
 
-            <Route path="/login" element={<Login />} />
-            <Route path="/verificar-codigo" element={<VerifyCode />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/login"
+              element={
+                <PublicShell>
+                  <Login />
+                </PublicShell>
+              }
+            />
+            <Route
+              path="/verificar-codigo"
+              element={
+                <PublicShell>
+                  <VerifyCode />
+                </PublicShell>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <PublicShell>
+                  <ResetPassword />
+                </PublicShell>
+              }
+            />
+
             <Route
               path="/viagens"
               element={
