@@ -6,6 +6,7 @@ import { CrmTab } from "@/components/configuracoes/crm-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 
 import { Button } from "@/components/ui/button";
+import { HelpTip, HintButton } from "@/components/help";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFeedback } from "@/lib/feedback";
@@ -105,8 +106,9 @@ export default function Configuracoes() {
                     <Monitor className="h-4 w-4" />
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                       Largura máxima do sistema
+                      <HelpTip texto="Controla o tamanho máximo do conteúdo em telas grandes de computador." />
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Define a largura máxima do conteúdo em telas grandes
@@ -117,8 +119,9 @@ export default function Configuracoes() {
 
                 <div className="rounded-sm border border-border p-4 sm:p-5">
                   <div className="mb-4 flex items-baseline justify-between">
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
                       Largura
+                      <HelpTip texto="Arraste para definir a largura máxima do conteúdo, em pixels." />
                     </span>
                     <span className="font-serif text-2xl text-foreground">
                       {valor}
@@ -127,6 +130,7 @@ export default function Configuracoes() {
                   </div>
 
                   <Slider
+                    aria-label="Largura máxima do sistema"
                     value={[valor]}
                     min={MIN_MAX_WIDTH}
                     max={MAX_MAX_WIDTH}
@@ -148,15 +152,17 @@ export default function Configuracoes() {
                 )}
 
                 <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-                  <Button
+                  <HintButton
+                    hint="Desfaz a alteração e volta para a largura salva anteriormente."
                     variant="outline"
                     className="w-full rounded-sm sm:w-auto"
                     disabled={!alterado || salvando}
                     onClick={() => setValor(maxWidth)}
                   >
                     Cancelar
-                  </Button>
-                  <Button
+                  </HintButton>
+                  <HintButton
+                    hint="Grava a nova largura máxima do sistema."
                     className="w-full rounded-sm sm:w-auto sm:min-w-32"
                     disabled={!podeEditar || salvando}
                     onClick={() => void salvar()}
@@ -167,7 +173,7 @@ export default function Configuracoes() {
                       <Save className="mr-2 h-4 w-4" />
                     )}
                     Salvar
-                  </Button>
+                  </HintButton>
                 </div>
               </div>
             )}

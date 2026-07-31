@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { HelpTip, HintButton } from "@/components/help";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -134,28 +135,35 @@ export default function Crm() {
           <h1 className="mt-2 font-serif text-3xl text-foreground">
             Funil de leads
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             {leads.length} lead(s) em {etapasAtivas.length} etapa(s).
+            <HelpTip texto="Total de leads (contatos) espalhados pelas etapas do funil de vendas" />
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {podeEditar && (
-            <Button onClick={() => navigate("/crm/leads/novo")}>
+            <HintButton
+              hint="Cadastra um novo lead (cliente em potencial) no funil"
+              onClick={() => navigate("/crm/leads/novo")}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Novo lead
-            </Button>
+            </HintButton>
           )}
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-        <Input
-          placeholder="Buscar por nome, WhatsApp ou origem..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          className="sm:max-w-sm"
-        />
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-1.5 sm:max-w-sm sm:flex-1">
+          <Input
+            placeholder="Buscar por nome, WhatsApp ou origem..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+          <HelpTip texto="Filtra os leads pelo nome, número de WhatsApp ou origem digitados" />
+        </div>
+        <div className="flex items-center gap-1.5">
         <Select value={filtroEtapa} onValueChange={setFiltroEtapa}>
           <SelectTrigger className="sm:max-w-[220px]">
             <SelectValue placeholder="Todas as etapas" />
@@ -169,6 +177,8 @@ export default function Crm() {
             ))}
           </SelectContent>
         </Select>
+        <HelpTip texto="Mostra apenas os leads que estão na etapa do funil escolhida" />
+        </div>
       </div>
 
       {loading ? (
@@ -223,6 +233,7 @@ export default function Crm() {
                     <span className="text-[11px] text-muted-foreground">
                       ({items.length})
                     </span>
+                    <HelpTip texto="Etapa do funil de vendas. Quantidade de leads que estão nela agora" />
                   </header>
 
                   {items.length === 0 ? (
@@ -272,24 +283,26 @@ export default function Crm() {
                               </Select>
                             )}
                             {podeEditar && (
-                              <Button
+                              <HintButton
+                                hint="Move este lead para outra etapa do funil"
                                 size="sm"
                                 variant="outline"
                                 className="h-8"
                                 onClick={() => navigate(`/crm/leads/${lead.id}`)}
                               >
                                 <Pencil className="h-3.5 w-3.5" />
-                              </Button>
+                              </HintButton>
                             )}
                             {podeExcluir && (
-                              <Button
+                              <HintButton
+                                hint="Exclui este lead do CRM permanentemente"
                                 size="sm"
                                 variant="outline"
                                 className="h-8 text-destructive"
                                 onClick={() => void excluirLead(lead)}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              </HintButton>
                             )}
                           </div>
                         </li>
@@ -354,6 +367,7 @@ export default function Crm() {
             <span className="text-[11px] font-semibold uppercase tracking-widest text-foreground">
               {stage.nome}
             </span>
+            <HelpTip texto="Etapa do funil. Arraste os cartões de leads entre colunas para mudar a etapa" />
           </div>
           <span className="rounded-sm bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
             {items.length}
