@@ -138,6 +138,7 @@ export default function Leads() {
         {podeEditar && (
           <HintButton
             hint="Cadastra um novo lead usando a mesma tela do CRM"
+            className="w-full lg:w-auto"
             onClick={() => navigate("/leads/novo")}
           >
             <Plus className="mr-2 h-4 w-4" />
