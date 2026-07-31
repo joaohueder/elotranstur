@@ -34,7 +34,7 @@ import { MODULES, normalizePermissions, type PermissionMap } from "@/lib/permiss
 import { useRealtime } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
-import { cn } from "@/lib/utils";
+import { cn, formatarTempoRestante } from "@/lib/utils";
 
 
 type UsuarioRow = {
@@ -48,6 +48,8 @@ type UsuarioRow = {
   permissoes: PermissionMap;
   online: boolean;
   sessao_iniciada_em: string | null;
+  sessao_atualizada_em: string | null;
+  sessao_expira_em: string | null;
   sessao_ip: string | null;
 };
 
@@ -124,6 +126,8 @@ export default function Usuarios() {
         permissoes: normalizePermissions(u.permissoes),
         online: Boolean(u.online),
         sessao_iniciada_em: (u.sessao_iniciada_em as string) ?? null,
+        sessao_atualizada_em: (u.sessao_atualizada_em as string) ?? null,
+        sessao_expira_em: (u.sessao_expira_em as string) ?? null,
         sessao_ip: (u.sessao_ip as string) ?? null,
       })),
     );
@@ -234,7 +238,14 @@ export default function Usuarios() {
     setRows((prev) =>
       prev.map((r) =>
         r.id === u.id
-          ? { ...r, online: false, sessao_iniciada_em: null, sessao_ip: null }
+          ? {
+              ...r,
+              online: false,
+              sessao_iniciada_em: null,
+              sessao_atualizada_em: null,
+              sessao_expira_em: null,
+              sessao_ip: null,
+            }
           : r,
       ),
     );
@@ -404,19 +415,6 @@ export default function Usuarios() {
 
                 <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
                   <div>
-                    <p className="uppercase tracking-widest">Criado em</p>
-                    <p className="mt-0.5 text-foreground">{formatarData(u.created_at)}</p>
-                  </div>
-                  <div>
-                    <p className="uppercase tracking-widest">Último acesso</p>
-                    <p className="mt-0.5 text-foreground">
-                      {formatarData(u.last_sign_in_at)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
-                  <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
                       Sessão
                       <HelpTip texto="Mostra há quanto tempo a pessoa está logada. Se estiver fora do sistema, aparece 'Não logado'." />
@@ -441,10 +439,33 @@ export default function Usuarios() {
                   </div>
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
+                      Expira em
+                      <HelpTip texto="Tempo restante até a sessão deste usuário expirar e ele precisar fazer login novamente." />
+                    </p>
+                    <p className="mt-0.5 text-foreground">
+                      {u.online && u.sessao_expira_em
+                        ? formatarTempoRestante(u.sessao_expira_em, agora)
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
                       IP
                       <HelpTip texto="Endereço de internet (IP) usado no acesso atual." />
                     </p>
                     <p className="mt-0.5 text-foreground">{u.sessao_ip ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
+                      Último acesso
+                      <HelpTip texto="Data do último login realizado no sistema." />
+                    </p>
+                    <p className="mt-0.5 text-foreground">
+                      {formatarData(u.last_sign_in_at)}
+                    </p>
                   </div>
                 </div>
 
