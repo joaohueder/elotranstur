@@ -49,6 +49,23 @@ export default function App() {
                 </RequireModule>
               }
             />
+            <Route
+              path="/usuarios/novo"
+              element={
+                <RequireModule modulo="usuarios">
+                  <UsuarioForm />
+                </RequireModule>
+              }
+            />
+            <Route
+              path="/usuarios/:id"
+              element={
+                <RequireModule modulo="usuarios">
+                  <UsuarioForm />
+                </RequireModule>
+              }
+            />
+
 
             <Route path="*" element={<NotFound />} />
           </Routes>
