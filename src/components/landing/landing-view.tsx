@@ -1161,7 +1161,7 @@ export function LandingView({
   return wrapper(
     <>
       <div
-        className="relative pb-24 pt-8 sm:pb-28 sm:pt-12 lg:-mr-[24rem] lg:pr-[24rem]"
+        className="relative pb-24 pt-8 sm:pb-28 sm:pt-12"
         style={{
           background: "linear-gradient(150deg, var(--lp-accent), var(--lp-accent2))",
         }}
