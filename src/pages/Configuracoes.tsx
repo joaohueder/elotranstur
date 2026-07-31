@@ -171,6 +171,9 @@ export default function Configuracoes() {
               <TabsTrigger value="email" className="rounded-sm">
                 E-mail
               </TabsTrigger>
+              <TabsTrigger value="integracao" className="rounded-sm">
+                Integração
+              </TabsTrigger>
             </TabsList>
           </div>
 
