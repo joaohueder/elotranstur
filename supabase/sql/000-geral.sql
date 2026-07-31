@@ -1980,6 +1980,11 @@ begin
         when m.session_id = s.id then m.expira_em
         else coalesce(s.not_after, coalesce(s.refreshed_at, s.created_at) + interval '30 days')
       end as sessao_expira_em,
+      case
+        when s.id is null then null
+        when m.session_id = s.id then coalesce(m.remember, false)
+        else null
+      end as sessao_remember,
       host(s.ip) as sessao_ip,
       s.user_agent as sessao_user_agent,
       (s.id is not null) as online,
