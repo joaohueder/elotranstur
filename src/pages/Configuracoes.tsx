@@ -27,23 +27,11 @@ export default function Configuracoes() {
   const { maxWidth, seo, loading, save } = useLayoutSettings();
   const { can, isAdmin } = useAuthz();
   const feedback = useFeedback();
-  const { cropperUi, ajustarCorte } = useImageCropper({
-    proporcoes: [
-      { key: "1.91:1", label: "1.91:1 (compartilhamento)", valor: 1200 / 630 },
-      { key: "16:9", label: "16:9", valor: 16 / 9 },
-      { key: "1:1", label: "1:1 (quadrado)", valor: 1 },
-    ],
-    proporcaoPadrao: 1200 / 630,
-    descricao:
-      "Arraste a imagem para posicionar e use o zoom. A área visível será usada como miniatura ao compartilhar o link.",
-  });
 
   const podeEditar = isAdmin || can("configuracoes", "edit");
   const [valor, setValor] = useState<number>(maxWidth || DEFAULT_MAX_WIDTH);
   const [salvando, setSalvando] = useState(false);
   const [formSeo, setFormSeo] = useState<SeoSettings>(seo);
-  const [enviandoImagem, setEnviandoImagem] = useState(false);
-  const inputImagemRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setValor(maxWidth);
@@ -53,51 +41,10 @@ export default function Configuracoes() {
     setFormSeo(seo);
   }, [seo]);
 
-  /** Abre o corte, comprime e envia a imagem de compartilhamento. */
-  async function enviarImagemSeo(arquivo: File | null) {
-    if (!arquivo) return;
-    if (!arquivo.type.startsWith("image/")) {
-      feedback.showNegative(
-        "Arquivo inválido",
-        `"${arquivo.name}" não é uma imagem.`,
-      );
-      return;
-    }
-    const recortado = await ajustarCorte(arquivo);
-    if (!recortado) return;
-
-    setEnviandoImagem(true);
-    try {
-      const otimizado = await comprimirImagem(recortado);
-      const extensao = otimizado.name.split(".").pop() ?? "jpg";
-      const caminho = `site/og-${crypto.randomUUID()}.${extensao}`;
-      const { error } = await supabase.storage
-        .from(BUCKET_SEO)
-        .upload(caminho, otimizado, {
-          upsert: false,
-          contentType: otimizado.type,
-          cacheControl: "31536000",
-        });
-      if (error) throw error;
-      const { data } = supabase.storage.from(BUCKET_SEO).getPublicUrl(caminho);
-      setFormSeo((f) => ({ ...f, imageUrl: data.publicUrl }));
-    } catch (err) {
-      feedback.showError(
-        "Não foi possível enviar",
-        "Ocorreu um erro ao enviar a imagem de compartilhamento.",
-        err,
-      );
-    } finally {
-      setEnviandoImagem(false);
-    }
-  }
-
-
   const seoAlterado =
     formSeo.siteName !== seo.siteName ||
     formSeo.title !== seo.title ||
-    formSeo.description !== seo.description ||
-    formSeo.imageUrl !== seo.imageUrl;
+    formSeo.description !== seo.description;
 
   async function salvar() {
     setSalvando(true);
