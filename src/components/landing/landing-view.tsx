@@ -1011,7 +1011,7 @@ export function LandingView({
           style={ctaStyle(m)}
         >
           <MessageCircle className="h-4 w-4" />
-          Quero minha vaga
+          Falar agora no WhatsApp
         </a>
       </div>
     </div>
