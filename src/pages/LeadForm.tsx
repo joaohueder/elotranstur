@@ -71,6 +71,8 @@ export default function LeadForm() {
   const feedback = useFeedback();
 
   const { origens } = useCrmOrigens(true);
+  // Origens usadas pelo sistema (ex.: Landing Page) não aparecem para escolha.
+  const origensSelecionaveis = origens.filter((o) => !o.sistema);
   const { confirm } = useConfirm();
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -418,18 +420,26 @@ export default function LeadForm() {
                   <FieldLabel help="Como esse lead chegou até você, ex.: WhatsApp, site, indicação">
                     Origem
                   </FieldLabel>
-                  <Select value={origem} onValueChange={setOrigem}>
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {origens.map((o) => (
-                        <SelectItem key={o.id} value={o.nome}>
-                          {o.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {origemDoSistema ? (
+                    <div className="mt-1.5 flex h-10 items-center gap-2 rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+                      <Lock className="h-3.5 w-3.5" />
+                      {origem}
+                      <HelpTip texto="Origem registrada automaticamente pelo sistema. Não pode ser alterada." />
+                    </div>
+                  ) : (
+                    <Select value={origem} onValueChange={setOrigem}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {origensSelecionaveis.map((o) => (
+                          <SelectItem key={o.id} value={o.nome}>
+                            {o.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="sm:col-span-2">
