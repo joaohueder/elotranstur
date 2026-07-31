@@ -1,5 +1,6 @@
 /** Módulos do sistema ELO com controle de permissão. */
 export const MODULES = [
+  { key: "dashboard", label: "Dashboard" },
   { key: "viagens", label: "Viagens" },
   { key: "crm", label: "CRM" },
   { key: "leads", label: "Leads" },
