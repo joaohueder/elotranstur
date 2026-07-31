@@ -539,10 +539,11 @@ function Formulario({
       <input
         required
         value={whatsapp}
-        onChange={(e) => setWhatsapp(e.target.value)}
-        placeholder="Seu WhatsApp (com DDD)"
+        onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
+        placeholder="(11) 90000-0000"
         aria-label="Seu WhatsApp"
         inputMode="tel"
+        maxLength={15}
         className="h-11 w-full px-3 text-sm outline-none"
         style={inputStyle}
       />
