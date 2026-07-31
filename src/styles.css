@@ -362,3 +362,64 @@
   }
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Ajustes mobile-first do sistema                                      */
+/* ------------------------------------------------------------------ */
+
+/* Evita rolagem horizontal indesejada em telas pequenas */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Barra de rolagem oculta (menus e abas deslizantes no mobile) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Abas roláveis horizontalmente no celular */
+.tabs-scroll {
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+.tabs-scroll [data-slot="tabs-list"],
+.tabs-scroll [role="tablist"] {
+  width: max-content;
+  min-width: 100%;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 767px) {
+  /* Evita o zoom automático do iOS ao focar campos */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Área de toque confortável em botões e campos */
+  button,
+  [role="tab"],
+  a[role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Quebra palavras longas (e-mails, links) dentro dos cards */
+  main p,
+  main span,
+  main h1,
+  main h2,
+  main h3 {
+    overflow-wrap: anywhere;
+  }
+}

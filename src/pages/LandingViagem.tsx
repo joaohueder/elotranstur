@@ -124,7 +124,7 @@ export default function LandingViagem() {
     return (
       <div className="grid min-h-screen place-items-center bg-muted px-6 text-center">
         <div>
-          <h1 className="font-serif text-3xl text-foreground">
+          <h1 className="font-serif text-2xl sm:text-3xl text-foreground">
             Página não encontrada
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">

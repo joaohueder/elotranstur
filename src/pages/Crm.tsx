@@ -223,7 +223,7 @@ export default function Crm() {
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · CRM
           </p>
-          <h1 className="mt-2 font-serif text-3xl text-foreground">
+          <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">
             Funil de leads
           </h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -231,10 +231,11 @@ export default function Crm() {
             <HelpTip texto="Total de leads (contatos) espalhados pelas etapas do funil de vendas" />
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           {podeEditar && (
             <HintButton
               hint="Cadastra um novo lead (cliente em potencial) no funil"
+              className="w-full sm:w-auto"
               onClick={() => navigate("/crm/leads/novo")}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -360,7 +361,7 @@ export default function Crm() {
                                 value={lead.stage_id ?? ""}
                                 onValueChange={(v) => void aplicarEtapa(lead, v)}
                               >
-                                <SelectTrigger className="h-8 flex-1 text-xs">
+                                <SelectTrigger className="h-9 min-w-[130px] flex-1 text-xs sm:h-8">
                                   <SelectValue placeholder="Etapa" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -377,7 +378,7 @@ export default function Crm() {
                                 hint="Move este lead para outra etapa do funil"
                                 size="sm"
                                 variant="outline"
-                                className="h-8"
+                                className="h-9 w-9 sm:h-8 sm:w-8"
                                 onClick={() => navigate(`/crm/leads/${lead.id}`)}
                               >
                                 <Pencil className="h-3.5 w-3.5" />
@@ -388,7 +389,7 @@ export default function Crm() {
                                 hint="Exclui este lead do CRM permanentemente"
                                 size="sm"
                                 variant="outline"
-                                className="h-8 text-destructive"
+                                className="h-9 w-9 text-destructive sm:h-8 sm:w-8"
                                 onClick={() => void excluirLead(lead)}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />

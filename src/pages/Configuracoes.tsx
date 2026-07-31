@@ -145,7 +145,7 @@ export default function Configuracoes() {
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
           Módulo · Configurações
         </p>
-        <h1 className="mt-2 font-serif text-3xl text-foreground">
+        <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">
           Configurações do sistema
         </h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">
@@ -157,7 +157,7 @@ export default function Configuracoes() {
       <div className="rounded-sm border border-border bg-background">
         <Tabs defaultValue="layout">
           <div className="border-b border-border px-4 pt-4 sm:px-6">
-            <TabsList className="rounded-sm">
+            <TabsList className="tabs-scroll w-full justify-start rounded-sm">
               <TabsTrigger value="layout" className="rounded-sm">
                 Layout
               </TabsTrigger>

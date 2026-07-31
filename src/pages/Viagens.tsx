@@ -171,7 +171,7 @@ export default function Viagens() {
             Módulo · Viagens
           </p>
           <div className="mt-1 flex items-center gap-2">
-            <h1 className="font-serif text-3xl text-foreground">Viagens</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl text-foreground">Viagens</h1>
             <HelpTip texto="Aqui você vê e gerencia todos os pacotes de viagem cadastrados." />
           </div>
         </div>
@@ -179,6 +179,7 @@ export default function Viagens() {
           <HintButton
             hint="Cria um novo cadastro de viagem para vender aos clientes."
             onClick={() => navigate("/viagens/nova")}
+            className="w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
             Nova viagem
@@ -230,15 +231,15 @@ export default function Viagens() {
           {filtradas.map((v) => (
             <div
               key={v.id}
-              className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
             >
-              <div className="flex min-w-0 gap-4">
+              <div className="flex min-w-0 gap-3 sm:gap-4">
                 {capaDa(v.imagens) && (
                   <img
                     src={capaDa(v.imagens)!}
                     alt={`Foto de capa da viagem para ${v.destino}`}
                     loading="lazy"
-                    className="h-20 w-28 shrink-0 rounded-sm border border-border object-cover"
+                    className="h-16 w-20 shrink-0 rounded-sm border border-border object-cover sm:h-20 sm:w-28"
                   />
                 )}
                 <div className="min-w-0">
@@ -289,7 +290,7 @@ export default function Viagens() {
                 </div>
               </div>
 
-              <div className="flex shrink-0 flex-wrap gap-2">
+              <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-border pt-3 sm:border-0 sm:pt-0">
                 {landingUrl(v) && (
                   <>
                     <HintButton

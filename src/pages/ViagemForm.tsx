@@ -346,7 +346,7 @@ export default function ViagemForm() {
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Módulo · Viagens
           </p>
-          <h1 className="mt-1 font-serif text-3xl text-foreground">
+          <h1 className="mt-1 font-serif text-2xl sm:text-3xl text-foreground">
             {editando ? "Editar viagem" : "Nova viagem"}
           </h1>
         </div>
@@ -360,7 +360,7 @@ export default function ViagemForm() {
         <div className="w-full rounded-sm border border-border bg-background">
           <Tabs value={aba} onValueChange={setAba}>
             <div className="flex items-center border-b border-border px-6 pt-6">
-              <TabsList className="rounded-sm">
+              <TabsList className="tabs-scroll w-full justify-start rounded-sm">
                 <TabsTrigger value="dados" className="rounded-sm">
                   Dados da Viagem
                 </TabsTrigger>
@@ -977,7 +977,7 @@ export default function ViagemForm() {
             </Dialog>
           </TabsContent>
 
-          <div className="flex justify-end gap-3 border-t border-border p-6">
+          <div className="flex flex-col-reverse gap-2 border-t border-border p-4 sm:flex-row sm:justify-end sm:gap-3 sm:p-6 [&>button]:w-full sm:[&>button]:w-auto">
             <HintButton
               hint="Descarta as alterações e volta para a lista de viagens."
               variant="outline"
