@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
+  Eye,
   GripVertical,
   ImagePlus,
   Loader2,
@@ -11,6 +12,14 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import { AppShell } from "@/components/app-shell";
 import { FieldLabel, HelpTip, HintButton, SectionTitle } from "@/components/help";
@@ -74,6 +83,7 @@ export default function ViagemForm() {
   const [landingModelo, setLandingModelo] = useState<string>(DEFAULT_LANDING_MODEL);
   const [landingSlug, setLandingSlug] = useState("");
   const [landingAtiva, setLandingAtiva] = useState(true);
+  const [previewModelo, setPreviewModelo] = useState<string | null>(null);
   const inputArquivo = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
