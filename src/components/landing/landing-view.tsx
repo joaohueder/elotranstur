@@ -1187,15 +1187,13 @@ export function LandingView({
               {selo}
               {preco}
               {contagem()}
-              <div className="lg:hidden">
-                <Formulario
-                  m={m}
-                  onSubmit={onSubmit}
-                  whatsappUrl={whatsappUrl}
-                  preview={preview}
-                  compacto
-                />
-              </div>
+              <Formulario
+                m={m}
+                onSubmit={onSubmit}
+                whatsappUrl={whatsappUrl}
+                preview={preview}
+                compacto
+              />
             </div>
           </div>
         </div>
