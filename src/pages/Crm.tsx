@@ -527,15 +527,6 @@ export default function Crm() {
                   )}
                 </div>
                 <div className="flex gap-1">
-                  <a
-                    href={whatsappLink(lead.whatsapp)}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Abrir WhatsApp"
-                    className="grid h-7 w-7 place-items-center rounded-sm text-muted-foreground hover:bg-muted"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                  </a>
                   {podeEditar && (
                     <button
                       type="button"
