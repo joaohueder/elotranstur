@@ -168,13 +168,22 @@ export default function UsuariosPage() {
         `Listagem completa indisponível (${listRes.error?.message ?? "RPC ausente"}). Execute supabase/sql/2026_usuarios_admin_list.sql na sua instância.`,
       );
 
-      const [profilesRes, rolesRes] = await Promise.all([
+      const [profilesRes, rolesRes, permsRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, email, nome, ativo")
           .order("email"),
         supabase.from("user_roles").select("user_id, role"),
+        supabase
+          .from("user_permissions")
+          .select("user_id, modulo, can_view, can_edit, can_delete"),
       ]);
+
+      for (const p of (permsRes.data ?? []) as PermissionRow[]) {
+        const current = permsByUser.get(p.user_id) ?? {};
+        current[p.modulo] = p;
+        permsByUser.set(p.user_id, current);
+      }
 
       if (profilesRes.error) {
         setLoadError(
