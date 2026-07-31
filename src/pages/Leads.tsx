@@ -9,6 +9,16 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
 
 import { AppShell } from "@/components/app-shell";
 import { HelpTip, HintButton } from "@/components/help";
@@ -25,6 +35,18 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 import { useCrmData, type CrmLead } from "@/lib/crm";
+
+const CORES_PIZZA = [
+  "hsl(var(--primary))",
+  "hsl(var(--brand-accent, var(--primary)))",
+  "#0ea5e9",
+  "#f59e0b",
+  "#10b981",
+  "#8b5cf6",
+  "#ef4444",
+  "#64748b",
+];
+
 
 /** Formata um timestamp ISO completo em data e hora no padrão brasileiro. */
 function formatarDataHora(iso: string): string {
@@ -83,6 +105,41 @@ export default function Leads() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }, [leads, busca, filtroEtapa, filtroOrigem]);
+
+  /** Evolução: quantidade de leads criados nos últimos 6 meses. */
+  const evolucao = useMemo(() => {
+    const base = new Date();
+    const meses = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(base.getFullYear(), base.getMonth() - (5 - i), 1);
+      return {
+        chave: `${d.getFullYear()}-${d.getMonth()}`,
+        mes: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
+        total: 0,
+      };
+    });
+    const idx = new Map(meses.map((m, i) => [m.chave, i]));
+    for (const l of leads) {
+      const d = new Date(l.created_at);
+      if (Number.isNaN(d.getTime())) continue;
+      const i = idx.get(`${d.getFullYear()}-${d.getMonth()}`);
+      if (i !== undefined) meses[i].total += 1;
+    }
+    return meses;
+  }, [leads]);
+
+  /** Distribuição de leads por origem. */
+  const porOrigem = useMemo(() => {
+    const mapa = new Map<string, number>();
+    for (const l of leads) {
+      const nome = l.origem || "Sem origem";
+      mapa.set(nome, (mapa.get(nome) ?? 0) + 1);
+    }
+    return Array.from(mapa, ([nome, total]) => ({ nome, total })).sort(
+      (a, b) => b.total - a.total,
+    );
+  }, [leads]);
+
+
 
   async function excluirLead(lead: CrmLead) {
     if (!podeExcluir) return;
@@ -146,6 +203,93 @@ export default function Leads() {
           </HintButton>
         )}
       </div>
+
+      {/* Mini dashboard */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <div className="rounded-sm border border-border bg-background p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Total de leads
+            <HelpTip texto="Quantidade total de leads já cadastrados no sistema." />
+          </p>
+          <p className="mt-3 font-serif text-4xl text-foreground">{leads.length}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {evolucao[evolucao.length - 1]?.total ?? 0} novo(s) neste mês
+          </p>
+        </div>
+
+        <div className="rounded-sm border border-border bg-background p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Últimos 6 meses
+            <HelpTip texto="Mostra quantos leads entraram em cada um dos últimos 6 meses." />
+          </p>
+          <div className="mt-3 h-[120px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={evolucao} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                <XAxis
+                  dataKey="mes"
+                  tickLine={false}
+                  axisLine={false}
+                  fontSize={11}
+                  stroke="hsl(var(--muted-foreground))"
+                />
+                <Tooltip
+                  cursor={{ fill: "hsl(var(--muted))" }}
+                  contentStyle={{
+                    fontSize: 12,
+                    borderRadius: 2,
+                    border: "1px solid hsl(var(--border))",
+                    background: "hsl(var(--background))",
+                  }}
+                  formatter={(v: number) => [`${v} lead(s)`, "Total"]}
+                />
+                <Bar dataKey="total" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-border bg-background p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Origens
+            <HelpTip texto="De quais canais os leads chegaram até você." />
+          </p>
+          <div className="mt-3 h-[120px]">
+            {porOrigem.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                Sem dados
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={porOrigem}
+                    dataKey="total"
+                    nameKey="nome"
+                    innerRadius={28}
+                    outerRadius={52}
+                    paddingAngle={2}
+                  >
+                    {porOrigem.map((o, i) => (
+                      <Cell key={o.nome} fill={CORES_PIZZA[i % CORES_PIZZA.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: 12,
+                      borderRadius: 2,
+                      border: "1px solid hsl(var(--border))",
+                      background: "hsl(var(--background))",
+                    }}
+                    formatter={(v: number, n: string) => [`${v} lead(s)`, n]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+
 
       {/* Filtros */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
