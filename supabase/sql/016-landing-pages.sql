@@ -19,9 +19,14 @@ comment on column public.viagens.landing_ativa  is 'Se falso, a landing page fic
 -- Preenche slugs vazios a partir do destino
 update public.viagens v
 set landing_slug = trim(both '-' from
-      regexp_replace(lower(unaccent_safe(coalesce(v.destino, 'viagem'))), '[^a-z0-9]+', '-', 'g')
+      regexp_replace(
+        lower(translate(coalesce(v.destino, 'viagem'),
+          'áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ',
+          'aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC')),
+        '[^a-z0-9]+', '-', 'g')
     ) || '-' || substr(v.id::text, 1, 6)
 where v.landing_slug is null or btrim(v.landing_slug) = '';
+
 
 create unique index if not exists viagens_landing_slug_uidx
   on public.viagens (landing_slug) where landing_slug is not null;
