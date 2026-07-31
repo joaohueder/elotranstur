@@ -307,6 +307,18 @@ export function EmailTab() {
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
         <Button
+          variant="outline"
+          className="w-full rounded-sm sm:w-auto"
+          disabled={salvando || testando}
+          onClick={() => {
+            setDestinatario(form.from_email);
+            setTesteAberto(true);
+          }}
+        >
+          <SendHorizonal className="mr-2 h-4 w-4" />
+          Testar envio
+        </Button>
+        <Button
           className="w-full rounded-sm sm:w-auto sm:min-w-32"
           disabled={salvando}
           onClick={() => void salvar()}
@@ -319,6 +331,55 @@ export function EmailTab() {
           Salvar
         </Button>
       </div>
+
+      <Dialog open={testeAberto} onOpenChange={setTesteAberto}>
+        <DialogContent className="rounded-sm sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Testar envio de e-mail</DialogTitle>
+            <DialogDescription>
+              Enviaremos uma mensagem de teste usando as configurações de SMTP
+              já salvas no sistema.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Enviar para
+            </Label>
+            <Input
+              className="rounded-sm"
+              type="email"
+              placeholder="destinatario@email.com"
+              value={destinatario}
+              onChange={(e) => setDestinatario(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              className="w-full rounded-sm sm:w-auto"
+              disabled={testando}
+              onClick={() => setTesteAberto(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="w-full rounded-sm sm:w-auto"
+              disabled={testando}
+              onClick={() => void enviarTeste()}
+            >
+              {testando ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <SendHorizonal className="mr-2 h-4 w-4" />
+              )}
+              Enviar teste
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
