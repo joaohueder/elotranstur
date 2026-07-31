@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FieldLabel, HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
@@ -216,8 +216,9 @@ export function EmailTab() {
           <Mail className="h-4 w-4" />
         </span>
         <div>
-          <p className="text-sm font-medium text-foreground">
+          <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
             Servidor de e-mail (SMTP)
+            <HelpTip texto="Dados do servidor usado para enviar e-mails automáticos do sistema." />
           </p>
           <p className="text-xs text-muted-foreground">
             Usado para envios transacionais do sistema, como recuperação de
@@ -229,9 +230,12 @@ export function EmailTab() {
       <div className="rounded-sm border border-border p-4 sm:p-5">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Endereço do servidor que envia os e-mails, fornecido pelo seu provedor de e-mail."
+            >
               Servidor SMTP
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               placeholder="smtp.seudominio.com"
@@ -241,9 +245,12 @@ export function EmailTab() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Número da porta de conexão com o servidor SMTP, geralmente 587 ou 465."
+            >
               Porta
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               type="number"
@@ -256,8 +263,9 @@ export function EmailTab() {
 
           <div className="flex items-center justify-between gap-3 rounded-sm border border-border px-4 py-3 sm:mt-6">
             <div>
-              <p className="text-sm font-medium text-foreground">
+              <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                 Conexão segura
+                <HelpTip texto="Ativa a criptografia SSL/TLS na conexão com o servidor de e-mail." />
               </p>
               <p className="text-xs text-muted-foreground">SSL / TLS</p>
             </div>
@@ -268,9 +276,12 @@ export function EmailTab() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Login usado para autenticar no servidor de e-mail (geralmente o próprio e-mail)."
+            >
               Usuário
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               autoComplete="off"
@@ -281,9 +292,12 @@ export function EmailTab() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Senha do usuário SMTP. Fica guardada de forma segura no sistema."
+            >
               Senha
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               type="password"
@@ -300,9 +314,12 @@ export function EmailTab() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Nome que aparece para quem recebe os e-mails enviados pelo sistema."
+            >
               Nome do remetente
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               value={form.from_name}
@@ -311,9 +328,12 @@ export function EmailTab() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Endereço de e-mail que aparece como remetente das mensagens enviadas."
+            >
               E-mail do remetente
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               type="email"
@@ -324,9 +344,12 @@ export function EmailTab() {
           </div>
 
           <div className="space-y-2 sm:col-span-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="E-mail para onde vão as respostas, caso diferente do remetente."
+            >
               Responder para (opcional)
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               type="email"
@@ -338,8 +361,9 @@ export function EmailTab() {
 
           <div className="flex items-center justify-between gap-3 rounded-sm border border-border px-4 py-3 sm:col-span-2">
             <div>
-              <p className="text-sm font-medium text-foreground">
+              <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                 Envio de e-mails ativo
+                <HelpTip texto="Liga ou desliga o envio de e-mails pelo sistema usando este servidor." />
               </p>
               <p className="text-xs text-muted-foreground">
                 Se desativado, o sistema não utilizará este servidor SMTP.
@@ -354,7 +378,8 @@ export function EmailTab() {
       </div>
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-        <Button
+        <HintButton
+          hint="Abre a janela para enviar um e-mail de teste e verificar se o SMTP está funcionando."
           variant="outline"
           className="w-full rounded-sm sm:w-auto"
           disabled={salvando || testando}
@@ -365,8 +390,9 @@ export function EmailTab() {
         >
           <SendHorizonal className="mr-2 h-4 w-4" />
           Testar envio
-        </Button>
-        <Button
+        </HintButton>
+        <HintButton
+          hint="Grava as configurações de e-mail do sistema."
           className="w-full rounded-sm sm:w-auto sm:min-w-32"
           disabled={salvando}
           onClick={() => void salvar()}
@@ -377,7 +403,7 @@ export function EmailTab() {
             <Save className="mr-2 h-4 w-4" />
           )}
           Salvar
-        </Button>
+        </HintButton>
       </div>
 
       <Dialog open={testeAberto} onOpenChange={setTesteAberto}>
@@ -391,9 +417,12 @@ export function EmailTab() {
           </DialogHeader>
 
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Endereço de e-mail que receberá a mensagem de teste."
+            >
               Enviar para
-            </Label>
+            </FieldLabel>
             <Input
               className="rounded-sm"
               type="email"
@@ -404,15 +433,17 @@ export function EmailTab() {
           </div>
 
           <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
-            <Button
+            <HintButton
+              hint="Fecha esta janela sem enviar o e-mail de teste."
               variant="outline"
               className="w-full rounded-sm sm:w-auto"
               disabled={testando}
               onClick={() => setTesteAberto(false)}
             >
               Cancelar
-            </Button>
-            <Button
+            </HintButton>
+            <HintButton
+              hint="Envia um e-mail de teste para o endereço informado."
               className="w-full rounded-sm sm:w-auto"
               disabled={testando}
               onClick={() => void enviarTeste()}
@@ -423,7 +454,7 @@ export function EmailTab() {
                 <SendHorizonal className="mr-2 h-4 w-4" />
               )}
               Enviar teste
-            </Button>
+            </HintButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

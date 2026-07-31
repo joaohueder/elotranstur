@@ -120,21 +120,28 @@ export function AppShell({ children }: { children: ReactNode }) {
             const path = PATHS[m.key] ?? `/${m.key}`;
             const active = pathname.startsWith(path);
             return (
-              <Link
-                key={m.key}
-                to={path}
-                className={cn(
-                  "flex h-full items-center gap-2 border-b-2 px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors",
-                  active
-                    ? "border-brand-accent text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                  m.key === "configuracoes" && "ml-auto",
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {m.label}
-              </Link>
+              <Tooltip key={m.key}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={path}
+                    className={cn(
+                      "flex h-full items-center gap-2 border-b-2 px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+                      active
+                        ? "border-brand-accent text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground",
+                      m.key === "configuracoes" && "ml-auto",
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {m.label}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[240px] text-xs">
+                  {MENU_HINTS[m.key] ?? `Abrir o módulo ${m.label}.`}
+                </TooltipContent>
+              </Tooltip>
             );
+
           })}
         </div>
       </nav>
