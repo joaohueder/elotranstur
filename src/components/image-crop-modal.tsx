@@ -20,6 +20,18 @@ const PROPORCOES = [
   { key: "1:1", label: "1:1 (quadrado)", valor: 1 },
 ] as const;
 
+export type ProporcaoOpcao = { key: string; label: string; valor: number };
+
+export type CropperOpcoes = {
+  /** Lista de proporções disponíveis no modal. */
+  proporcoes?: ProporcaoOpcao[];
+  /** Proporção selecionada ao abrir. */
+  proporcaoPadrao?: number;
+  /** Texto de apoio exibido no cabeçalho do modal. */
+  descricao?: string;
+};
+
+
 const LARGURA_PALCO = 560;
 
 type Pendente = {
@@ -32,9 +44,14 @@ type Pendente = {
  * Modal de ajuste de corte da imagem.
  * Uso: const { cropperUi, ajustarCorte } = useImageCropper();
  */
-export function useImageCropper() {
+export function useImageCropper(opcoes?: CropperOpcoes) {
+  const listaProporcoes: ProporcaoOpcao[] =
+    opcoes?.proporcoes ?? PROPORCOES.map((p) => ({ ...p }));
   const [pendente, setPendente] = useState<Pendente | null>(null);
-  const [proporcao, setProporcao] = useState<number>(16 / 9);
+  const [proporcao, setProporcao] = useState<number>(
+    opcoes?.proporcaoPadrao ?? listaProporcoes[0].valor,
+  );
+
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [processando, setProcessando] = useState(false);
@@ -173,17 +190,18 @@ export function useImageCropper() {
             Ajustar corte da imagem
           </DialogTitle>
           <DialogDescription>
-            Arraste a imagem para posicionar e use o zoom. A área visível será
-            salva na galeria.
+            {opcoes?.descricao ??
+              "Arraste a imagem para posicionar e use o zoom. A área visível será salva na galeria."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Proporção
-            <HelpTip texto="Formato do recorte. 16:9 é o ideal para fotos de capa." />
+            <HelpTip texto="Formato do recorte: define o formato final da imagem." />
           </span>
-          {PROPORCOES.map((p) => (
+          {listaProporcoes.map((p) => (
+
             <Button
               key={p.key}
               type="button"
