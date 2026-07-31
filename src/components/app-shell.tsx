@@ -11,6 +11,7 @@ import {
   Bus,
   UserPlus,
   UserCog,
+  LayoutDashboard,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -41,6 +42,7 @@ import { cn } from "@/lib/utils";
 
 
 const ICONS: Record<string, typeof Users> = {
+  dashboard: LayoutDashboard,
   viagens: Bus,
   crm: KanbanSquare,
   leads: UserPlus,
@@ -49,6 +51,7 @@ const ICONS: Record<string, typeof Users> = {
 };
 
 const PATHS: Record<string, string> = {
+  dashboard: "/dashboard",
   viagens: "/viagens",
   crm: "/crm",
   leads: "/leads",
@@ -58,6 +61,7 @@ const PATHS: Record<string, string> = {
 
 /** Explicações simples de cada módulo, exibidas ao passar o mouse no menu. */
 const MENU_HINTS: Record<string, string> = {
+  dashboard: "Visão geral de visitas e leads em números e gráficos.",
   viagens: "Cadastre e acompanhe as viagens da empresa.",
   crm: "Acompanhe seus leads e o andamento das negociações.",
   leads: "Veja todos os leads cadastrados em formato de lista.",
