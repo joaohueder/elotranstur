@@ -1069,7 +1069,7 @@ export function LandingView({
         <main className={`${secao} space-y-12 sm:space-y-14`}>
           {infos}
           {corpoComum}
-          <div className="lg:hidden">{formulario}</div>
+          {formulario}
           {rodape}
         </main>
       </>,
