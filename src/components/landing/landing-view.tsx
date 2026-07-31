@@ -1114,7 +1114,7 @@ export function LandingView({
                 )}
                 <div className="pt-1">{contagem(true)}</div>
               </div>
-              <div className="hidden lg:block">{formulario}</div>
+              
             </div>
           </div>
         </header>
