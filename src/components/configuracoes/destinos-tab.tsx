@@ -43,7 +43,21 @@ export function DestinosTab() {
 
   useRealtime(["viagens"], () => void carregarUso());
 
-  const usos = (nome: string) => emUso[(nome ?? "").trim().toLowerCase()] ?? 0;
+  /** Conta viagens usando o destino, aceitando "Nome" ou "Nome - UF". */
+  const usos = (d: { nome: string; uf?: string | null }) => {
+    const base = (d.nome ?? "").trim().toLowerCase();
+    if (!base) return 0;
+    const uf = (d.uf ?? "").trim().toLowerCase();
+    const chaves = new Set([base]);
+    if (uf) {
+      chaves.add(`${base} - ${uf}`);
+      chaves.add(`${base}/${uf}`);
+      chaves.add(`${base} ${uf}`);
+    }
+    let total = 0;
+    for (const chave of chaves) total += emUso[chave] ?? 0;
+    return total;
+  };
 
   const lista: DestinoDraft[] = drafts ?? destinos.map((d) => ({ ...d }));
 
