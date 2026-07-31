@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Loader2,
+  MapPin,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -40,6 +50,27 @@ export default function Viagens() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("todas");
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState<string | null>(null);
+
+  const landingUrl = (v: Viagem) =>
+    v.landing_slug ? `${window.location.origin}/v/${v.landing_slug}` : null;
+
+  async function copiarUrl(v: Viagem) {
+    const url = landingUrl(v);
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiado(v.id);
+      window.setTimeout(() => setCopiado((a) => (a === v.id ? null : a)), 2000);
+    } catch (err) {
+      feedback.showError(
+        "Não foi possível copiar",
+        "Seu navegador bloqueou a cópia automática. Copie o endereço manualmente.",
+        err,
+      );
+    }
+  }
+
 
   const podeEditar = isAdmin || can("viagens", "edit");
   const podeExcluir = isAdmin || can("viagens", "delete");
@@ -50,7 +81,7 @@ export default function Viagens() {
       const { data, error } = await supabase
         .from("viagens")
         .select(
-          "id, titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, created_at",
+          "id, titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, situacao, created_at, landing_slug, landing_ativa",
         )
         .order("data_partida", { ascending: true });
       if (error) throw error;
@@ -248,7 +279,34 @@ export default function Viagens() {
                 </div>
               </div>
 
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {landingUrl(v) && (
+                  <>
+                    <HintButton
+                      hint="Copia o endereço (link) da landing page desta viagem para compartilhar."
+                      variant="outline"
+                      size="icon"
+                      onClick={() => void copiarUrl(v)}
+                    >
+                      {copiado === v.id ? (
+                        <Check className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </HintButton>
+                    <HintButton
+                      hint="Abre a landing page desta viagem em uma nova aba."
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        window.open(landingUrl(v)!, "_blank", "noopener")
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </HintButton>
+                  </>
+                )}
+
                 {podeEditar && (
                   <HintButton
                     hint="Edita os dados desta viagem."
