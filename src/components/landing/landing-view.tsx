@@ -589,6 +589,14 @@ export function LandingView({ viagem, modelo, paleta, onSubmit, preview }: Props
   );
   useGoogleFont(m.fonts.google);
 
+  /* Aumenta a tipografia base em mobile para melhor legibilidade. */
+  useEffect(() => {
+    document.documentElement.classList.add("landing-mobile-larger-font");
+    return () => {
+      document.documentElement.classList.remove("landing-mobile-larger-font");
+    };
+  }, []);
+
   const imagens = viagem.imagens ?? [];
   const capa = capaDa(imagens);
   const fotos = Array.from(

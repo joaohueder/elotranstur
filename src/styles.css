@@ -157,3 +157,11 @@
   max-width: var(--app-max-width);
   margin-inline: auto;
 }
+
+/* Landing pages: aumenta a tipografia base em telas pequenas para melhor
+   legibilidade em anúncios e dispositivos móveis. */
+@media (max-width: 640px) {
+  html.landing-mobile-larger-font {
+    font-size: 18px;
+  }
+}
