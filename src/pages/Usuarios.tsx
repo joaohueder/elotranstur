@@ -446,12 +446,16 @@ export default function Usuarios() {
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
                       Expira em
-                      <HelpTip texto="Tempo restante até a sessão deste usuário expirar e ele precisar fazer login novamente." />
+                      <HelpTip texto="Tempo restante até a sessão expirar. Se a pessoa não marcou 'Ficar conectado por 30 dias', a sessão encerra no logoff." />
                     </p>
                     <p className="mt-0.5 text-foreground">
-                      {u.online && u.sessao_expira_em
-                        ? formatarTempoRestante(u.sessao_expira_em, agora)
-                        : "—"}
+                      {!u.online
+                        ? "—"
+                        : u.sessao_remember === false
+                          ? "No logoff"
+                          : u.sessao_expira_em
+                            ? formatarTempoRestante(u.sessao_expira_em, agora)
+                            : "—"}
                     </p>
                   </div>
                 </div>
