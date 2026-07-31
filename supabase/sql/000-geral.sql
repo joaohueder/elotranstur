@@ -887,3 +887,5 @@ create trigger viagens_set_updated_at
 before update on public.viagens
 for each row execute function public.set_updated_at();
 
+
+commit;
