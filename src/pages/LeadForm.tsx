@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ORIGENS, formatWhatsapp, type CrmStage } from "@/lib/crm";
+import { formatWhatsapp, useCrmOrigens, type CrmStage } from "@/lib/crm";
 import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 
@@ -23,6 +23,7 @@ export default function LeadForm() {
   const navigate = useNavigate();
   const feedback = useFeedback();
 
+  const { origens } = useCrmOrigens(true);
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -178,9 +179,9 @@ export default function LeadForm() {
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ORIGENS.map((o) => (
-                    <SelectItem key={o} value={o}>
-                      {o}
+                  {origens.map((o) => (
+                    <SelectItem key={o.id} value={o.nome}>
+                      {o.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>

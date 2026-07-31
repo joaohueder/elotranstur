@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Monitor, Save } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { CrmTab } from "@/components/configuracoes/crm-tab";
 import { EmailTab } from "@/components/configuracoes/email-tab";
 
 import { Button } from "@/components/ui/button";
@@ -73,11 +74,18 @@ export default function Configuracoes() {
               <TabsTrigger value="layout" className="rounded-sm">
                 Layout
               </TabsTrigger>
+              <TabsTrigger value="crm" className="rounded-sm">
+                CRM
+              </TabsTrigger>
               <TabsTrigger value="email" className="rounded-sm">
                 E-mail
               </TabsTrigger>
             </TabsList>
           </div>
+
+          <TabsContent value="crm" className="m-0 p-4 sm:p-6">
+            <CrmTab />
+          </TabsContent>
 
           <TabsContent value="email" className="m-0 p-4 sm:p-6">
             <EmailTab />
