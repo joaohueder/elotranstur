@@ -614,28 +614,12 @@ export default function LeadForm() {
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-[280px_1fr]">
                   <div>
-                    <FieldLabel help="Momento em que a anotação foi feita. Já vem preenchida automaticamente, mas você pode ajustar se quiser">
+                    <FieldLabel help="Momento em que a anotação foi feita. É preenchida automaticamente com a data/hora atual no momento do salvamento">
                       Data e hora
                     </FieldLabel>
-                    <div className="mt-1.5 flex gap-2">
-                      <Input
-                        type="datetime-local"
-                        value={novaNotaDataHora}
-                        onChange={(e) => setNovaNotaDataHora(e.target.value)}
-                        className="flex-1"
-                      />
-                      <HintButton
-                        type="button"
-                        variant="outline"
-                        hint="Preenche a data e hora com o momento atual"
-                        onClick={() =>
-                          setNovaNotaDataHora(
-                            dataHoraUTCParaLocal(new Date().toISOString()),
-                          )
-                        }
-                      >
-                        Agora
-                      </HintButton>
+                    <div className="mt-1.5 flex h-9 items-center rounded-sm border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      Será registrado automaticamente no momento do salvamento
                     </div>
                   </div>
                   <div>
