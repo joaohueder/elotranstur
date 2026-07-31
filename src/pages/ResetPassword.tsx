@@ -1,0 +1,172 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useFeedback } from "@/lib/feedback";
+import { useSeo } from "@/lib/seo";
+import { supabase } from "@/lib/supabase";
+
+export default function ResetPasswordPage() {
+  useSeo({
+    title: "Redefinir senha — ELO Transporte e Turismo",
+    description: "Defina uma nova senha de acesso ao painel da ELO.",
+  });
+
+  const navigate = useNavigate();
+  const { showSuccess, showNegative, showError } = useFeedback();
+
+  const [ready, setReady] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // O link de recuperação chega como #access_token=...&type=recovery.
+  // O listener é registrado antes de qualquer leitura de sessão.
+  useEffect(() => {
+    let active = true;
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (active && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN")) {
+        setReady(true);
+      }
+    });
+
+    const isRecovery = window.location.hash.includes("type=recovery");
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      if (data.session || isRecovery) setReady(true);
+      else {
+        showNegative(
+          "Link inválido ou expirado",
+          "Solicite um novo link de redefinição de senha na tela de login.",
+        );
+      }
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [showNegative]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+
+    if (password.length < 8) {
+      showNegative(
+        "Senha muito curta",
+        "A nova senha deve ter pelo menos 8 caracteres.",
+      );
+      return;
+    }
+    if (password !== confirm) {
+      showNegative(
+        "Senhas diferentes",
+        "A confirmação da senha não confere com a nova senha informada.",
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+
+      showSuccess(
+        "Senha atualizada",
+        "Sua nova senha foi definida com sucesso. Faça login para acessar o painel.",
+      );
+      await supabase.auth.signOut();
+      navigate("/login", { replace: true });
+    } catch (err) {
+      showError(
+        "Falha ao redefinir a senha",
+        "Não conseguimos atualizar sua senha. O link pode ter expirado — solicite um novo na tela de login.",
+        err,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col justify-center bg-muted px-8 py-16 font-sans lg:px-24">
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-12 flex items-center gap-3">
+          <div className="grid h-10 px-3 place-items-center rounded-sm bg-brand-accent text-xl font-serif font-bold italic text-primary-foreground">
+            ELO
+          </div>
+          <span className="font-serif text-xl tracking-tight">
+            TRANSPORTE E TURISMO
+          </span>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="mb-2 font-serif text-3xl text-foreground">
+            Definir nova senha
+          </h2>
+          <p className="text-muted-foreground">
+            Escolha uma senha forte para proteger o acesso ao painel.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label
+              htmlFor="new-password"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Nova senha
+            </Label>
+            <Input
+              id="new-password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="rounded-none border-border bg-background px-4 py-3 focus:border-brand-accent focus:ring-0"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="confirm-password"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Confirmar nova senha
+            </Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="rounded-none border-border bg-background px-4 py-3 focus:border-brand-accent focus:ring-0"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={loading || !ready}
+            className="w-full rounded-none bg-primary py-6 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
+          >
+            {loading ? "Salvando..." : "Salvar nova senha"}
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/login", { replace: true })}
+            className="w-full text-xs font-medium text-brand-accent hover:underline"
+          >
+            Voltar para o login
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
