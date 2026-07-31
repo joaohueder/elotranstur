@@ -20,6 +20,18 @@ const PROPORCOES = [
   { key: "1:1", label: "1:1 (quadrado)", valor: 1 },
 ] as const;
 
+export type ProporcaoOpcao = { key: string; label: string; valor: number };
+
+export type CropperOpcoes = {
+  /** Lista de proporções disponíveis no modal. */
+  proporcoes?: ProporcaoOpcao[];
+  /** Proporção selecionada ao abrir. */
+  proporcaoPadrao?: number;
+  /** Texto de apoio exibido no cabeçalho do modal. */
+  descricao?: string;
+};
+
+
 const LARGURA_PALCO = 560;
 
 type Pendente = {
