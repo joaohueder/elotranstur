@@ -227,8 +227,154 @@ export default function Viagens() {
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-border rounded-sm border border-border bg-background">
+        <>
+        {/* CARDS — celular */}
+        <div className="grid gap-4 sm:hidden">
           {filtradas.map((v) => (
+            <article
+              key={v.id}
+              className="overflow-hidden rounded-lg border border-border bg-background shadow-sm"
+            >
+              <div className="relative">
+                {capaDa(v.imagens) ? (
+                  <img
+                    src={capaDa(v.imagens)!}
+                    alt={`Foto de capa da viagem para ${v.destino}`}
+                    loading="lazy"
+                    className="h-40 w-full object-cover"
+                  />
+                ) : (
+                  <div className="grid h-24 w-full place-items-center bg-muted">
+                    <MapPin className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+                <span
+                  className={cn(
+                    "absolute left-3 top-3 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest backdrop-blur",
+                    situacaoClasses(v.situacao),
+                  )}
+                >
+                  {situacaoLabel(v.situacao)}
+                </span>
+              </div>
+
+              <div className="space-y-3 p-4">
+                <div className="min-w-0">
+                  <h2 className="font-serif text-lg leading-snug text-foreground">
+                    {v.titulo || v.destino}
+                  </h2>
+                  <p className="mt-0.5 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    {v.destino}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-md bg-muted px-3 py-2">
+                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                      Partida
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {formatarData(v.data_partida)}
+                      {v.hora_partida ? ` · ${formatarHora(v.hora_partida)}` : ""}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-muted px-3 py-2">
+                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                      Por pessoa
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {formatarValor(v.valor)}
+                    </p>
+                  </div>
+                </div>
+
+                <ViagemCountdown data={v.data_partida} hora={v.hora_partida} />
+
+                {(v.itens_inclusos ?? []).length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {v.itens_inclusos.slice(0, 4).map((item, i) => (
+                      <span
+                        key={`${v.id}-m-${i}`}
+                        className="rounded-full bg-muted px-2.5 py-1 text-[11px] text-muted-foreground"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                    {v.itens_inclusos.length > 4 && (
+                      <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] text-muted-foreground">
+                        +{v.itens_inclusos.length - 4}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 border-t border-border px-4 py-3">
+                {podeEditar && (
+                  <HintButton
+                    hint="Edita os dados desta viagem."
+                    variant="outline"
+                    className="h-10 flex-1 rounded-md"
+                    onClick={() => navigate(`/viagens/${v.id}`)}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Editar
+                  </HintButton>
+                )}
+                {landingUrl(v) && (
+                  <>
+                    <HintButton
+                      hint="Copia o link de compartilhamento da viagem."
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-md"
+                      onClick={() => void copiarUrl(v)}
+                    >
+                      {copiado === v.id ? (
+                        <Check className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </HintButton>
+                    <HintButton
+                      hint="Abre a landing page desta viagem em uma nova aba."
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-md"
+                      onClick={() =>
+                        window.open(landingUrl(v)!, "_blank", "noopener")
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </HintButton>
+                  </>
+                )}
+                {podeExcluir && (
+                  <HintButton
+                    hint="Exclui esta viagem definitivamente."
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-md text-destructive"
+                    disabled={excluindo === v.id}
+                    onClick={() => void excluir(v)}
+                  >
+                    {excluindo === v.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </HintButton>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* LISTA — tablet e computador */}
+        <div className="hidden divide-y divide-border rounded-sm border border-border bg-background sm:block">
+          {filtradas.map((v) => (
+
             <div
               key={v.id}
               className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
@@ -347,7 +493,9 @@ export default function Viagens() {
             </div>
           ))}
         </div>
+        </>
       )}
+
     </AppShell>
   );
 }
