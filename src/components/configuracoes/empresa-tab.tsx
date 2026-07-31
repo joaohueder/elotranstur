@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Building2, Loader2, Save } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { FieldLabel, HelpTip, HintButton } from "@/components/help";
 import { Input } from "@/components/ui/input";
 import { useFeedback } from "@/lib/feedback";
@@ -187,19 +186,18 @@ export function EmpresaTab() {
         </p>
       ) : (
         <div className="flex justify-end">
-          <HintButton hint="Grava os dados da empresa no sistema.">
-            <Button
-              className="rounded-sm"
-              onClick={() => void salvar()}
-              disabled={!alterado || salvando}
-            >
-              {salvando ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Salvar dados da empresa
-            </Button>
+          <HintButton
+            hint="Grava os dados da empresa no sistema."
+            className="rounded-sm"
+            onClick={() => void salvar()}
+            disabled={!alterado || salvando}
+          >
+            {salvando ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Salvar dados da empresa
           </HintButton>
         </div>
       )}
