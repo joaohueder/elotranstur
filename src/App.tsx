@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ConfirmProvider } from "@/lib/confirm";
 import { FeedbackProvider } from "@/lib/feedback";
 
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
