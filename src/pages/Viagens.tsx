@@ -165,6 +165,56 @@ export default function Viagens() {
     }
   }
 
+  async function clonar(v: Viagem) {
+    if (!podeEditar) return;
+    const ok = await confirm({
+      title: "Clonar viagem",
+      message: `Deseja criar uma cópia da viagem para "${v.destino}"? A cópia será criada como Rascunho.`,
+      confirmText: "Sim, clonar",
+    });
+    if (!ok) return;
+    setClonando(v.id);
+    try {
+      const { data: original, error: erroBusca } = await supabase
+        .from("viagens")
+        .select(
+          "titulo, subtitulo, descricao, destino, data_partida, hora_partida, valor, vagas, itens_inclusos, imagens, landing_modelo, landing_paleta, landing_slug",
+        )
+        .eq("id", v.id)
+        .single();
+      if (erroBusca) throw erroBusca;
+
+      const sufixo = Math.random().toString(36).slice(2, 7);
+      const payload = {
+        ...original,
+        titulo: `${original.titulo || original.destino} (cópia)`,
+        situacao: "rascunho",
+        landing_slug: original.landing_slug
+          ? `${original.landing_slug}-copia-${sufixo}`
+          : null,
+        landing_ativa: false,
+      };
+
+      const { error } = await supabase.from("viagens").insert(payload);
+      if (error) throw error;
+
+      feedback.showSuccess(
+        "Viagem clonada",
+        `Uma cópia da viagem para ${v.destino} foi criada como Rascunho.`,
+      );
+      await carregar();
+    } catch (err) {
+      feedback.showError(
+        "Não foi possível clonar",
+        "Ocorreu um erro ao clonar a viagem. Tente novamente.",
+        err,
+      );
+    } finally {
+      setClonando(null);
+    }
+  }
+
+
   return (
     <AppShell>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
