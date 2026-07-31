@@ -322,6 +322,22 @@
   display: none;
 }
 
+/* Formulário flutuante lateral (desktop) */
+.lp-flutuante {
+  scrollbar-width: thin;
+  animation: lp-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.28));
+}
+.lp-flutuante::-webkit-scrollbar {
+  width: 6px;
+}
+.lp-flutuante::-webkit-scrollbar-thumb {
+  background: var(--lp-border);
+  border-radius: 999px;
+}
+
+
+
 @media (prefers-reduced-motion: reduce) {
   .lp-reveal,
   .lp-rise,
