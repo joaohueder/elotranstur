@@ -28,7 +28,6 @@ import { useAuthz } from "@/lib/use-authz";
 import { cn } from "@/lib/utils";
 import {
   useCrmData,
-  whatsappLink,
   tempoDeVida,
   isStageFinal,
   type CrmLead,
