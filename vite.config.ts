@@ -3,12 +3,14 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "node:path";
+// @ts-expect-error — plugin em JS puro (roda apenas no build)
+import { prerenderLandings } from "./scripts/prerender-landings.mjs";
 
 // React + Vite SPA (sem SSR, sem TanStack Start, sem Nitro, sem Cloudflare).
 // `npm run build` gera dist/index.html + dist/assets para hospedagem compartilhada.
 export default defineConfig({
   base: "/",
-  plugins: [react(), tailwindcss(), tsconfigPaths()],
+  plugins: [react(), tailwindcss(), tsconfigPaths(), prerenderLandings()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
