@@ -82,3 +82,42 @@ export function useCrmData() {
 
   return { stages, leads, loading, error, reload: load, setLeads };
 }
+
+export type CrmOrigem = {
+  id: string;
+  nome: string;
+  posicao: number;
+  ativo: boolean;
+};
+
+/** Carrega as origens de lead configuradas no sistema. */
+export function useCrmOrigens(somenteAtivas = false) {
+  const [origens, setOrigens] = useState<CrmOrigem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase
+        .from("crm_origens")
+        .select("id, nome, posicao, ativo")
+        .order("posicao", { ascending: true });
+      if (somenteAtivas) query = query.eq("ativo", true);
+      const { data, error: err } = await query;
+      if (err) throw err;
+      setOrigens((data ?? []) as CrmOrigem[]);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [somenteAtivas]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  return { origens, loading, error, reload: load };
+}
