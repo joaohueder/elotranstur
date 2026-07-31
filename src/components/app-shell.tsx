@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, RefreshCw, Users, Settings, KanbanSquare, Bus } from "lucide-react";
+import { LogOut, RefreshCw, Users, Settings, KanbanSquare, Bus, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 const ICONS: Record<string, typeof Users> = {
   viagens: Bus,
   crm: KanbanSquare,
+  leads: UserPlus,
   usuarios: Users,
   configuracoes: Settings,
 };
@@ -24,6 +25,7 @@ const ICONS: Record<string, typeof Users> = {
 const PATHS: Record<string, string> = {
   viagens: "/viagens",
   crm: "/crm",
+  leads: "/leads",
   usuarios: "/usuarios",
   configuracoes: "/configuracoes",
 };
@@ -32,6 +34,7 @@ const PATHS: Record<string, string> = {
 const MENU_HINTS: Record<string, string> = {
   viagens: "Cadastre e acompanhe as viagens da empresa.",
   crm: "Acompanhe seus leads e o andamento das negociações.",
+  leads: "Veja todos os leads cadastrados em formato de lista.",
   usuarios: "Crie usuários e defina o que cada um pode acessar.",
   configuracoes: "Ajustes gerais do sistema, como layout, e-mail e CRM.",
 };

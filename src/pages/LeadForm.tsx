@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   CalendarDays,
@@ -64,6 +64,10 @@ export default function LeadForm() {
   const { id } = useParams();
   const editando = Boolean(id);
   const navigate = useNavigate();
+  const location = useLocation();
+  // Mesma tela usada pelos módulos CRM e Leads: volta para a origem correta.
+  const noModuloLeads = location.pathname.startsWith("/leads");
+  const voltarPara = noModuloLeads ? "/leads" : "/crm";
   const feedback = useFeedback();
 
   const { origens } = useCrmOrigens(true);
@@ -239,7 +243,7 @@ export default function LeadForm() {
         editando ? "Lead atualizado" : "Lead cadastrado",
         `${payload.nome} foi ${editando ? "atualizado" : "cadastrado"} com sucesso.`,
       );
-      navigate("/crm");
+      navigate(voltarPara);
     } catch (err) {
       feedback.showError(
         "Não foi possível salvar",
@@ -347,13 +351,13 @@ export default function LeadForm() {
           hint="Volta para a lista de leads do CRM sem salvar"
           variant="outline"
           size="icon"
-          onClick={() => navigate("/crm")}
+          onClick={() => navigate(voltarPara)}
         >
           <ArrowLeft className="h-4 w-4" />
         </HintButton>
         <div>
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
-            Módulo · CRM
+            Módulo · {noModuloLeads ? "Leads" : "CRM"}
           </p>
           <h1 className="mt-1 flex items-center gap-1.5 font-serif text-3xl text-foreground">
             {editando ? "Editar lead" : "Novo lead"}
@@ -705,7 +709,7 @@ export default function LeadForm() {
             <HintButton
               hint="Descarta as alterações e volta para a lista de leads"
               variant="outline"
-              onClick={() => navigate("/crm")}
+              onClick={() => navigate(voltarPara)}
             >
               Cancelar
             </HintButton>
