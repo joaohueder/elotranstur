@@ -60,6 +60,7 @@ volatile
 security definer
 set search_path = public
 as $$
+#variable_conflict use_column
 declare
   allowed_modules constant text[] := array['usuarios','configuracoes'];
   p            jsonb;
@@ -67,10 +68,10 @@ declare
   nome_norm    text  := nullif(btrim(coalesce(_nome, '')), '');
   ativo_norm   boolean := coalesce(_ativo, true);
   modulos      text[] := '{}';
-  modulo       text;
-  can_view     boolean;
-  can_edit     boolean;
-  can_delete   boolean;
+  v_modulo     text;
+  v_can_view   boolean;
+  v_can_edit   boolean;
+  v_can_delete boolean;
   result       jsonb;
 begin
   -- 3.1) Autorização
@@ -129,28 +130,28 @@ begin
         raise exception 'Cada permissão deve ser um objeto JSON.' using errcode = '22023';
       end if;
 
-      modulo := p->>'modulo';
+      v_modulo := p->>'modulo';
 
-      if modulo is null or not (modulo = any (allowed_modules)) then
-        raise exception 'Módulo inválido: %', coalesce(modulo, '(nulo)') using errcode = '22023';
+      if v_modulo is null or not (v_modulo = any (allowed_modules)) then
+        raise exception 'Módulo inválido: %', coalesce(v_modulo, '(nulo)') using errcode = '22023';
       end if;
 
-      if modulo = any (modulos) then
-        raise exception 'Módulo duplicado: %', modulo using errcode = '22023';
+      if v_modulo = any (modulos) then
+        raise exception 'Módulo duplicado: %', v_modulo using errcode = '22023';
       end if;
-      modulos := modulos || modulo;
+      modulos := modulos || v_modulo;
 
-      can_view   := coalesce((p->>'can_view')::boolean, false);
-      can_edit   := coalesce((p->>'can_edit')::boolean, false);
-      can_delete := coalesce((p->>'can_delete')::boolean, false);
+      v_can_view   := coalesce((p->>'can_view')::boolean, false);
+      v_can_edit   := coalesce((p->>'can_edit')::boolean, false);
+      v_can_delete := coalesce((p->>'can_delete')::boolean, false);
 
       -- Coerência: editar/excluir exige visualizar
-      if (can_edit or can_delete) and not can_view then
-        can_view := true;
+      if (v_can_edit or v_can_delete) and not v_can_view then
+        v_can_view := true;
       end if;
 
       insert into public.user_permissions (user_id, modulo, can_view, can_edit, can_delete)
-      values (_user_id, modulo, can_view, can_edit, can_delete)
+      values (_user_id, v_modulo, v_can_view, v_can_edit, v_can_delete)
       on conflict (user_id, modulo) do update
         set can_view   = excluded.can_view,
             can_edit   = excluded.can_edit,
