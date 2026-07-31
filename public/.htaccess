@@ -2,6 +2,13 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Prévia de compartilhamento (WhatsApp, Facebook, Telegram, Twitter/X, etc.):
+  # robôs que NÃO executam JavaScript recebem o HTML estático de og.php,
+  # com a foto de capa, o título e o subtítulo da viagem.
+  RewriteCond %{HTTP_USER_AGENT} (WhatsApp|facebookexternalhit|facebookcatalog|Facebot|Twitterbot|TelegramBot|Discordbot|Slackbot|LinkedInBot|Pinterest|SkypeUriPreview|redditbot|vkShare|Applebot|Googlebot|bingbot|Iframely|Embedly) [NC]
+  RewriteRule ^v/([A-Za-z0-9\-_]+)/?$ /og.php?slug=$1 [L,QSA]
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
