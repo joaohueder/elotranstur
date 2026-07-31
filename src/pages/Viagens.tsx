@@ -279,7 +279,34 @@ export default function Viagens() {
                 </div>
               </div>
 
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {landingUrl(v) && (
+                  <>
+                    <HintButton
+                      hint="Copia o endereço (link) da landing page desta viagem para compartilhar."
+                      variant="outline"
+                      size="icon"
+                      onClick={() => void copiarUrl(v)}
+                    >
+                      {copiado === v.id ? (
+                        <Check className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </HintButton>
+                    <HintButton
+                      hint="Abre a landing page desta viagem em uma nova aba."
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        window.open(landingUrl(v)!, "_blank", "noopener")
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </HintButton>
+                  </>
+                )}
+
                 {podeEditar && (
                   <HintButton
                     hint="Edita os dados desta viagem."
