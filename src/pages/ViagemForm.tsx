@@ -216,6 +216,7 @@ export default function ViagemForm() {
       return;
     }
     if (!dataPartida) {
+      setAba("dados");
       feedback.showNegative(
         "Campo obrigatório",
         "Informe a data de partida da viagem.",
