@@ -138,6 +138,8 @@ export default function App() {
         </BrowserRouter>
         </LayoutSettingsProvider>
       </FeedbackProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
+
