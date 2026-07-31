@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ForgotPasswordModal } from "@/components/forgot-password-modal";
-import { Button } from "@/components/ui/button";
+import { HelpTip, HintButton } from "@/components/help";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
