@@ -108,6 +108,14 @@ export default function LoginPage() {
         return;
       }
 
+      // Registra no banco a duração real desta sessão (30 dias ou 6 horas),
+      // para que o módulo de usuários mostre a expiração correta.
+      try {
+        await supabase.rpc("registrar_expiracao_sessao", { p_remember: rememberMe });
+      } catch {
+        // não bloqueia o login
+      }
+
 
       if (!redirected.current) {
         redirected.current = true;
