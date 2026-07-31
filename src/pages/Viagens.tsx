@@ -50,6 +50,27 @@ export default function Viagens() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("todas");
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState<string | null>(null);
+
+  const landingUrl = (v: Viagem) =>
+    v.landing_slug ? `${window.location.origin}/v/${v.landing_slug}` : null;
+
+  async function copiarUrl(v: Viagem) {
+    const url = landingUrl(v);
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiado(v.id);
+      window.setTimeout(() => setCopiado((a) => (a === v.id ? null : a)), 2000);
+    } catch (err) {
+      feedback.showError(
+        "Não foi possível copiar",
+        "Seu navegador bloqueou a cópia automática. Copie o endereço manualmente.",
+        err,
+      );
+    }
+  }
+
 
   const podeEditar = isAdmin || can("viagens", "edit");
   const podeExcluir = isAdmin || can("viagens", "delete");
