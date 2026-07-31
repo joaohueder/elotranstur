@@ -1044,3 +1044,7 @@ create unique index if not exists viagens_landing_slug_uidx
 
 -- Funções públicas landing_viagem(text) e landing_lead(text,text,text):
 -- ver arquivo supabase/sql/016-landing-pages.sql (execute-o na íntegra).
+
+-- Remove a assinatura antiga com o parâmetro mensagem. Manter duas
+-- assinaturas causa o erro PGRST203 ao enviar o formulário público.
+drop function if exists public.landing_lead(text, text, text, text);
