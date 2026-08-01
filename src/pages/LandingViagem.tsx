@@ -105,6 +105,27 @@ export default function LandingViagem() {
     // Marca a visita atual como convertida em lead (Dashboard).
     void marcarVisitaLead(dados.whatsapp);
 
+    // Notifica a empresa (e os e-mails em cópia) sobre o novo lead.
+    void (async () => {
+      try {
+        const contexto = await contextoDaVisita();
+        await supabase.functions.invoke("password-reset", {
+          body: {
+            action: "lead-notify",
+            slug,
+            nome: dados.nome,
+            whatsapp: dados.whatsapp,
+            origem: "Landing Page",
+            contexto: { ...contexto, referrer: document.referrer || "" },
+          },
+        });
+      } catch {
+        /* a notificação nunca bloqueia o lead */
+      }
+    })();
+
+
+
 
 
     // Meta Ads: conversão de Lead (Pixel + API de Conversões, deduplicados).
