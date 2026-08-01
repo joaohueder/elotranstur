@@ -165,8 +165,12 @@ export function useCrmData(syncTick?: number) {
     }
   }, []);
 
+  const jaCarregou = useRef(false);
   useEffect(() => {
-    void load();
+    // Primeira carga mostra o esqueleto; as atualizações seguintes são
+    // silenciosas (apenas os dados mudam, a tela não recarrega).
+    void load(jaCarregou.current);
+    jaCarregou.current = true;
   }, [load, syncTick]);
 
   useRealtime(["crm_stages", "crm_leads", "crm_lead_viagens", "viagens"], () =>
