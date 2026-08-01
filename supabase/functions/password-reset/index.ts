@@ -300,11 +300,39 @@ Deno.serve(async (req) => {
       password?: string;
       destinatario?: string;
       smtp?: Record<string, unknown>;
+      slug?: string;
+      nome?: string;
+      whatsapp?: string;
+      origem?: string;
+      contexto?: Record<string, unknown>;
     };
 
     const db = admin();
     const email = (body.email ?? "").trim().toLowerCase();
     const acao = body.action;
+
+    // Notificação de novo lead vindo da landing page (público).
+    if (acao === "lead-notify") {
+      const nome = String(body.nome ?? "").trim().slice(0, 120);
+      const whatsapp = String(body.whatsapp ?? "").trim().slice(0, 40);
+      if (!nome || !whatsapp) {
+        return json({ error: "Dados do lead incompletos." }, 400);
+      }
+      try {
+        const r = await notificarLead(db, {
+          slug: String(body.slug ?? "").slice(0, 200),
+          nome,
+          whatsapp,
+          origem: String(body.origem ?? "").slice(0, 60),
+          contexto: body.contexto ?? {},
+        });
+        return json(r);
+      } catch (e) {
+        return json({ ok: false, motivo: (e as Error).message });
+      }
+    }
+
+
 
     // Teste de envio a partir de Configurações > E-mail (somente admin).
     if (acao === "test") {
