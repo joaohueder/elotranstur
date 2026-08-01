@@ -6,6 +6,7 @@ import {
   CopyPlus,
   ExternalLink,
   Loader2,
+  Lock,
   MapPin,
   Pencil,
   Plus,
