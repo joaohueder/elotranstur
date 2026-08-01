@@ -127,7 +127,7 @@ export function EmpresaTab() {
       return;
     }
 
-    setSalvando(true)
+    setSalvando(true);
     try {
       const { error } = await supabase.rpc("save_empresa_settings", {
         _nome: form.nome.trim(),

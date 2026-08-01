@@ -85,11 +85,26 @@ async function carregarSmtp(
   return cfg;
 }
 
+/** E-mails adicionais que recebem cópia (CC) dos envios para a empresa. */
+async function carregarCopias(db: ReturnType<typeof admin>): Promise<string[]> {
+  const { data } = await db
+    .from("app_empresa")
+    .select("email, emails_copia")
+    .eq("id", true)
+    .maybeSingle();
+
+  return String(data?.emails_copia ?? "")
+    .split(",")
+    .map((e: string) => e.trim())
+    .filter(Boolean);
+}
+
 async function enviarSmtp(
   cfg: SmtpCfg,
   para: string,
   assunto: string,
   html: string,
+  cc: string[] = [],
 ) {
   const porta = Number(cfg.smtp_port);
   const tlsImplicito = porta === 465 ? true : Boolean(cfg.smtp_secure) && porta !== 587;
@@ -108,6 +123,7 @@ async function enviarSmtp(
   await client.send({
     from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
     to: para,
+    cc: cc.length ? cc : undefined,
     replyTo: cfg.reply_to || undefined,
     subject: assunto,
     html,
