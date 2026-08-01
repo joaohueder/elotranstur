@@ -30,6 +30,10 @@ import { AppShell } from "@/components/app-shell";
 import { ProximaAtualizacao } from "@/components/dashboard/proxima-atualizacao";
 import { UltimasVisitas } from "@/components/dashboard/ultimas-visitas";
 import { HelpTip } from "@/components/help";
+import {
+  DashboardRefreshProvider,
+  useDashboardRefresh,
+} from "@/lib/dashboard-refresh";
 import { useCrmData, isStageFinal } from "@/lib/crm";
 import { useVisitas } from "@/lib/visitas";
 
