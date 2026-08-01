@@ -364,8 +364,12 @@ export type VisitaDetalhada = {
   detalhes?: Record<string, unknown> | null;
 };
 
-/** Últimas visitas registradas, atualizadas a cada 30 segundos. */
-export function useUltimasVisitas(limite = 10) {
+/**
+ * Últimas visitas registradas.
+ * Atualiza automaticamente a cada 30 segundos, ou sincroniza com `syncTick`
+ * quando usado dentro do DashboardRefreshProvider.
+ */
+export function useUltimasVisitas(limite = 10, syncTick?: number) {
   const [visitas, setVisitas] = useState<VisitaDetalhada[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -392,9 +396,13 @@ export function useUltimasVisitas(limite = 10) {
 
   useEffect(() => {
     void load();
+  }, [load, syncTick]);
+
+  useEffect(() => {
+    if (syncTick !== undefined) return; // sincronizado externamente
     const t = setInterval(() => void load(true), 30_000);
     return () => clearInterval(t);
-  }, [load]);
+  }, [load, syncTick]);
 
   return { visitas, loading, error, reload: load };
 }
