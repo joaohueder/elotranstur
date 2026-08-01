@@ -27,6 +27,7 @@ import {
 } from "recharts";
 
 import { AppShell } from "@/components/app-shell";
+import { ProximaAtualizacao } from "@/components/dashboard/proxima-atualizacao";
 import { UltimasVisitas } from "@/components/dashboard/ultimas-visitas";
 import { HelpTip } from "@/components/help";
 import { useCrmData, isStageFinal } from "@/lib/crm";
@@ -255,6 +256,7 @@ export default function Dashboard() {
 
   return (
     <AppShell>
+      <ProximaAtualizacao />
       <div className="mb-6">
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
           Módulo · Dashboard
