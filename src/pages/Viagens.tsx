@@ -6,6 +6,7 @@ import {
   CopyPlus,
   ExternalLink,
   Loader2,
+  Lock,
   MapPin,
   Pencil,
   Plus,
@@ -103,11 +104,29 @@ export default function Viagens() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** Quantidade de leads vinculados a cada viagem (bloqueia exclusão). */
+  const [leadsPorViagem, setLeadsPorViagem] = useState<Record<string, number>>({});
+
+  const carregarLeads = useCallback(async () => {
+    const { data } = await supabase.from("crm_lead_viagens").select("viagem_id");
+    const mapa: Record<string, number> = {};
+    for (const linha of data ?? []) {
+      const id = (linha as { viagem_id: string }).viagem_id;
+      if (!id) continue;
+      mapa[id] = (mapa[id] ?? 0) + 1;
+    }
+    setLeadsPorViagem(mapa);
+  }, []);
+
+  const leadsDa = (v: Viagem) => leadsPorViagem[v.id] ?? 0;
+
   useEffect(() => {
     void carregar();
-  }, [carregar]);
+    void carregarLeads();
+  }, [carregar, carregarLeads]);
 
   useRealtime(["viagens"], () => void carregar(true));
+  useRealtime(["crm_lead_viagens"], () => void carregarLeads());
 
   const filtradas = useMemo(() => {
     const ordemSituacao: Record<string, number> = {
@@ -138,6 +157,14 @@ export default function Viagens() {
 
   async function excluir(v: Viagem) {
     if (!podeExcluir) return;
+    const leads = leadsDa(v);
+    if (leads > 0) {
+      feedback.showNegative(
+        "Viagem com leads",
+        `A viagem para "${v.destino}" possui ${leads} lead(s) cadastrado(s) e por isso não pode ser excluída. Remova o interesse desses leads no CRM antes de excluir.`,
+      );
+      return;
+    }
     const ok = await confirm({
       title: "Excluir viagem",
       message: `Tem certeza que deseja excluir a viagem para "${v.destino}"? Esta ação não poderá ser desfeita.`,
@@ -420,15 +447,21 @@ export default function Viagens() {
                 )}
                 {podeExcluir && (
                   <HintButton
-                    hint="Exclui esta viagem definitivamente."
+                    hint={
+                      leadsDa(v) > 0
+                        ? `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`
+                        : "Exclui esta viagem definitivamente."
+                    }
                     variant="outline"
                     size="icon"
                     className="h-10 w-10 rounded-md text-destructive"
-                    disabled={excluindo === v.id}
+                    disabled={excluindo === v.id || leadsDa(v) > 0}
                     onClick={() => void excluir(v)}
                   >
                     {excluindo === v.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : leadsDa(v) > 0 ? (
+                      <Lock className="h-4 w-4" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}
@@ -559,14 +592,20 @@ export default function Viagens() {
                 )}
                 {podeExcluir && (
                   <HintButton
-                    hint="Exclui esta viagem definitivamente."
+                    hint={
+                      leadsDa(v) > 0
+                        ? `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`
+                        : "Exclui esta viagem definitivamente."
+                    }
                     variant="outline"
                     size="icon"
-                    disabled={excluindo === v.id}
+                    disabled={excluindo === v.id || leadsDa(v) > 0}
                     onClick={() => void excluir(v)}
                   >
                     {excluindo === v.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : leadsDa(v) > 0 ? (
+                      <Lock className="h-4 w-4" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}
