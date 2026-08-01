@@ -269,6 +269,8 @@ export default function Dashboard() {
           <HelpTip texto="Visita é quando alguém abre uma página pública (landing page). Única = pessoas diferentes; Total = todas as aberturas." />
         </p>
       </div>
+      {/* Espaço reservado para a barra fixa de próxima atualização */}
+      <div aria-hidden className="h-14" />
 
       {carregando ? (
         <div className="flex h-40 items-center justify-center text-muted-foreground">
