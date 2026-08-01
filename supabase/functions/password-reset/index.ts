@@ -86,17 +86,25 @@ async function carregarSmtp(
 }
 
 /** E-mails adicionais que recebem cópia (CC) dos envios para a empresa. */
-async function carregarCopias(db: ReturnType<typeof admin>): Promise<string[]> {
+async function carregarCopias(
+  db: ReturnType<typeof admin>,
+  para: string,
+): Promise<string[]> {
   const { data } = await db
     .from("app_empresa")
     .select("email, emails_copia")
     .eq("id", true)
     .maybeSingle();
 
-  return String(data?.emails_copia ?? "")
+  const empresa = String(data?.email ?? "").trim().toLowerCase();
+  const copias = String(data?.emails_copia ?? "")
     .split(",")
     .map((e: string) => e.trim())
     .filter(Boolean);
+
+  // Só entram em cópia os e-mails destinados à empresa.
+  if (!empresa || empresa !== para.trim().toLowerCase()) return [];
+  return copias.filter((e) => e.toLowerCase() !== empresa);
 }
 
 async function enviarSmtp(
@@ -160,6 +168,7 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
         </p>
       </div>
     `,
+    await carregarCopias(db, para),
   );
 }
 
@@ -231,6 +240,7 @@ Deno.serve(async (req) => {
             </p>
           </div>
         `,
+        await carregarCopias(db, destinatario),
       );
 
       return json({ ok: true });
