@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { supabase } from "@/lib/supabase";
@@ -315,8 +315,12 @@ export function useVisitas(syncTick?: number) {
     }
   }, []);
 
+  const jaCarregou = useRef(false);
   useEffect(() => {
-    void load();
+    // Primeira carga mostra o esqueleto; as atualizações seguintes são
+    // silenciosas (apenas os dados mudam, a tela não recarrega).
+    void load(jaCarregou.current);
+    jaCarregou.current = true;
   }, [load, syncTick]);
 
   useEffect(() => {
@@ -394,8 +398,12 @@ export function useUltimasVisitas(limite = 10, syncTick?: number) {
     [limite],
   );
 
+  const jaCarregou = useRef(false);
   useEffect(() => {
-    void load();
+    // Primeira carga mostra o esqueleto; as atualizações seguintes são
+    // silenciosas (apenas os dados mudam, a tela não recarrega).
+    void load(jaCarregou.current);
+    jaCarregou.current = true;
   }, [load, syncTick]);
 
   useEffect(() => {
