@@ -585,14 +585,20 @@ export default function Viagens() {
                 )}
                 {podeExcluir && (
                   <HintButton
-                    hint="Exclui esta viagem definitivamente."
+                    hint={
+                      leadsDa(v) > 0
+                        ? `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`
+                        : "Exclui esta viagem definitivamente."
+                    }
                     variant="outline"
                     size="icon"
-                    disabled={excluindo === v.id}
+                    disabled={excluindo === v.id || leadsDa(v) > 0}
                     onClick={() => void excluir(v)}
                   >
                     {excluindo === v.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : leadsDa(v) > 0 ? (
+                      <Lock className="h-4 w-4" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}
