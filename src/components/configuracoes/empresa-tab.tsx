@@ -193,6 +193,27 @@ export function EmpresaTab() {
               }
             />
           </div>
+
+          <div className="space-y-2">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="E-mail de contato da empresa, usado em comunicações e páginas públicas."
+            >
+              E-mail
+            </FieldLabel>
+            <Input
+              className="rounded-sm"
+              type="email"
+              inputMode="email"
+              placeholder="contato@suaempresa.com.br"
+              value={form.email}
+              disabled={!podeEditar}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, email: e.target.value }))
+              }
+            />
+          </div>
+
         </div>
       </div>
 
