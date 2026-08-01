@@ -27,6 +27,7 @@ import {
 } from "recharts";
 
 import { AppShell } from "@/components/app-shell";
+import { ProximaAtualizacao } from "@/components/dashboard/proxima-atualizacao";
 import { UltimasVisitas } from "@/components/dashboard/ultimas-visitas";
 import { HelpTip } from "@/components/help";
 import { useCrmData, isStageFinal } from "@/lib/crm";
