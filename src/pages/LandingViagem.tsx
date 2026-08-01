@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPinOff } from "lucide-react";
 
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { PublicShell } from "@/components/public-shell";
@@ -127,15 +127,19 @@ export default function LandingViagem() {
     );
   }
 
-  if (!viagem) {
+  if (!viagem || viagem.situacao !== "ativa") {
     return (
       <div className="grid min-h-screen place-items-center bg-muted px-6 text-center">
-        <div>
-          <h1 className="font-serif text-2xl sm:text-3xl text-foreground">
-            Página não encontrada
+        <div className="max-w-md">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-background shadow-sm">
+            <MapPinOff className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <h1 className="mt-5 font-serif text-2xl text-foreground sm:text-3xl">
+            Viagem indisponível
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Esta viagem não está mais disponível.
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Esta viagem não existe ou já foi encerrada. Fale com a gente para
+            conhecer os próximos destinos disponíveis.
           </p>
         </div>
       </div>
