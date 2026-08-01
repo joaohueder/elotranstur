@@ -258,7 +258,7 @@ export default function Dashboard() {
     <AppShell>
       <ProximaAtualizacao />
       <div className="mb-6">
-
+        <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
           Módulo · Dashboard
         </p>
         <h1 className="mt-2 font-serif text-2xl sm:text-3xl text-foreground">
