@@ -156,6 +156,14 @@ export default function Viagens() {
 
   async function excluir(v: Viagem) {
     if (!podeExcluir) return;
+    const leads = leadsDa(v);
+    if (leads > 0) {
+      feedback.showNegative(
+        "Viagem com leads",
+        `A viagem para "${v.destino}" possui ${leads} lead(s) cadastrado(s) e por isso não pode ser excluída. Remova o interesse desses leads no CRM antes de excluir.`,
+      );
+      return;
+    }
     const ok = await confirm({
       title: "Excluir viagem",
       message: `Tem certeza que deseja excluir a viagem para "${v.destino}"? Esta ação não poderá ser desfeita.`,
