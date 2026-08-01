@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2, MapPinOff } from "lucide-react";
+import { Frown, Loader2, MessageCircle } from "lucide-react";
 
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { PublicShell } from "@/components/public-shell";
@@ -128,11 +128,21 @@ export default function LandingViagem() {
   }
 
   if (!viagem || viagem.situacao !== "ativa") {
+    const digitos = (empresa?.whatsapp ?? "").replace(/\D/g, "");
+    const numero = digitos.length <= 11 ? `55${digitos}` : digitos;
+    const texto =
+      "Olá! Tentei acessar uma viagem que não está mais disponível. " +
+      "Poderia me enviar as próximas viagens e destinos disponíveis?";
+    const link =
+      digitos.length >= 10
+        ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`
+        : null;
+
     return (
       <div className="grid min-h-screen place-items-center bg-muted px-6 text-center">
         <div className="max-w-md">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-background shadow-sm">
-            <MapPinOff className="h-6 w-6 text-muted-foreground" />
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-background shadow-sm">
+            <Frown className="h-8 w-8 text-muted-foreground" />
           </div>
           <h1 className="mt-5 font-serif text-2xl text-foreground sm:text-3xl">
             Viagem indisponível
@@ -141,6 +151,19 @@ export default function LandingViagem() {
             Esta viagem não existe ou já foi encerrada. Fale com a gente para
             conhecer os próximos destinos disponíveis.
           </p>
+          {link && (
+            <button
+              type="button"
+              title="Fala com a nossa equipe pelo WhatsApp para conhecer as próximas viagens."
+              onClick={() => {
+                window.location.href = link;
+              }}
+              className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[hsl(142_70%_35%)] px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:brightness-110 sm:w-auto sm:text-base"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Falar Agora no WhatsApp
+            </button>
+          )}
         </div>
       </div>
     );
