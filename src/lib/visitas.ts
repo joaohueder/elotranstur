@@ -212,6 +212,15 @@ async function detalhesDaVisita(pathname: string, esperarGeo = true) {
 }
 
 /** Marca a visita atual como convertida em lead. */
+/** Contexto completo da visita atual (geo, dispositivo, UTMs) para notificações. */
+export async function contextoDaVisita(esperarGeo = false) {
+  try {
+    return await detalhesDaVisita(window.location.pathname, esperarGeo);
+  } catch {
+    return {};
+  }
+}
+
 export async function marcarVisitaLead(whatsapp?: string) {
   try {
     await supabase.rpc("marcar_visita_lead", {
