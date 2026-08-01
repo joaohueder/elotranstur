@@ -2554,6 +2554,7 @@ execute function public.viagens_bloqueia_exclusao_nao_rascunho();
 
 
 -- 047 - Landing page publica somente para viagens com situacao "ativa"
+begin;
 -- 047 - Landing page pública somente para viagens com situação "ativa"
 
 
