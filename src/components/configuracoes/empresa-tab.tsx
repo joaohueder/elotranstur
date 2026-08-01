@@ -81,7 +81,9 @@ export function EmpresaTab() {
   }, []);
 
   const alterado =
-    form.nome !== original.nome || form.whatsapp !== original.whatsapp;
+    form.nome !== original.nome ||
+    form.whatsapp !== original.whatsapp ||
+    form.email !== original.email;
 
   async function salvar() {
     if (!form.nome.trim()) {
@@ -92,12 +94,23 @@ export function EmpresaTab() {
       return;
     }
 
+    const email = form.email.trim();
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      feedback.showNegative(
+        "E-mail inválido",
+        "Informe um e-mail válido para a empresa.",
+      );
+      return;
+    }
+
     setSalvando(true);
     try {
       const { error } = await supabase.rpc("save_empresa_settings", {
         _nome: form.nome.trim(),
         _whatsapp: form.whatsapp.trim(),
-      });
+        _email: email,
+      } as never);
+
       if (error) throw error;
 
       setOriginal({ ...form });
