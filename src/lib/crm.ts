@@ -101,8 +101,12 @@ export function isStageFinal(stage: CrmStage): boolean {
   return nome.includes("fechado") || nome.includes("perdido") || nome.includes("ganho") || nome.includes("convertido");
 }
 
-/** Carrega etapas e leads do CRM, incluindo as viagens de interesse. */
-export function useCrmData() {
+/**
+ * Carrega etapas e leads do CRM, incluindo as viagens de interesse.
+ * Atualiza via Realtime e, quando usado dentro do DashboardRefreshProvider,
+ * sincroniza também com o ciclo de 30 segundos do Dashboard.
+ */
+export function useCrmData(syncTick?: number) {
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [leads, setLeads] = useState<CrmLead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,7 +167,7 @@ export function useCrmData() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, syncTick]);
 
   useRealtime(["crm_stages", "crm_leads", "crm_lead_viagens", "viagens"], () =>
     void load(true),

@@ -72,9 +72,14 @@ function Linha({ rotulo, valor }: { rotulo: string; valor?: unknown }) {
   );
 }
 
+interface UltimasVisitasProps {
+  /** Tick de sincronização do DashboardRefreshProvider. */
+  syncTick?: number;
+}
+
 /** Últimas 10 visitas registradas nas páginas públicas. */
-export function UltimasVisitas() {
-  const { visitas, loading } = useUltimasVisitas(10);
+export function UltimasVisitas({ syncTick }: UltimasVisitasProps) {
+  const { visitas, loading } = useUltimasVisitas(10, syncTick);
   const [detalhe, setDetalhe] = useState<VisitaDetalhada | null>(null);
   const [agora, setAgora] = useState(() => Date.now());
 

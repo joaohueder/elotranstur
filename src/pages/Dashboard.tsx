@@ -30,6 +30,10 @@ import { AppShell } from "@/components/app-shell";
 import { ProximaAtualizacao } from "@/components/dashboard/proxima-atualizacao";
 import { UltimasVisitas } from "@/components/dashboard/ultimas-visitas";
 import { HelpTip } from "@/components/help";
+import {
+  DashboardRefreshProvider,
+  useDashboardRefresh,
+} from "@/lib/dashboard-refresh";
 import { useCrmData, isStageFinal } from "@/lib/crm";
 import { useVisitas } from "@/lib/visitas";
 
@@ -114,10 +118,11 @@ function Painel({
   );
 }
 
-/** Módulo Dashboard — visão geral de visitas e leads. */
-export default function Dashboard() {
-  const { visitas, loading: carregandoVisitas } = useVisitas();
-  const { stages, leads, loading: carregandoLeads } = useCrmData();
+/** Conteúdo sincronizado do Dashboard. */
+function DashboardContent() {
+  const { tick, lastUpdated } = useDashboardRefresh();
+  const { visitas, loading: carregandoVisitas } = useVisitas(tick);
+  const { stages, leads, loading: carregandoLeads } = useCrmData(tick);
 
   const etapaPorId = useMemo(
     () => new Map(stages.map((s) => [s.id, s])),
@@ -256,7 +261,7 @@ export default function Dashboard() {
 
   return (
     <AppShell>
-      <ProximaAtualizacao />
+      <ProximaAtualizacao lastUpdated={lastUpdated} />
       <div className="mb-6">
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
           Módulo · Dashboard
@@ -483,17 +488,26 @@ export default function Dashboard() {
           </div>
 
           {/* LINHA 4 — últimas visitas */}
-          <UltimasVisitas />
+          <UltimasVisitas syncTick={tick} />
 
 
 
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
-            Os números de visitas são atualizados automaticamente a cada 30
+            Os números do dashboard são atualizados automaticamente a cada 30
             segundos.
           </p>
         </div>
       )}
     </AppShell>
+  );
+}
+
+/** Módulo Dashboard — visão geral de visitas e leads. */
+export default function Dashboard() {
+  return (
+    <DashboardRefreshProvider>
+      <DashboardContent />
+    </DashboardRefreshProvider>
   );
 }

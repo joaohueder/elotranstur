@@ -2,24 +2,28 @@ import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 
 import { HelpTip } from "@/components/help";
+import { DASHBOARD_REFRESH_MS } from "@/lib/dashboard-refresh";
 
-const CICLO_MS = 30_000;
+interface ProximaAtualizacaoProps {
+  /** Momento da última atualização sincronizada (opcional). */
+  lastUpdated?: Date;
+}
 
 /** Barra de regressão que indica quando os dados do dashboard serão atualizados. */
-export function ProximaAtualizacao() {
-  const [restante, setRestante] = useState(CICLO_MS);
+export function ProximaAtualizacao({ lastUpdated }: ProximaAtualizacaoProps) {
+  const [restante, setRestante] = useState(DASHBOARD_REFRESH_MS);
 
   useEffect(() => {
-    const inicio = Date.now();
+    const inicio = lastUpdated ? lastUpdated.getTime() : Date.now();
     const id = window.setInterval(() => {
-      const decorrido = (Date.now() - inicio) % CICLO_MS;
-      setRestante(CICLO_MS - decorrido);
+      const decorrido = (Date.now() - inicio) % DASHBOARD_REFRESH_MS;
+      setRestante(DASHBOARD_REFRESH_MS - decorrido);
     }, 200);
     return () => window.clearInterval(id);
-  }, []);
+  }, [lastUpdated]);
 
   const segundos = Math.ceil(restante / 1000);
-  const progresso = (restante / CICLO_MS) * 100;
+  const progresso = (restante / DASHBOARD_REFRESH_MS) * 100;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-3 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur sm:px-6">
