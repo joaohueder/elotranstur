@@ -1637,6 +1637,9 @@ create table if not exists public.app_empresa (
 alter table public.app_empresa
   add column if not exists email text not null default '';
 
+alter table public.app_empresa
+  add column if not exists emails_copia text not null default '';
+
 
 insert into public.app_empresa (id) values (true)
 on conflict (id) do nothing;
