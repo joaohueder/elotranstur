@@ -291,8 +291,12 @@ const VAZIO: VisitasMetricas = {
   semana: [],
 };
 
-/** Métricas de visitas do Dashboard, atualizadas automaticamente a cada 30s. */
-export function useVisitas() {
+/**
+ * Métricas de visitas do Dashboard.
+ * Atualiza automaticamente a cada 30 segundos, ou sincroniza com `syncTick`
+ * quando usado dentro do DashboardRefreshProvider.
+ */
+export function useVisitas(syncTick?: number) {
   const [dados, setDados] = useState<VisitasMetricas>(VAZIO);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -313,9 +317,13 @@ export function useVisitas() {
 
   useEffect(() => {
     void load();
+  }, [load, syncTick]);
+
+  useEffect(() => {
+    if (syncTick !== undefined) return; // sincronizado externamente
     const t = setInterval(() => void load(true), 30_000);
     return () => clearInterval(t);
-  }, [load]);
+  }, [load, syncTick]);
 
   return { visitas: dados, loading, error, reload: load };
 }
