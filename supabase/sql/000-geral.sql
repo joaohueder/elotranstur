@@ -2537,8 +2537,8 @@ security definer
 set search_path = public
 as $$
 begin
-  if coalesce(old.situacao, '') <> 'rascunho' then
-    raise exception 'Somente viagens em Rascunho podem ser excluídas (situação atual: %).', old.situacao
+  if old.situacao is distinct from 'rascunho'::viagem_situacao then
+    raise exception 'Somente viagens em Rascunho podem ser excluídas (situação atual: %).', coalesce(old.situacao::text, 'indefinida')
       using errcode = 'P0001';
   end if;
   return old;
