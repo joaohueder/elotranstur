@@ -106,50 +106,72 @@ export function UltimasVisitas() {
       ) : (
         <>
           {/* Desktop */}
-          <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full text-left text-xs">
+          <div className="hidden lg:block">
+            <table className="w-full table-fixed text-left text-xs">
+              <colgroup>
+                <col className="w-[9.5rem]" />
+                <col className="w-[4.5rem]" />
+                <col />
+                <col className="w-[7.5rem]" />
+                <col />
+                <col />
+                <col className="hidden xl:table-column" />
+                <col className="w-[6rem]" />
+                <col className="w-[6.5rem]" />
+              </colgroup>
               <thead className="bg-muted/40 text-[10px] uppercase tracking-widest text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Data/hora</th>
-                  <th className="px-4 py-2 font-medium">
+                  <th className="px-2 py-2 font-medium">Data/hora</th>
+                  <th className="px-2 py-2 font-medium">
                     <span className="inline-flex items-center gap-1">
                       Online
                       <HelpTip texto="Tempo restante para esta visita deixar de ser contada como online (3 minutos sem atividade)." />
                     </span>
                   </th>
-                  <th className="px-4 py-2 font-medium">Cidade</th>
-                  <th className="px-4 py-2 font-medium">IP</th>
-                  <th className="px-4 py-2 font-medium">Página</th>
-                  <th className="px-4 py-2 font-medium">Origem</th>
-                  <th className="px-4 py-2 font-medium">UTM</th>
-                  <th className="px-4 py-2 font-medium">Lead</th>
-                  <th className="px-4 py-2 font-medium text-right">Detalhe</th>
+                  <th className="px-2 py-2 font-medium">Cidade</th>
+                  <th className="px-2 py-2 font-medium">IP</th>
+                  <th className="px-2 py-2 font-medium">Página</th>
+                  <th className="px-2 py-2 font-medium">Origem</th>
+                  <th className="hidden px-2 py-2 font-medium xl:table-cell">UTM</th>
+                  <th className="px-2 py-2 font-medium">Lead</th>
+                  <th className="px-2 py-2 text-right font-medium">Detalhe</th>
                 </tr>
               </thead>
               <tbody>
                 {visitas.map((v) => (
                   <tr key={v.id} className="border-t border-border/70">
-                    <td className="whitespace-nowrap px-4 py-2">{quando(v.created_at)}</td>
-                    <td className="whitespace-nowrap px-4 py-2">
+                    <td className="truncate px-2 py-2 tabular-nums">{quando(v.created_at)}</td>
+                    <td className="px-2 py-2">
                       <Expiracao visita={v} agora={agora} />
                     </td>
-                    <td className="px-4 py-2">{local(v)}</td>
-                    <td className="px-4 py-2 font-mono">{v.ip || "—"}</td>
-                    <td className="max-w-[14rem] truncate px-4 py-2">{v.path}</td>
-                    <td className="max-w-[12rem] truncate px-4 py-2">
+                    <td className="truncate px-2 py-2" title={local(v)}>
+                      {local(v)}
+                    </td>
+                    <td className="truncate px-2 py-2 font-mono" title={v.ip || "—"}>
+                      {v.ip || "—"}
+                    </td>
+                    <td className="truncate px-2 py-2" title={v.path}>
+                      {v.path}
+                    </td>
+                    <td
+                      className="truncate px-2 py-2"
+                      title={v.utm_source || v.referrer || "Direto"}
+                    >
                       {v.utm_source || v.referrer || "Direto"}
                     </td>
-                    <td className="max-w-[14rem] truncate px-4 py-2">{utm(v)}</td>
-                    <td className="px-4 py-2">
+                    <td className="hidden truncate px-2 py-2 xl:table-cell" title={utm(v)}>
+                      {utm(v)}
+                    </td>
+                    <td className="truncate px-2 py-2">
                       {v.virou_lead ? (
                         <span className="rounded-full bg-emerald-600/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
-                          Sim{v.lead_nome ? ` · ${v.lead_nome}` : ""}
+                          Sim
                         </span>
                       ) : (
                         <span className="text-muted-foreground">Não</span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-2 py-2 text-right">
                       <HintButton
                         hint="Abre todos os detalhes registrados desta visita"
                         variant="outline"
@@ -166,6 +188,7 @@ export function UltimasVisitas() {
               </tbody>
             </table>
           </div>
+
 
           {/* Mobile */}
           <div className="divide-y divide-border lg:hidden">
