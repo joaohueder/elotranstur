@@ -118,14 +118,32 @@ begin
   end if;
 
   insert into public.crm_leads (nome, whatsapp, origem, stage_id, posicao)
-  values (btrim(_nome), v_digits, 'Landing Page', v_stage, 0)
+  values (
+    btrim(_nome),
+    case
+      when length(v_digits) = 11 then '(' || substr(v_digits,1,2) || ') ' || substr(v_digits,3,5) || '-' || substr(v_digits,8,4)
+      when length(v_digits) = 10 then '(' || substr(v_digits,1,2) || ') ' || substr(v_digits,3,4) || '-' || substr(v_digits,7,4)
+      else v_digits
+    end,
+    'Landing Page',
+    v_stage,
+    coalesce((select min(posicao) - 1 from public.crm_leads where stage_id = v_stage), 0)
+  )
   returning id into v_lead;
 
-  insert into public.crm_lead_viagens (lead_id, viagem_id)
-  values (v_lead, v_viagem.id)
-  on conflict do nothing;
+  begin
+    insert into public.crm_lead_viagens (lead_id, viagem_id)
+    values (v_lead, v_viagem.id)
+    on conflict do nothing;
+  exception when others then
+    null; -- vinculo com a viagem e opcional; nao deve impedir o lead
+  end;
 
   return json_build_object('ok', true, 'lead_id', v_lead);
+exception when others then
+  return json_build_object('ok', false,
+    'message', 'Erro ao salvar o lead: ' || sqlerrm,
+    'code', sqlstate);
 end;
 $$;
 
