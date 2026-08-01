@@ -120,6 +120,15 @@ export default function Viagens() {
 
   const leadsDa = (v: Viagem) => leadsPorViagem[v.id] ?? 0;
 
+  /** Retorna o motivo do bloqueio de exclusão, ou null quando pode excluir. */
+  const motivoBloqueio = (v: Viagem): string | null => {
+    if (v.situacao !== "rascunho")
+      return `Somente viagens em Rascunho podem ser excluídas. Esta viagem está como "${situacaoLabel(v.situacao)}".`;
+    if (leadsDa(v) > 0)
+      return `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`;
+    return null;
+  };
+
   useEffect(() => {
     void carregar();
     void carregarLeads();
