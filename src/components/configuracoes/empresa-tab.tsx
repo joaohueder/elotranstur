@@ -7,9 +7,10 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 
-type EmpresaForm = { nome: string; whatsapp: string };
+type EmpresaForm = { nome: string; whatsapp: string; email: string };
 
-const VAZIO: EmpresaForm = { nome: "", whatsapp: "" };
+const VAZIO: EmpresaForm = { nome: "", whatsapp: "", email: "" };
+
 
 /** Máscara (00) 00000-0000 */
 function mascaraWhatsapp(valor: string) {
@@ -38,7 +39,7 @@ export function EmpresaTab() {
     async function carregar() {
       const { data, error } = await supabase
         .from("app_empresa")
-        .select("nome, whatsapp")
+        .select("nome, whatsapp, email")
         .maybeSingle();
       if (cancelado) return;
 
@@ -49,10 +50,12 @@ export function EmpresaTab() {
           error,
         );
       } else if (data) {
-        const carregado = {
+        const carregado: EmpresaForm = {
           nome: String(data.nome ?? ""),
           whatsapp: mascaraWhatsapp(String(data.whatsapp ?? "")),
+          email: String((data as { email?: string }).email ?? ""),
         };
+
         setForm(carregado);
         setOriginal(carregado);
       }
@@ -78,7 +81,9 @@ export function EmpresaTab() {
   }, []);
 
   const alterado =
-    form.nome !== original.nome || form.whatsapp !== original.whatsapp;
+    form.nome !== original.nome ||
+    form.whatsapp !== original.whatsapp ||
+    form.email !== original.email;
 
   async function salvar() {
     if (!form.nome.trim()) {
@@ -89,12 +94,23 @@ export function EmpresaTab() {
       return;
     }
 
+    const email = form.email.trim();
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      feedback.showNegative(
+        "E-mail inválido",
+        "Informe um e-mail válido para a empresa.",
+      );
+      return;
+    }
+
     setSalvando(true);
     try {
       const { error } = await supabase.rpc("save_empresa_settings", {
         _nome: form.nome.trim(),
         _whatsapp: form.whatsapp.trim(),
-      });
+        _email: email,
+      } as never);
+
       if (error) throw error;
 
       setOriginal({ ...form });
@@ -177,6 +193,27 @@ export function EmpresaTab() {
               }
             />
           </div>
+
+          <div className="space-y-2">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="E-mail de contato da empresa, usado em comunicações e páginas públicas."
+            >
+              E-mail
+            </FieldLabel>
+            <Input
+              className="rounded-sm"
+              type="email"
+              inputMode="email"
+              placeholder="contato@suaempresa.com.br"
+              value={form.email}
+              disabled={!podeEditar}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, email: e.target.value }))
+              }
+            />
+          </div>
+
         </div>
       </div>
 

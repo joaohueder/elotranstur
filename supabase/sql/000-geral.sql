@@ -1628,10 +1628,15 @@ create table if not exists public.app_empresa (
   id boolean primary key default true,
   nome text not null default '',
   whatsapp text not null default '',
+  email text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint app_empresa_singleton check (id)
 );
+
+alter table public.app_empresa
+  add column if not exists email text not null default '';
+
 
 insert into public.app_empresa (id) values (true)
 on conflict (id) do nothing;
@@ -1660,7 +1665,8 @@ for each row execute function public.set_updated_at();
 -- Salvar dados da empresa
 create or replace function public.save_empresa_settings(
   _nome text,
-  _whatsapp text
+  _whatsapp text,
+  _email text default ''
 )
 returns void
 language plpgsql
@@ -1672,16 +1678,23 @@ begin
     raise exception 'Sem permissão para alterar os dados da empresa';
   end if;
 
-  insert into public.app_empresa (id, nome, whatsapp)
-  values (true, coalesce(_nome, ''), coalesce(_whatsapp, ''))
+  if coalesce(_email, '') <> '' and _email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
+    raise exception 'E-mail da empresa inválido';
+  end if;
+
+  insert into public.app_empresa (id, nome, whatsapp, email)
+  values (true, coalesce(_nome, ''), coalesce(_whatsapp, ''), coalesce(_email, ''))
   on conflict (id) do update
     set nome = excluded.nome,
-        whatsapp = excluded.whatsapp;
+        whatsapp = excluded.whatsapp,
+        email = excluded.email;
 end;
 $$;
 
-revoke all on function public.save_empresa_settings(text, text) from public;
-grant execute on function public.save_empresa_settings(text, text) to authenticated;
+drop function if exists public.save_empresa_settings(text, text);
+revoke all on function public.save_empresa_settings(text, text, text) from public;
+grant execute on function public.save_empresa_settings(text, text, text) to authenticated;
+
 
 -- Realtime
 do $$
