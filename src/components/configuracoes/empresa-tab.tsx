@@ -7,9 +7,14 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 
-type EmpresaForm = { nome: string; whatsapp: string; email: string };
+type EmpresaForm = {
+  nome: string;
+  whatsapp: string;
+  email: string;
+  emails_copia: string;
+};
 
-const VAZIO: EmpresaForm = { nome: "", whatsapp: "", email: "" };
+const VAZIO: EmpresaForm = { nome: "", whatsapp: "", email: "", emails_copia: "" };
 
 
 /** Máscara (00) 00000-0000 */
@@ -39,7 +44,7 @@ export function EmpresaTab() {
     async function carregar() {
       const { data, error } = await supabase
         .from("app_empresa")
-        .select("nome, whatsapp, email")
+        .select("nome, whatsapp, email, emails_copia")
         .maybeSingle();
       if (cancelado) return;
 
@@ -54,6 +59,9 @@ export function EmpresaTab() {
           nome: String(data.nome ?? ""),
           whatsapp: mascaraWhatsapp(String(data.whatsapp ?? "")),
           email: String((data as { email?: string }).email ?? ""),
+          emails_copia: String(
+            (data as { emails_copia?: string }).emails_copia ?? "",
+          ),
         };
 
         setForm(carregado);
@@ -83,7 +91,8 @@ export function EmpresaTab() {
   const alterado =
     form.nome !== original.nome ||
     form.whatsapp !== original.whatsapp ||
-    form.email !== original.email;
+    form.email !== original.email ||
+    form.emails_copia !== original.emails_copia;
 
   async function salvar() {
     if (!form.nome.trim()) {
@@ -103,12 +112,28 @@ export function EmpresaTab() {
       return;
     }
 
-    setSalvando(true);
+    const copias = form.emails_copia
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+    const invalido = copias.find(
+      (e) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e),
+    );
+    if (invalido) {
+      feedback.showNegative(
+        "E-mail em cópia inválido",
+        `O endereço "${invalido}" não é um e-mail válido. Separe os e-mails por vírgula.`,
+      );
+      return;
+    }
+
+    setSalvando(true)
     try {
       const { error } = await supabase.rpc("save_empresa_settings", {
         _nome: form.nome.trim(),
         _whatsapp: form.whatsapp.trim(),
         _email: email,
+        _emails_copia: copias.join(", "),
       } as never);
 
       if (error) throw error;
@@ -212,6 +237,29 @@ export function EmpresaTab() {
                 setForm((p) => ({ ...p, email: e.target.value }))
               }
             />
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <FieldLabel
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+              help="Endereços que receberão uma cópia (CC) de todo e-mail enviado para a empresa. Separe vários e-mails por vírgula."
+            >
+              E-mails em cópia (opcional)
+            </FieldLabel>
+            <Input
+              className="rounded-sm"
+              inputMode="email"
+              placeholder="financeiro@suaempresa.com.br, vendas@suaempresa.com.br"
+              value={form.emails_copia}
+              disabled={!podeEditar}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, emails_copia: e.target.value }))
+              }
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Separe vários endereços por vírgula. Todos receberão cópia dos
+              e-mails enviados para a empresa.
+            </p>
           </div>
 
         </div>
