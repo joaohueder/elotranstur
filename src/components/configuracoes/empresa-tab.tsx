@@ -7,9 +7,10 @@ import { useFeedback } from "@/lib/feedback";
 import { supabase } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
 
-type EmpresaForm = { nome: string; whatsapp: string };
+type EmpresaForm = { nome: string; whatsapp: string; email: string };
 
-const VAZIO: EmpresaForm = { nome: "", whatsapp: "" };
+const VAZIO: EmpresaForm = { nome: "", whatsapp: "", email: "" };
+
 
 /** Máscara (00) 00000-0000 */
 function mascaraWhatsapp(valor: string) {
