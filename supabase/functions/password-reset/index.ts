@@ -85,11 +85,34 @@ async function carregarSmtp(
   return cfg;
 }
 
+/** E-mails adicionais que recebem cópia (CC) dos envios para a empresa. */
+async function carregarCopias(
+  db: ReturnType<typeof admin>,
+  para: string,
+): Promise<string[]> {
+  const { data } = await db
+    .from("app_empresa")
+    .select("email, emails_copia")
+    .eq("id", true)
+    .maybeSingle();
+
+  const empresa = String(data?.email ?? "").trim().toLowerCase();
+  const copias = String(data?.emails_copia ?? "")
+    .split(",")
+    .map((e: string) => e.trim())
+    .filter(Boolean);
+
+  // Só entram em cópia os e-mails destinados à empresa.
+  if (!empresa || empresa !== para.trim().toLowerCase()) return [];
+  return copias.filter((e) => e.toLowerCase() !== empresa);
+}
+
 async function enviarSmtp(
   cfg: SmtpCfg,
   para: string,
   assunto: string,
   html: string,
+  cc: string[] = [],
 ) {
   const porta = Number(cfg.smtp_port);
   const tlsImplicito = porta === 465 ? true : Boolean(cfg.smtp_secure) && porta !== 587;
@@ -108,6 +131,7 @@ async function enviarSmtp(
   await client.send({
     from: cfg.from_name ? `${cfg.from_name} <${cfg.from_email}>` : cfg.from_email,
     to: para,
+    cc: cc.length ? cc : undefined,
     replyTo: cfg.reply_to || undefined,
     subject: assunto,
     html,
@@ -144,6 +168,7 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
         </p>
       </div>
     `,
+    await carregarCopias(db, para),
   );
 }
 
@@ -215,6 +240,7 @@ Deno.serve(async (req) => {
             </p>
           </div>
         `,
+        await carregarCopias(db, destinatario),
       );
 
       return json({ ok: true });
