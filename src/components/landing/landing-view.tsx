@@ -56,6 +56,7 @@ export type LandingViagem = {
   vagas: number;
   itens_inclusos: string[] | null;
   imagens: ViagemImagem[] | null;
+  situacao?: string | null;
   modelo?: string | null;
   paleta?: string | null;
   slug?: string | null;
