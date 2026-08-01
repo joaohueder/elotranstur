@@ -120,6 +120,15 @@ export default function Viagens() {
 
   const leadsDa = (v: Viagem) => leadsPorViagem[v.id] ?? 0;
 
+  /** Retorna o motivo do bloqueio de exclusão, ou null quando pode excluir. */
+  const motivoBloqueio = (v: Viagem): string | null => {
+    if (v.situacao !== "rascunho")
+      return `Somente viagens em Rascunho podem ser excluídas. Esta viagem está como "${situacaoLabel(v.situacao)}".`;
+    if (leadsDa(v) > 0)
+      return `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`;
+    return null;
+  };
+
   useEffect(() => {
     void carregar();
     void carregarLeads();
@@ -157,12 +166,9 @@ export default function Viagens() {
 
   async function excluir(v: Viagem) {
     if (!podeExcluir) return;
-    const leads = leadsDa(v);
-    if (leads > 0) {
-      feedback.showNegative(
-        "Viagem com leads",
-        `A viagem para "${v.destino}" possui ${leads} lead(s) cadastrado(s) e por isso não pode ser excluída. Remova o interesse desses leads no CRM antes de excluir.`,
-      );
+    const bloqueio = motivoBloqueio(v);
+    if (bloqueio) {
+      feedback.showNegative("Exclusão bloqueada", bloqueio);
       return;
     }
     const ok = await confirm({
@@ -447,20 +453,16 @@ export default function Viagens() {
                 )}
                 {podeExcluir && (
                   <HintButton
-                    hint={
-                      leadsDa(v) > 0
-                        ? `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`
-                        : "Exclui esta viagem definitivamente."
-                    }
+                    hint={motivoBloqueio(v) ?? "Exclui esta viagem definitivamente."}
                     variant="outline"
                     size="icon"
                     className="h-10 w-10 rounded-md text-destructive"
-                    disabled={excluindo === v.id || leadsDa(v) > 0}
+                    disabled={excluindo === v.id || motivoBloqueio(v) !== null}
                     onClick={() => void excluir(v)}
                   >
                     {excluindo === v.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : leadsDa(v) > 0 ? (
+                    ) : motivoBloqueio(v) ? (
                       <Lock className="h-4 w-4" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
@@ -592,19 +594,15 @@ export default function Viagens() {
                 )}
                 {podeExcluir && (
                   <HintButton
-                    hint={
-                      leadsDa(v) > 0
-                        ? `Esta viagem tem ${leadsDa(v)} lead(s) e não pode ser excluída.`
-                        : "Exclui esta viagem definitivamente."
-                    }
+                    hint={motivoBloqueio(v) ?? "Exclui esta viagem definitivamente."}
                     variant="outline"
                     size="icon"
-                    disabled={excluindo === v.id || leadsDa(v) > 0}
+                    disabled={excluindo === v.id || motivoBloqueio(v) !== null}
                     onClick={() => void excluir(v)}
                   >
                     {excluindo === v.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : leadsDa(v) > 0 ? (
+                    ) : motivoBloqueio(v) ? (
                       <Lock className="h-4 w-4" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
