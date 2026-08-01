@@ -42,7 +42,7 @@ export default function LoginPage() {
     const go = () => {
       if (!active || redirected.current) return;
       redirected.current = true;
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
@@ -134,7 +134,7 @@ export default function LoginPage() {
       loginInProgress.current = false;
       if (!redirected.current) {
         redirected.current = true;
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       loginInProgress.current = false;
