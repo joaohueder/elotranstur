@@ -1628,10 +1628,15 @@ create table if not exists public.app_empresa (
   id boolean primary key default true,
   nome text not null default '',
   whatsapp text not null default '',
+  email text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint app_empresa_singleton check (id)
 );
+
+alter table public.app_empresa
+  add column if not exists email text not null default '';
+
 
 insert into public.app_empresa (id) values (true)
 on conflict (id) do nothing;
