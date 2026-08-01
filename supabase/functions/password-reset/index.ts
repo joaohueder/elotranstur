@@ -172,8 +172,124 @@ async function enviarEmail(db: ReturnType<typeof admin>, para: string, codigo: s
   );
 }
 
+function esc(v: unknown) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** Notifica a empresa (com cópias) sobre um novo lead vindo de uma landing page. */
+async function notificarLead(
+  db: ReturnType<typeof admin>,
+  payload: {
+    slug?: string;
+    nome?: string;
+    whatsapp?: string;
+    origem?: string;
+    contexto?: Record<string, unknown>;
+  },
+) {
+  const { data: empresa } = await db
+    .from("app_empresa")
+    .select("nome, email")
+    .eq("id", true)
+    .maybeSingle();
+
+  const para = String(empresa?.email ?? "").trim();
+  if (!para) return { ok: false, motivo: "E-mail da empresa não configurado" };
+
+  const cfg = await carregarSmtp(db);
+  if (cfg.ativo === false) return { ok: false, motivo: "Envio de e-mails desativado" };
+
+  let viagem: Record<string, unknown> = {};
+  if (payload.slug) {
+    const { data } = await db.rpc("landing_viagem", { _slug: payload.slug });
+    viagem = (data ?? {}) as Record<string, unknown>;
+  }
+
+  const c = payload.contexto ?? {};
+  const agora = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const destino = [viagem.destino, viagem.uf].filter(Boolean).join(" / ");
+
+  const linhas: Array<[string, unknown]> = [
+    ["Nome", payload.nome],
+    ["WhatsApp", payload.whatsapp],
+    ["Origem do lead", payload.origem || "Landing Page"],
+    ["Data / hora", agora],
+    ["Viagem", viagem.titulo || viagem.destino],
+    ["Destino de interesse", destino],
+    ["Data de partida", viagem.data_partida],
+    ["Página", c.url || payload.slug],
+    ["Cidade", [c.cidade, c.regiao, c.pais].filter(Boolean).join(" / ")],
+    ["IP", c.ip],
+    ["Provedor", c.provedor],
+    ["Dispositivo", [c.dispositivo, c.sistema, c.navegador].filter(Boolean).join(" · ")],
+    ["Resolução", c.resolucao],
+    ["Idioma / fuso", [c.idioma, c.fuso].filter(Boolean).join(" · ")],
+    ["Referência (referrer)", c.referrer],
+    ["utm_source", c.utm_source],
+    ["utm_medium", c.utm_medium],
+    ["utm_campaign", c.utm_campaign],
+    ["utm_term", c.utm_term],
+    ["utm_content", c.utm_content],
+    ["fbclid", c.fbclid],
+    ["gclid", c.gclid],
+    ["Query", c.query],
+  ];
+
+  const corpo = linhas
+    .filter(([, v]) => String(v ?? "").trim() !== "")
+    .map(
+      ([k, v]) => `
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#6b7280;white-space:nowrap">${esc(k)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827">${esc(v)}</td>
+        </tr>`,
+    )
+    .join("");
+
+  const digitos = String(payload.whatsapp ?? "").replace(/\D/g, "");
+  const numero = digitos.length <= 11 ? `55${digitos}` : digitos;
+
+  await enviarSmtp(
+    cfg,
+    para,
+    `Novo lead: ${payload.nome ?? "sem nome"}${destino ? ` · ${destino}` : ""}`,
+    `
+      <div style="font-family:Helvetica,Arial,sans-serif;max-width:640px;margin:0 auto;padding:28px;color:#111827">
+        <p style="letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 8px">
+          ELO Transporte e Turismo
+        </p>
+        <h1 style="font-size:20px;margin:0 0 6px">Novo lead recebido</h1>
+        <p style="font-size:13px;color:#374151;margin:0 0 18px">
+          Um novo contato foi enviado pelo formulário da landing page.
+        </p>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb">${corpo}</table>
+        ${
+          digitos.length >= 10
+            ? `<p style="margin:20px 0 0">
+                 <a href="https://wa.me/${numero}" style="background:#111827;color:#ffffff;text-decoration:none;padding:12px 20px;display:inline-block;font-size:13px">
+                   Falar agora no WhatsApp
+                 </a>
+               </p>`
+            : ""
+        }
+        <p style="font-size:11px;color:#9ca3af;margin-top:24px">
+          Mensagem automática do sistema ELO · ${agora}
+        </p>
+      </div>
+    `,
+    await carregarCopias(db, para),
+  );
+
+  return { ok: true };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+
+
 
   try {
     const body = (await req.json()) as {
