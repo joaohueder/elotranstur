@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPinOff } from "lucide-react";
 
 import { LandingView, type LandingViagem } from "@/components/landing/landing-view";
 import { PublicShell } from "@/components/public-shell";
