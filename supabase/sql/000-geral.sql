@@ -1665,7 +1665,8 @@ for each row execute function public.set_updated_at();
 -- Salvar dados da empresa
 create or replace function public.save_empresa_settings(
   _nome text,
-  _whatsapp text
+  _whatsapp text,
+  _email text default ''
 )
 returns void
 language plpgsql
@@ -1677,16 +1678,23 @@ begin
     raise exception 'Sem permissão para alterar os dados da empresa';
   end if;
 
-  insert into public.app_empresa (id, nome, whatsapp)
-  values (true, coalesce(_nome, ''), coalesce(_whatsapp, ''))
+  if coalesce(_email, '') <> '' and _email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
+    raise exception 'E-mail da empresa inválido';
+  end if;
+
+  insert into public.app_empresa (id, nome, whatsapp, email)
+  values (true, coalesce(_nome, ''), coalesce(_whatsapp, ''), coalesce(_email, ''))
   on conflict (id) do update
     set nome = excluded.nome,
-        whatsapp = excluded.whatsapp;
+        whatsapp = excluded.whatsapp,
+        email = excluded.email;
 end;
 $$;
 
-revoke all on function public.save_empresa_settings(text, text) from public;
-grant execute on function public.save_empresa_settings(text, text) to authenticated;
+drop function if exists public.save_empresa_settings(text, text);
+revoke all on function public.save_empresa_settings(text, text, text) from public;
+grant execute on function public.save_empresa_settings(text, text, text) to authenticated;
+
 
 -- Realtime
 do $$
