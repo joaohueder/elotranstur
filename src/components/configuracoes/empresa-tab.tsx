@@ -39,7 +39,7 @@ export function EmpresaTab() {
     async function carregar() {
       const { data, error } = await supabase
         .from("app_empresa")
-        .select("nome, whatsapp")
+        .select("nome, whatsapp, email")
         .maybeSingle();
       if (cancelado) return;
 
@@ -50,10 +50,12 @@ export function EmpresaTab() {
           error,
         );
       } else if (data) {
-        const carregado = {
+        const carregado: EmpresaForm = {
           nome: String(data.nome ?? ""),
           whatsapp: mascaraWhatsapp(String(data.whatsapp ?? "")),
+          email: String((data as { email?: string }).email ?? ""),
         };
+
         setForm(carregado);
         setOriginal(carregado);
       }
