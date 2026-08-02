@@ -22,6 +22,17 @@ function json(body: unknown, status = 200) {
 }
 
 const CODE_TTL_MIN = 15;
+
+/** Controle simples de abuso: N tentativas por chave dentro da janela. */
+const _hits = new Map<string, number[]>();
+function limiteExcedido(chave: string, max: number, janelaMs: number): boolean {
+  const agora = Date.now();
+  const lista = (_hits.get(chave) ?? []).filter((t) => agora - t < janelaMs);
+  lista.push(agora);
+  _hits.set(chave, lista);
+  if (_hits.size > 5000) _hits.clear();
+  return lista.length > max;
+}
 const TOKEN_TTL_MIN = 15;
 const MAX_ATTEMPTS = 5;
 
@@ -310,6 +321,19 @@ Deno.serve(async (req) => {
     const db = admin();
     const email = (body.email ?? "").trim().toLowerCase();
     const acao = body.action;
+
+    // Limite de requisições por IP (anti-abuso de envio de e-mail).
+    const ipOrigem =
+      (req.headers.get("cf-connecting-ip") ??
+        req.headers.get("x-real-ip") ??
+        req.headers.get("x-forwarded-for") ??
+        "desconhecido").split(",")[0].trim();
+
+    if (acao === "lead-notify" || acao === "request") {
+      if (limiteExcedido(`${acao}:${ipOrigem}`, 5, 10 * 60_000)) {
+        return json({ ok: true });
+      }
+    }
 
     // Notificação de novo lead vindo da landing page (público).
     if (acao === "lead-notify") {

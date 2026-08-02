@@ -42,10 +42,8 @@ export default function LandingViagem() {
   useEffect(() => {
     let ativo = true;
     (async () => {
-      const { data } = await supabase
-        .from("app_empresa")
-        .select("nome, whatsapp")
-        .maybeSingle();
+      // RPC pública: devolve somente nome e WhatsApp (e-mails ficam protegidos).
+      const { data } = await supabase.rpc("empresa_publica");
       if (ativo && data) setEmpresa(data as { nome: string; whatsapp: string });
     })();
     return () => {
@@ -93,11 +91,9 @@ export default function LandingViagem() {
       _whatsapp: dados.whatsapp,
     });
     if (error) {
+      // Não expõe detalhes internos do banco na página pública.
       console.error("landing_lead error", error);
-      const codigo = (error as { code?: string }).code;
-      return `Não foi possível enviar agora${codigo ? ` (${codigo})` : ""}: ${
-        error.message || "erro desconhecido"
-      }`;
+      return "Não foi possível enviar agora. Tente novamente em instantes.";
     }
     const res = (data ?? {}) as { ok?: boolean; message?: string };
     if (!res.ok) return res.message || "Não foi possível enviar agora.";
