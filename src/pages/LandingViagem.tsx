@@ -89,6 +89,7 @@ export default function LandingViagem() {
       _slug: slug,
       _nome: dados.nome,
       _whatsapp: dados.whatsapp,
+      _visitor: visitorId(),
     });
     if (error) {
       // Não expõe detalhes internos do banco na página pública.
