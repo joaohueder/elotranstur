@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { APP_VERSION } from "@/lib/version";
+
+
 import {
   Tooltip,
   TooltipContent,
