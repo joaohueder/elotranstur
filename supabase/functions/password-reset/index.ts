@@ -311,6 +311,19 @@ Deno.serve(async (req) => {
     const email = (body.email ?? "").trim().toLowerCase();
     const acao = body.action;
 
+    // Limite de requisições por IP (anti-abuso de envio de e-mail).
+    const ipOrigem =
+      (req.headers.get("cf-connecting-ip") ??
+        req.headers.get("x-real-ip") ??
+        req.headers.get("x-forwarded-for") ??
+        "desconhecido").split(",")[0].trim();
+
+    if (acao === "lead-notify" || acao === "request") {
+      if (limiteExcedido(`${acao}:${ipOrigem}`, 5, 10 * 60_000)) {
+        return json({ ok: true });
+      }
+    }
+
     // Notificação de novo lead vindo da landing page (público).
     if (acao === "lead-notify") {
       const nome = String(body.nome ?? "").trim().slice(0, 120);
