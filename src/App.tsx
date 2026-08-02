@@ -11,6 +11,7 @@ import { PublicShell } from "@/components/public-shell";
 import { LayoutSettingsProvider } from "@/lib/layout-settings";
 import { MetaPixelTracker } from "@/lib/meta-ads";
 import { SessionCloseGuard } from "@/lib/session-close";
+import { ThemeProvider } from "@/lib/theme";
 import { VisitTracker } from "@/lib/visitas";
 
 import { useAuthz } from "@/lib/use-authz";
@@ -54,6 +55,7 @@ function RequireModule({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
       <TooltipProvider delayDuration={200}>
       <FeedbackProvider>
         <ConfirmProvider>
@@ -218,6 +220,7 @@ export default function App() {
         </ConfirmProvider>
       </FeedbackProvider>
       </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
