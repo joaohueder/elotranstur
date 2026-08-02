@@ -188,9 +188,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="grid h-8 w-12 place-items-center rounded-sm bg-brand-accent font-serif text-base font-bold italic text-primary-foreground sm:h-9 sm:w-14 sm:text-lg">
               ELO
             </span>
-            <span className="hidden text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground sm:block">
-              Transporte e Turismo
+            <span
+              className="hidden leading-tight sm:block"
+              title={`Versão atual do sistema: ${APP_VERSION}.`}
+            >
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+                Transporte e Turismo
+              </span>
+              <span className="block text-[10px] font-medium tracking-[0.12em] text-muted-foreground/70">
+                Versão {APP_VERSION}
+              </span>
             </span>
+
             </Link>
           </div>
 
