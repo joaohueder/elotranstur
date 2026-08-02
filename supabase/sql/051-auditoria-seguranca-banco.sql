@@ -330,7 +330,20 @@ revoke all on function public.registrar_visita(text, text, text, jsonb) from pub
 grant execute on function public.registrar_visita(text, text, text, jsonb) to anon, authenticated;
 
 -- Assinatura antiga (3 parâmetros) não é mais usada pelo sistema.
-revoke all on function public.registrar_visita(text, text, text) from anon, authenticated;
+-- Só remove se ela ainda existir no banco (evita erro 42883).
+do $$
+begin
+  if exists (
+    select 1 from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'registrar_visita'
+      and pg_get_function_identity_arguments(p.oid) = 'text, text, text'
+  ) then
+    execute 'drop function public.registrar_visita(text, text, text)';
+  end if;
+end;
+$$;
 
 -- ---------------------------------------------------------------------
 -- 7) VALIDAÇÃO NO BANCO (não confiar só no frontend)
