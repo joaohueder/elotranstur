@@ -9,7 +9,7 @@ import { rastrearMeta } from "@/lib/meta-ads";
 import { useSeo } from "@/lib/seo";
 import { useLayoutSettings } from "@/lib/layout-settings";
 import { capaDa } from "@/lib/viagens";
-import { contextoDaVisita, marcarVisitaLead } from "@/lib/visitas";
+import { contextoDaVisita, marcarVisitaLead, visitorId } from "@/lib/visitas";
 
 
 
