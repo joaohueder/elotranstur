@@ -279,6 +279,26 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                 </DropdownMenuItem>
 
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 rounded-sm"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    toggle();
+                  }}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                  <span className="flex-1">
+                    Tema {theme === "dark" ? "claro" : "escuro"}
+                    <span className="block text-[10px] font-normal text-muted-foreground">
+                      Alterne o visual do painel. O padrão é claro.
+                    </span>
+                  </span>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
