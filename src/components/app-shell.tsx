@@ -12,6 +12,8 @@ import {
   UserPlus,
   UserCog,
   LayoutDashboard,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -38,6 +40,7 @@ import { MODULES } from "@/lib/permissions";
 
 import { supabase, clearRememberMe } from "@/lib/supabase";
 import { useAuthz } from "@/lib/use-authz";
+import { useApplyTheme, useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 
@@ -79,6 +82,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { can, nome, email, isAdmin, refresh } = useAuthz();
   const [refreshing, setRefreshing] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
+  const { theme, toggle } = useTheme();
+  useApplyTheme();
 
   const items = MODULES.filter((m) => can(m.key, "view"));
 
@@ -190,6 +195,27 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={toggle}
+                  aria-label="Alternar entre tema claro e escuro"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-sm border border-border text-foreground hover:bg-muted"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[240px] text-xs">
+                Muda o visual do sistema entre claro e escuro. Sua escolha fica
+                salva neste aparelho.
+              </TooltipContent>
+            </Tooltip>
+
             <DropdownMenu>
               <Tooltip>
                 <TooltipTrigger asChild>
