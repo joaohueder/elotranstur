@@ -9,7 +9,7 @@ import { rastrearMeta } from "@/lib/meta-ads";
 import { useSeo } from "@/lib/seo";
 import { useLayoutSettings } from "@/lib/layout-settings";
 import { capaDa } from "@/lib/viagens";
-import { contextoDaVisita, marcarVisitaLead } from "@/lib/visitas";
+import { contextoDaVisita, marcarVisitaLead, visitorId } from "@/lib/visitas";
 
 
 
@@ -89,6 +89,7 @@ export default function LandingViagem() {
       _slug: slug,
       _nome: dados.nome,
       _whatsapp: dados.whatsapp,
+      _visitor: visitorId(),
     });
     if (error) {
       // Não expõe detalhes internos do banco na página pública.

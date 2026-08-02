@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 const CHAVE_VISITANTE = "elo:visitor-id";
 
 /** Identificador anônimo e persistente do visitante (não contém dados pessoais). */
-function visitorId(): string {
+export function visitorId(): string {
   try {
     let id = localStorage.getItem(CHAVE_VISITANTE);
     if (!id) {
