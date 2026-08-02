@@ -42,10 +42,8 @@ export default function LandingViagem() {
   useEffect(() => {
     let ativo = true;
     (async () => {
-      const { data } = await supabase
-        .from("app_empresa")
-        .select("nome, whatsapp")
-        .maybeSingle();
+      // RPC pública: devolve somente nome e WhatsApp (e-mails ficam protegidos).
+      const { data } = await supabase.rpc("empresa_publica");
       if (ativo && data) setEmpresa(data as { nome: string; whatsapp: string });
     })();
     return () => {
