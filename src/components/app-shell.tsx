@@ -207,27 +207,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={toggle}
-                  aria-label="Alternar entre tema claro e escuro"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-sm border border-border text-foreground hover:bg-muted"
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-4 w-4" />
-                  ) : (
-                    <Moon className="h-4 w-4" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[240px] text-xs">
-                Muda o visual do sistema entre claro e escuro. Sua escolha fica
-                salva neste aparelho.
-              </TooltipContent>
-            </Tooltip>
-
             <DropdownMenu>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -296,6 +275,26 @@ export function AppShell({ children }: { children: ReactNode }) {
                     Recarregar permissões
                     <span className="block text-[10px] font-normal text-muted-foreground">
                       Atualiza o que você pode acessar, sem sair do sistema.
+                    </span>
+                  </span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 rounded-sm"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    toggle();
+                  }}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                  <span className="flex-1">
+                    Tema {theme === "dark" ? "claro" : "escuro"}
+                    <span className="block text-[10px] font-normal text-muted-foreground">
+                      Alterne o visual do painel. O padrão é claro.
                     </span>
                   </span>
                 </DropdownMenuItem>

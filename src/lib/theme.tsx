@@ -28,9 +28,8 @@ function readCache(): Theme {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw === "dark" || raw === "light") return raw;
-    return window.matchMedia?.("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    // O tema claro é o padrão do sistema; o escuro é uma opção secundária.
+    return "light";
   } catch {
     return "light";
   }
