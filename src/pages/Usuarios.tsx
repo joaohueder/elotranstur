@@ -47,6 +47,8 @@ type UsuarioRow = {
   is_admin: boolean;
   permissoes: PermissionMap;
   online: boolean;
+  last_seen_at: string | null;
+  last_seen_page: string | null;
   sessao_iniciada_em: string | null;
   sessao_atualizada_em: string | null;
   sessao_expira_em: string | null;
@@ -126,6 +128,8 @@ export default function Usuarios() {
         is_admin: Boolean(u.is_admin),
         permissoes: normalizePermissions(u.permissoes),
         online: Boolean(u.online),
+        last_seen_at: (u.last_seen_at as string) ?? null,
+        last_seen_page: (u.last_seen_page as string) ?? null,
         sessao_iniciada_em: (u.sessao_iniciada_em as string) ?? null,
         sessao_atualizada_em: (u.sessao_atualizada_em as string) ?? null,
         sessao_expira_em: (u.sessao_expira_em as string) ?? null,
@@ -422,31 +426,51 @@ export default function Usuarios() {
                 <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
-                      Sessão
-                      <HelpTip texto="Mostra há quanto tempo a pessoa está logada. Se estiver fora do sistema, aparece 'Não logado'." />
+                      Presença
+                      <HelpTip texto="Página onde o usuário foi visto pela última vez e há quanto tempo." />
                     </p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-foreground">
+                    <div className="mt-0.5 flex flex-col gap-0.5 text-foreground">
                       {u.online ? (
                         <>
-                          <Wifi className="h-3.5 w-3.5 text-emerald-600" />
-                          <span key={agora}>
-                            {u.sessao_iniciada_em
-                              ? `Logado há ${tempoDeVida(u.sessao_iniciada_em)}`
-                              : "Logado"}
+                          <div className="flex items-center gap-1.5">
+                            <Wifi className="h-3.5 w-3.5 text-emerald-600" />
+                            <span className="truncate font-medium">
+                              {u.last_seen_page || "Painel"}
+                            </span>
+                          </div>
+                          <span className="text-[9px] text-muted-foreground ml-5">
+                            Ativo há {tempoDeVida(u.last_seen_at || u.sessao_atualizada_em || new Date().toISOString())}
                           </span>
                         </>
                       ) : (
-                        <>
-                          <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
-                          Não logado
-                        </>
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <WifiOff className="h-3.5 w-3.5" />
+                          <span>Não logado</span>
+                        </div>
                       )}
-                    </p>
+                    </div>
                   </div>
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
+                      Sessão
+                      <HelpTip texto="Início da sessão e endereço IP utilizado." />
+                    </p>
+                    <div className="mt-0.5 space-y-0.5 text-foreground">
+                      <p className="truncate">
+                        {u.sessao_iniciada_em ? tempoDeVida(u.sessao_iniciada_em) : "—"}
+                      </p>
+                      <p className="text-[9px] text-muted-foreground">
+                        IP: {u.sessao_ip || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
+                  <div>
+                    <p className="flex items-center gap-1 uppercase tracking-widest">
                       Expira em
-                      <HelpTip texto="Tempo restante até a sessão expirar. Se a pessoa não marcou 'Ficar conectado por 30 dias', a sessão encerra no logoff." />
+                      <HelpTip texto="Tempo restante até a sessão expirar." />
                     </p>
                     <p className="mt-0.5 text-foreground">
                       {!u.online
@@ -458,22 +482,16 @@ export default function Usuarios() {
                             : "—"}
                     </p>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 border-t border-border px-4 py-4 sm:px-6 text-[11px] text-muted-foreground">
-                  <div>
-                    <p className="flex items-center gap-1 uppercase tracking-widest">
-                      IP
-                      <HelpTip texto="Endereço de internet (IP) usado no acesso atual." />
-                    </p>
-                    <p className="mt-0.5 text-foreground">{u.sessao_ip ?? "—"}</p>
-                  </div>
                   <div>
                     <p className="flex items-center gap-1 uppercase tracking-widest">
                       Último acesso
                       <HelpTip texto="Data do último login realizado no sistema." />
                     </p>
                     <p className="mt-0.5 text-foreground">
+                      {formatarData(u.last_sign_in_at)}
+                    </p>
+                  </div>
+                </div>
                       {formatarData(u.last_sign_in_at)}
                     </p>
                   </div>

@@ -77,6 +77,36 @@ const MENU_HINTS: Record<string, string> = {
 
 
 /**
+ * Componente que rastreia a presença do usuário autenticado no sistema.
+ * Atualiza a página atual e o horário da última atividade a cada 30s.
+ */
+function PresenceTracker() {
+  const { pathname } = useLocation();
+  const { userId } = useAuthz();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const update = async () => {
+      // Evita atualizar em rotas de login/auth ou públicas
+      if (pathname.startsWith("/login") || pathname.startsWith("/v/")) return;
+      
+      try {
+        await supabase.rpc("update_user_presence", { _path: pathname });
+      } catch (err) {
+        console.warn("Falha ao atualizar presença:", err);
+      }
+    };
+
+    void update();
+    const timer = setInterval(() => void update(), 30_000); // 30 segundos
+    return () => clearInterval(timer);
+  }, [pathname, userId]);
+
+  return null;
+}
+
+/**
  * Layout padrão do sistema ELO: header fixo + barra de menu fixa + main + rodapé.
  */
 export function AppShell({ children }: { children: ReactNode }) {
@@ -107,6 +137,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-muted font-sans">
+      <PresenceTracker />
       {/* HEADER FIXO */}
       <header className="fixed inset-x-0 top-0 z-40 h-14 border-b border-border bg-background sm:h-16">
         <div className="app-container flex h-full items-center justify-between px-3 sm:px-6">
