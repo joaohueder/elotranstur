@@ -15,7 +15,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { APP_VERSION } from "@/lib/version";
 
