@@ -492,10 +492,6 @@ export default function Usuarios() {
                     </p>
                   </div>
                 </div>
-                      {formatarData(u.last_sign_in_at)}
-                    </p>
-                  </div>
-                </div>
 
                 <div className="border-t border-border px-4 py-4 sm:px-6">
                   <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
