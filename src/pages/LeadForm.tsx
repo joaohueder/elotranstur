@@ -6,6 +6,7 @@ import {
   Loader2,
   Lock,
   MapPin,
+  MessageCircle,
   Plus,
   Save,
   StickyNote,
@@ -408,14 +409,27 @@ export default function LeadForm() {
                   >
                     WhatsApp
                   </FieldLabel>
-                  <Input
-                    id="whatsapp"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
-                    placeholder="(00) 00000-0000"
-                    inputMode="numeric"
-                    className="mt-1.5"
-                  />
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <Input
+                      id="whatsapp"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
+                      placeholder="(00) 00000-0000"
+                      inputMode="numeric"
+                      className="flex-1"
+                    />
+                    {editando && whatsapp.replace(/\D/g, "").length >= 10 && (
+                      <a
+                        href={`https://wa.me/55${whatsapp.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-green-500 text-white shadow-sm transition-transform hover:scale-105 active:scale-95 sm:hidden"
+                        title="Abrir WhatsApp"
+                      >
+                        <MessageCircle className="h-5 w-5 fill-current" />
+                      </a>
+                    )}
+                  </div>
                 </div>
 
                 <div>

@@ -10,6 +10,7 @@ import {
   MapPin,
   CalendarDays,
   Clock,
+  MessageCircle,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -341,9 +342,20 @@ export default function Crm() {
                               <p className="truncate text-sm font-medium text-foreground">
                                 {lead.nome}
                               </p>
-                              <p className="mt-0.5 text-xs text-muted-foreground">
-                                {lead.whatsapp} · {lead.origem}
-                              </p>
+                              <div className="mt-0.5 flex items-center gap-2">
+                                <p className="text-xs text-muted-foreground">
+                                  {lead.whatsapp} · {lead.origem}
+                                </p>
+                                <a
+                                  href={`https://wa.me/55${lead.whatsapp.replace(/\D/g, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white shadow-sm transition-transform hover:scale-110 active:scale-95"
+                                  title="Abrir WhatsApp"
+                                >
+                                  <MessageCircle className="h-3.5 w-3.5 fill-current" />
+                                </a>
+                              </div>
                               <div className="mt-2">
                                 <LeadLifetime
                                   createdAt={lead.created_at}
@@ -484,12 +496,25 @@ export default function Crm() {
                 movendo === lead.id && "opacity-50",
               )}
             >
-              <p className="truncate text-sm font-medium text-foreground">
-                {lead.nome}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {lead.whatsapp}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {lead.nome}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {lead.whatsapp}
+                  </p>
+                </div>
+                <a
+                  href={`https://wa.me/55${lead.whatsapp.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-500 text-white shadow-sm transition-transform hover:scale-110 active:scale-95 lg:hidden"
+                  title="Abrir WhatsApp"
+                >
+                  <MessageCircle className="h-4 w-4 fill-current" />
+                </a>
+              </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span className="inline-block rounded-sm bg-muted px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
                   {lead.origem}
